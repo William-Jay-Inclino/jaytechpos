@@ -1,0 +1,26 @@
+# version: '3.8'
+services:
+
+  jaytechpos-db:
+    image: postgres:17
+    ports:
+      - 5438:5432
+    environment:
+      POSTGRES_USER: jay
+      POSTGRES_PASSWORD: jay123
+      POSTGRES_HOST_AUTH_METHOD: md5
+      TZ: Asia/Manila
+    command: postgres -c "listen_addresses=*"
+    networks:
+      - jaytechpos-network
+    restart: always
+    volumes:
+      - jaytechpos-db-data:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d
+
+networks:
+  jaytechpos-network:
+    driver: bridge
+
+volumes:
+  jaytechpos-db-data:
