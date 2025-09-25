@@ -2,17 +2,17 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * @property int $id
- * @property string $role_name
- * @property string|null $description
- */
 class Role extends Model
 {
+    use HasFactory;
+
     /**
      * The attributes that are mass assignable.
+     *
+     * Protects against mass assignment attacks.
      *
      * @var array<int, string>
      */
@@ -22,16 +22,11 @@ class Role extends Model
     ];
 
     /**
-     * The attributes that should be cast.
-     *
-     * @return array<string, string>
+     * Example relationship:
+     * A role can belong to many users (many-to-many).
      */
-    protected function casts(): array
+    public function users()
     {
-        return [
-            'id' => 'integer',
-            'name' => 'string',
-            'description' => 'string',
-        ];
+        return $this->belongsToMany(User::class);
     }
 }

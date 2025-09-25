@@ -46,4 +46,39 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    public function activityLogs()
+    {
+        return $this->hasMany(ActivityLog::class);
+    }
+
+    /**
+     * Refunds created/initiated by this user (e.g., cashier).
+     */
+    public function refundsInitiated()
+    {
+        return $this->hasMany(Refund::class, 'user_id');
+    }
+
+    /**
+     * Refunds approved/managed by this user (e.g., manager).
+     */
+    public function refundsApproved()
+    {
+        return $this->hasMany(Refund::class, 'manager_id');
+    }
+
+    /**
+     * A user (cashier/seller) can have many sales.
+     */
+    public function sales()
+    {
+        return $this->hasMany(Sale::class, 'user_id');
+    }
+
 }

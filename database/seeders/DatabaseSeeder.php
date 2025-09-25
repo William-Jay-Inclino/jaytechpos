@@ -38,6 +38,13 @@ class DatabaseSeeder extends Seeder
             ['unit_name' => 'Ounce', 'abbreviation' => 'oz'],
         ]);
 
+        // SEED SALES STATUSES - atleast 3 statuses
+        DB::table('sales_statuses')->insert([
+            ['name' => 'Completed', 'description' => 'Sale completed successfully', 'is_active' => true],
+            ['name' => 'Refunded', 'description' => 'Sale has been refunded', 'is_active' => true],
+            ['name' => 'Voided', 'description' => 'Sale was voided', 'is_active' => false],
+        ]);
+
         // SEED VAT RATES - atleast 3 rates
         DB::table('vat_rates')->insert([
             ['rate_name' => 'VAT 12%', 'rate_percentage' => 12.00],
