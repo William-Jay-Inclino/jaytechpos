@@ -16,7 +16,6 @@ services:
     restart: always
     volumes:
       - jaytechpos-db-data:/var/lib/postgresql/data
-      - ./init-db:/docker-entrypoint-initdb.d
 
 networks:
   jaytechpos-network:

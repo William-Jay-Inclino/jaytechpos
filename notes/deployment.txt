@@ -1,0 +1,28 @@
+
+==============================================  OPTIMIZING ROUTES ==============================================
+
+php artisan route:cache
+
+php artisan route:clear
+
+Source: https://laravel.com/docs/12.x/routing#attaching-rate-limiters-to-routes
+
+
+============================================== OPTIMIZING VIEWS ==============================================
+
+php artisan view:cache
+
+
+php artisan view:clear
+
+
+Source: https://laravel.com/docs/12.x/views
+
+============================================== OPTIMIZING EVENTS ==============================================
+
+php artisan event:cache
+
+
+php artisan event:clear
+
+https://laravel.com/docs/12.x/events
