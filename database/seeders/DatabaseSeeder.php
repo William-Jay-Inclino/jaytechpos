@@ -16,14 +16,6 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {   
 
-        // SEED ROLES
-        DB::table('roles')->insert([
-            ['name' => 'Admin', 'description' => 'Administrator with full access'],
-            ['name' => 'Manager', 'description' => 'Manager with POS and Inventory access'],
-            ['name' => 'Cashier', 'description' => 'Cashier with POS access'],
-            ['name' => 'Staff', 'description' => 'Staff with Inventory access'],
-        ]);
-
         // SEED UNITS - atleast 10 units
         DB::table('units')->insert([
             ['unit_name' => 'Piece', 'abbreviation' => 'pc/pcs'],

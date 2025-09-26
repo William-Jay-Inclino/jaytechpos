@@ -47,11 +47,6 @@ class User extends Authenticatable
         ];
     }
 
-    public function role()
-    {
-        return $this->belongsTo(Role::class);
-    }
-
     public function activityLogs()
     {
         return $this->hasMany(ActivityLog::class);

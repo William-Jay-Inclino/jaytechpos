@@ -24,6 +24,7 @@ Route::middleware(['throttle:global'])->group(function () {
         return Inertia::render('Dashboard');
     })->middleware(['auth', 'verified'])->name('dashboard');
 
+    Route::resource('categories', App\Http\Controllers\Inventory\CategoryController::class)->middleware(['auth', 'verified'])->except(['show']);
 
 });
 
