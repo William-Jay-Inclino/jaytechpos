@@ -9,37 +9,41 @@ import { Label } from '@/components/ui/label';
 import InputError from '@/components/InputError.vue';
 import { Link } from '@inertiajs/vue3'
 import { showSuccessToast } from '@/lib/toast';
+import { Category } from '@/types/inventory';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Categories', href: '/categories' },
-    { title: 'Create Category', href: '/categories/create' },
+    { title: 'Edit Category', href: '/categories/edit' },
 ];
 
+const props = defineProps<{
+    category: Category
+}>()
+
 const form = useForm({
-    category_name: '',
-    description: '',
+    category_name: props.category.category_name,
+    description: props.category.description,
 });
 
 function submit() {
-    form.post('/categories', {
+    form.put(`/categories/${props.category.id}`, {
         preserveScroll: true,
         onSuccess: () => {
-            form.reset();
-            showSuccessToast('Category created successfully!');
+            showSuccessToast('Category updated successfully!');
         },
     });
 };
 </script>
 
 <template>
-    <Head title="Create Category" />
+    <Head title="Edit Category" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
             <!-- Header -->
             <div class="mb-6">
                 <h1 class="text-lg sm:text-xl lg:text-2xl font-semibold tracking-tight">
-                    Create Category
+                    Edit Category
                 </h1>
             </div>
 

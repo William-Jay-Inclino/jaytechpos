@@ -15,7 +15,7 @@ class CategoryController extends Controller
      */
     public function index(): Response
     {
-        $categories = Category::all();
+        $categories = Category::orderBy('category_name')->get();
         return Inertia::render('categories/Index', [
             "categories" => $categories
         ]);
@@ -34,40 +34,53 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'category_name' => 'required|string|max:255',
             'description' => 'nullable|string|max:255',
         ]);
 
-        Category::create([
-            'category_name' => $request->category_name,
-            'description' => $request->description,
-        ]);
+        Category::create($validated);
 
-        return redirect()->route('categories.index')->with('success', 'Category created successfully.');
+        return redirect()
+            ->route('categories.index')
+            ->with('success', 'Category created successfully.');
     }
     
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
-    {
-        //
+    public function edit(Category $category)
+    {   
+        return Inertia::render('categories/Edit', [
+            'category' => $category
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Category $category)
     {
-        //
+        $validated = $request->validate([
+            'category_name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:255',
+        ]);
+
+        $category->update($validated);
+
+        return back()->with('success', 'Category updated successfully.');
+
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Category $category)
     {
-        //
+        $category->delete();
+
+        return redirect()
+            ->route('categories.index')
+            ->with('success', 'Category deleted successfully.');
     }
 }
