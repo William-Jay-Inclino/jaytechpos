@@ -18,9 +18,9 @@ services:
     ports:
       - 5438:5432
     environment:
-      POSTGRES_USER: jay
+      POSTGRES_USER: [USER]
       POSTGRES_DB: jaytechpos_db
-      POSTGRES_PASSWORD: jay123
+      POSTGRES_PASSWORD: [PASSWORD]
       POSTGRES_HOST_AUTH_METHOD: "scram-sha-256\nhost replication all 0.0.0.0/0 md5"
       POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
     command: |
