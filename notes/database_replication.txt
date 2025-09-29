@@ -16,3 +16,8 @@ expected output:
  pg_is_in_recovery 
 -------------------
  t
+
+
+
+
+Article for database replication in postgresql: https://medium.com/@eremeykin/how-to-setup-single-primary-postgresql-replication-with-docker-compose-98c48f233bbf
