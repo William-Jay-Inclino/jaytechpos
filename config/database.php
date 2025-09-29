@@ -95,6 +95,20 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => 'prefer',
+
+            'read' => [
+                'host' => [
+                    env('DB_HOST_READ', '127.0.0.1'),
+                ],
+                'port' => env('DB_PORT_READ', '5439'),
+            ],
+            'write' => [
+                'host' => [
+                    env('DB_HOST_WRITE', '127.0.0.1'),
+                ],
+                'port' => env('DB_PORT_WRITE', '5438'),
+            ],
+            'sticky' => true,
         ],
 
         'sqlsrv' => [
