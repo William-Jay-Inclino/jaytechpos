@@ -11,6 +11,18 @@ import "vue-toastification/dist/index.css"
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
+// Determine base path for subdirectory
+const getBasePath = () => {
+    const path = window.location.pathname;
+    return path.startsWith('/jaytechpos') ? '/jaytechpos' : '';
+};
+
+const basePath = getBasePath();
+
+// Configure axios base URL for API requests
+import axios from 'axios';
+axios.defaults.baseURL = basePath;
+
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
     resolve: (name) =>
@@ -47,6 +59,10 @@ createInertiaApp({
     progress: {
         color: '#4B5563',
     },
+    page: {
+        ...(window as any).initialPage,
+        url: basePath + (window as any).initialPage?.url || '/',
+    }
 });
 
 // This will set light / dark mode on page load...
