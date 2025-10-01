@@ -27,6 +27,14 @@ Route::middleware(['throttle:global'])->group(function () {
         return Inertia::render('Dashboard');
     })->middleware(['auth', 'verified'])->name('dashboard');
 
+    Route::get('sales', function () {
+        return Inertia::render('sales/Index');
+    })->middleware(['auth', 'verified'])->name('sales.index');
+
+    Route::get('sales/create', function () {
+        return Inertia::render('sales/Create');
+    })->middleware(['auth', 'verified'])->name('sales.create');
+
 
     Route::resource('categories', CategoryController::class)
         ->middleware(['auth', 'verified'])

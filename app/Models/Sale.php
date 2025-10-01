@@ -56,4 +56,9 @@ class Sale extends Model
         return $this->hasMany(Refund::class, 'sale_id');
     }
 
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
 }

@@ -23,6 +23,7 @@ return new class extends Migration
             $table->decimal('unit_price', 15, 2);
             $table->decimal('cost_price', 15, 2);
             $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->string('image_path')->nullable();
             $table->timestamps();
         });
     }

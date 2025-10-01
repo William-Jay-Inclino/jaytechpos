@@ -1,0 +1,176 @@
+Step 1 - Server Preparation & Updates
+
+sudo apt update && sudo apt upgrade -y
+sudo apt install -y curl wget git unzip build-essential
+
+
+Step 2 - Install Web Server (Nginx)
+
+sudo apt install -y nginx
+sudo systemctl start nginx
+sudo systemctl enable nginx
+
+
+Step 3 - Install Database (PostgreSQL)
+
+sudo apt install -y postgresql postgresql-contrib
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+
+
+Step 4 - Install PHP 8.3 with Extensions
+
+sudo add-apt-repository ppa:ondrej/php -y
+sudo apt update
+
+sudo apt install -y php8.3 php8.3-fpm php8.3-pgsql php8.3-mbstring \
+php8.3-xml php8.3-bcmath php8.3-curl php8.3-zip php8.3-gd \
+php8.3-tokenizer php8.3-ctype php8.3-dom php8.3-fileinfo
+
+sudo systemctl start php8.3-fpm
+sudo systemctl enable php8.3-fpm
+
+
+Step 5 - Install Node.js and NPM
+
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt install -y nodejs
+
+node -v
+npm -v
+
+
+Step 6 - Install and Configure Composer
+
+curl -sS https://getcomposer.org/installer | php
+sudo mv composer.phar /usr/local/bin/composer
+sudo chmod +x /usr/local/bin/composer
+
+
+Step 7 - Deploy Application Code
+
+sudo mkdir -p /var/www/jaytechpos
+sudo chown -R $USER:$USER /var/www/jaytechpos
+
+cd /var/www/jaytechpos
+git clone git@github.com:William-Jay-Inclino/jaytechpos.git
+
+
+Step 8 - Create Database
+
+cd jaytechpos/docker 
+cp docker-compose.yml.example
+docker compose up -d
+docker exec -it docker-jaytechpos-db-1 psql -U jay
+CREATE DATABASE jaytechpos_db;
+exit;
+
+
+Step 9 - Install PHP Dependencies
+cd /var/www/jaytechpos
+composer install --optimize-autoloader --no-dev
+sudo chown -R www-data:www-data storage bootstrap/cache
+sudo chmod -R 775 storage bootstrap/cache
+
+
+Step 10 - Install Node.js Dependencies and Build Assets
+
+npm install
+npm run build
+
+
+Step 11 - Configure Environment File
+
+cp .env.example .env
+nano .env -> edit with your own config 
+php artisan key:generate
+
+Example .env configurations 
+
+APP_NAME=JayTechPOS
+APP_ENV=production
+APP_KEY=
+APP_DEBUG=false
+APP_URL=localhost
+
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5438
+DB_DATABASE=jaytechpos_db
+DB_USERNAME=jay
+DB_PASSWORD=jay123
+
+
+Step 12 - Configure Nginx
+
+sudo nano /etc/nginx/sites-available
+sudo nano default 
+
+Example config: 
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name localhost;
+    root /home/jay/apps/jaytechpos/public;
+
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-Content-Type-Options "nosniff";
+
+    index index.php;
+
+    charset utf-8;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location = /robots.txt  { access_log off; log_not_found off; }
+
+    error_page 404 /index.php;
+
+    location ~ ^/index\.php(/|$) {
+        fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        include fastcgi_params;
+        fastcgi_hide_header X-Powered-By;
+    }
+
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+}
+
+Note: Check first php version. It should match fastcgi_pass
+
+sudo ln -s /etc/nginx/sites-available/jaytechpos /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl reload nginx
+
+
+Step 13 - Run Laravel Setup Commands
+
+cd /var/www/jaytechpos
+php artisan migrate
+php artisan db:seed
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+
+
+Step 14 - Configure Firewall
+sudo ufw enable
+sudo ufw allow ssh
+sudo ufw allow 'Nginx Full'
+
+
+Step 15 - Monitor Application (Optional)
+sudo systemctl status nginx
+sudo systemctl status php8.3-fpm
+sudo systemctl status postgresql
+sudo systemctl status laravel-worker
+tail -f /var/www/jaytechpos/storage/logs/laravel.log
+
+
+Step 16 - Open chrome browser and go to localhost
