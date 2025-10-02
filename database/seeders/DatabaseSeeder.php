@@ -30,6 +30,15 @@ class DatabaseSeeder extends Seeder
             ['unit_name' => 'Ounce', 'abbreviation' => 'oz'],
         ]);
 
+        // SEED CUSTOMER - atleast 5 customers
+        DB::table('customers')->insert([
+            ['name' => 'Alice Johnson', 'mobile_number' => '09171234567'],
+            ['name' => 'Bob Smith', 'mobile_number' => '09179876543'],
+            ['name' => 'Charlie Brown', 'mobile_number' => '09281234567'],
+            ['name' => 'Diana Prince', 'mobile_number' => '09381234567'],
+            ['name' => 'Ethan Hunt', 'mobile_number' => '09481234567'],
+        ]);
+
         // SEED SALES STATUSES - atleast 3 statuses
         DB::table('sales_statuses')->insert([
             ['name' => 'Completed', 'description' => 'Sale completed successfully', 'is_active' => true],

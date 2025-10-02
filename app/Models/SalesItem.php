@@ -16,7 +16,7 @@ class SalesItem extends Model
         'unit_price',
         'discount_amount',
         'vat_amount',
-        'total_price',
+        'total_amount',
     ];
 
     protected $casts = [
@@ -24,7 +24,7 @@ class SalesItem extends Model
         'unit_price' => 'decimal:2',
         'discount_amount' => 'decimal:2',
         'vat_amount' => 'decimal:2',
-        'total_price' => 'decimal:2',
+        'total_amount' => 'decimal:2',
     ];
 
     /**

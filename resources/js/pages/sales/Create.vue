@@ -1,141 +1,217 @@
 <script setup lang="ts">
-    import AppLayout from '@/layouts/AppLayout.vue';
-    import { type BreadcrumbItem, type Product } from '@/types';
-    import AddProductModal from '@/components/AddProductModal.vue';
-    import { Head, Link } from '@inertiajs/vue3';
-    import { Button } from '@/components/ui/button';
-    import { Input } from '@/components/ui/input';
-    import { Label } from '@/components/ui/label';
-    import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-    import {
-        Select,
-        SelectContent,
-        SelectItem,
-        SelectTrigger,
-        SelectValue,
-    } from '@/components/ui/select';
-    import {
-        Card,
-        CardContent,
-        CardHeader,
-        CardTitle,
-        CardDescription,
-    } from '@/components/ui/card';
-    import {
-        Table,
-        TableBody,
-        TableCell,
-        TableHead,
-        TableHeader,
-        TableRow,
-    } from '@/components/ui/table';
-    import { Trash2, Plus } from 'lucide-vue-next';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { Trash2, ArrowLeft } from 'lucide-vue-next';
+
+// Layout & Components
+import AppLayout from '@/layouts/AppLayout.vue';
+import AddProductModal from '@/components/AddProductModal.vue';
+
+// UI Components
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+
+// Types
+import type { BreadcrumbItem } from '@/types';
+import { Product } from '@/types/inventory';
+import { Customer, CartItem } from '@/types/pos';
+
+const props = defineProps<{ 
+    products: Product[];
+    customers: Customer[];
+    sale?: SaleResponse;
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Sales', href: '/sales' },
     { title: 'New Sale', href: '/sales/create' },
 ];
 
-const props = defineProps<{ products: Product[] }>();
-console.log('Products:', props.products);
-
-import { ref, computed, onMounted, onUnmounted } from 'vue';
-const showAddModal = ref(false); // Ensure modal starts closed
-const saleItems = ref<Product[]>([]);
-
-// Sale item interface with quantity
-interface SaleItem extends Product {
-    quantity: number;
-    discount: number;
+// Types for sale response
+interface SaleResponse {
+    id: number;
+    invoice_number: string;
+    receipt_number: string;
+    transaction_date: string;
+    customer_id: number | null;
+    subtotal: number;
+    total_amount: number;
+    discount_amount: number;
+    vat_amount: number;
+    net_amount: number;
+    amount_tendered: number;
+    change_amount: number;
+    items: Array<{
+        product_id: number;
+        quantity: number;
+        unit_price: number;
+        discount_amount: number;
+        vat_amount: number;
+        total_amount: number;
+    }>;
+    cashier: string;
 }
 
-const saleItemsWithQty = ref<SaleItem[]>([]);
+// Reactive State
+const isAddModalOpen = ref(false);
+const cartItems = ref<CartItem[]>([]);
+const selectedCustomerId = ref<number | null>(null);
+const amountTendered = ref(0);
+const showSuccessModal = ref(false);
+const saleData = ref<SaleResponse | null>(null);
+const isProcessing = ref(false);
 
-function handleAddProduct(data: { product: Product; quantity: number }) {
+// Business Logic Functions
+function addProductToCart(data: { product: Product; quantity: number }): void {
     const { product, quantity } = data;
     
-    // Check if product already exists in cart
-    const existingItem = saleItemsWithQty.value.find(item => item.id === product.id);
+    const existingItem = cartItems.value.find((item: CartItem) => item.id === product.id);
     
     if (existingItem) {
-        // Increase quantity by the specified amount
         existingItem.quantity += quantity;
     } else {
-        // Add new product with specified quantity
-        saleItemsWithQty.value.push({
+        cartItems.value.push({
             ...product,
-            quantity: quantity,
-            discount: 0
+            quantity,
+            discountAmount: 0
         });
     }
     
-    showAddModal.value = false;
+    isAddModalOpen.value = false;
 }
 
-function removeItem(index: number) {
-    saleItemsWithQty.value.splice(index, 1);
+function removeCartItem(index: number): void {
+    cartItems.value.splice(index, 1);
 }
 
-function updateQuantity(index: number, quantity: number) {
+function updateCartItemQuantity(index: number, quantity: number): void {
     if (quantity > 0) {
-        saleItemsWithQty.value[index].quantity = quantity;
+        cartItems.value[index].quantity = quantity;
     }
 }
 
-// Computed totals
-const subtotal = computed(() => {
-    return saleItemsWithQty.value.reduce((sum, item) => {
-        const itemPrice = Number(item.unit_price) || 0;
-        return sum + (itemPrice * item.quantity) - item.discount;
+function calculateItemSubtotal(item: CartItem): number {
+    return (Number(item.unit_price) * item.quantity) - item.discountAmount;
+}
+
+function calculateItemVat(item: CartItem): number {
+    const subtotal = calculateItemSubtotal(item);
+    const vatRate = item.vat?.rate_percentage || 0;
+    return subtotal * (vatRate / 100);
+}
+
+function calculateItemTotal(item: CartItem): number {
+    return calculateItemSubtotal(item) + calculateItemVat(item);
+}
+
+// Computed Properties
+const cartSubtotal = computed((): number => {
+    return cartItems.value.reduce((sum: number, item: CartItem) => {
+        return sum + calculateItemSubtotal(item);
     }, 0);
 });
 
-const totalVat = computed(() => {
-    return saleItemsWithQty.value.reduce((sum, item) => {
-        const itemPrice = Number(item.unit_price) || 0;
-        const itemSubtotal = (itemPrice * item.quantity) - item.discount;
-        const vatRate = item.vat?.rate_percentage || 0;
-        return sum + (itemSubtotal * vatRate / 100);
+const cartTotalVat = computed((): number => {
+    return cartItems.value.reduce((sum: number, item: CartItem) => {
+        return sum + calculateItemVat(item);
     }, 0);
 });
 
-const totalDiscount = computed(() => {
-    return saleItemsWithQty.value.reduce((sum, item) => sum + item.discount, 0);
+const cartTotalDiscount = computed((): number => {
+    return cartItems.value.reduce((sum: number, item: CartItem) => {
+        return sum + item.discountAmount;
+    }, 0);
 });
 
-const grandTotal = computed(() => {
-    return subtotal.value + totalVat.value;
+const cartGrandTotal = computed((): number => {
+    return cartSubtotal.value + cartTotalVat.value;
 });
 
-const netAmount = computed(() => {
-    return grandTotal.value - totalDiscount.value;
+const cartNetAmount = computed((): number => {
+    return cartGrandTotal.value;
 });
 
-// Payment fields
-const amountTendered = ref(0);
-const change = computed(() => {
-    return Math.max(0, amountTendered.value - netAmount.value);
+const totalItemsInCart = computed((): number => {
+    return cartItems.value.reduce((sum: number, item: CartItem) => sum + item.quantity, 0);
 });
 
-function handleCheckout() {
-    // TODO: Implement checkout logic
-    console.log('Processing checkout...', {
-        items: saleItemsWithQty.value,
-        netAmount: netAmount.value,
-        amountTendered: amountTendered.value,
-        change: change.value
+const changeAmount = computed((): number => {
+    return Math.max(0, amountTendered.value - cartNetAmount.value);
+});
+
+const isCheckoutValid = computed((): boolean => {
+    return cartItems.value.length > 0 && amountTendered.value >= cartNetAmount.value;
+});
+
+// Event Handlers
+function handleCheckout(): void {
+    if (!isCheckoutValid.value || isProcessing.value) return;
+    
+    isProcessing.value = true;
+    
+    const checkoutData = {
+        customer_id: selectedCustomerId.value,
+        items: cartItems.value.map(item => ({
+            product_id: item.id,
+            quantity: item.quantity,
+            unit_price: Number(item.unit_price),
+            discount_amount: item.discountAmount,
+            vat_amount: calculateItemVat(item),
+            total_amount: calculateItemTotal(item)
+        })),
+        subtotal: cartSubtotal.value,
+        total_amount: cartGrandTotal.value,
+        discount_amount: cartTotalDiscount.value,
+        vat_amount: cartTotalVat.value,
+        net_amount: cartNetAmount.value,
+        amount_tendered: amountTendered.value,
+        change_amount: changeAmount.value
+    };
+    
+    console.log('Processing checkout...', checkoutData);
+    
+    // Use Inertia router instead of fetch
+    router.post('/sales', checkoutData, {
+        onSuccess: () => {
+            console.log('✅ Sale completed successfully!');
+            // Sale data will be available in props after successful submission
+        },
+        onError: (errors) => {
+            console.error('❌ Checkout failed:', errors);
+            isProcessing.value = false;
+        },
+        onFinish: () => {
+            isProcessing.value = false;
+        }
     });
 }
 
-// Keyboard shortcut handler
-function handleKeydown(event: KeyboardEvent) {
-    // Ctrl+A to open Add Item modal
+function resetForm(): void {
+    cartItems.value = [];
+    selectedCustomerId.value = null;
+    amountTendered.value = 0;
+    showSuccessModal.value = false;
+    saleData.value = null;
+}
+
+function printReceipt(): void {
+    window.print();
+}
+
+function closeSuccessModal(): void {
+    showSuccessModal.value = false;
+    resetForm();
+}
+
+function handleKeyboardShortcuts(event: KeyboardEvent): void {
     if (event.ctrlKey && event.key === 'a') {
         event.preventDefault();
-        showAddModal.value = true;
-    }
-    // Ctrl+Enter to checkout
-    else if (event.ctrlKey && event.key === 'Enter' && saleItemsWithQty.value.length > 0) {
+        isAddModalOpen.value = true;
+    } else if (event.ctrlKey && event.key === 'Enter' && isCheckoutValid.value) {
         event.preventDefault();
         handleCheckout();
     }
@@ -143,12 +219,22 @@ function handleKeydown(event: KeyboardEvent) {
 
 // Add keyboard event listener when component mounts
 onMounted(() => {
-    document.addEventListener('keydown', handleKeydown);
+    document.addEventListener('keydown', handleKeyboardShortcuts);
 });
 
 onUnmounted(() => {
-    document.removeEventListener('keydown', handleKeydown);
+    document.removeEventListener('keydown', handleKeyboardShortcuts);
 });
+
+// Watch for sale prop changes to show success modal
+watch(() => props.sale, (newSale: SaleResponse | undefined) => {
+    if (newSale) {
+        console.log('Sale data received:', newSale);
+        saleData.value = newSale;
+        showSuccessModal.value = true;
+        isProcessing.value = false;
+    }
+}, { immediate: true });
 
 </script>
 
@@ -156,61 +242,35 @@ onUnmounted(() => {
     <Head title="Create Sale" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="w-full flex justify-center px-2 py-6 md:px-8 md:py-10">
+        <div class="w-full px-2 py-6 md:px-8 md:py-10">
             <!-- Page Header -->
-            <div class="max-w-7xl w-full">
-                <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
+            <div class="max-w-7xl mx-auto">
+                <div class="flex items-center gap-4 mb-6">
+                    <Link href="/sales">
+                        <Button variant="ghost" size="sm" class="p-2">
+                            <ArrowLeft class="h-5 w-5" />
+                        </Button>
+                    </Link>
                     <h1 class="text-xl md:text-2xl font-semibold tracking-tight">🛒 New Sale</h1>
-                    <div class="flex gap-2">
-                        <Link href="/sales">
-                            <Button variant="outline" size="lg" class="min-w-[96px]">Cancel</Button>
-                        </Link>
-                    </div>
                 </div>
 
-                <!-- Particulars Card -->
-                <Card class="border rounded-xl w-full max-w-7xl mx-auto shadow-none">
-                    <CardHeader class="pb-2">
-                        <CardTitle class="text-base font-medium">Particulars</CardTitle>
-                        <CardDescription class="text-xs text-gray-500">Add items to this sale</CardDescription>
-                    </CardHeader>
-                    <CardContent class="space-y-6">
-                        <!-- Customer Info -->
-                        <div class="space-y-2 mb-2">
-                            <Label for="customer" class="text-sm font-medium">Customer</Label>
-                            <div class="flex gap-2 flex-col sm:flex-row">
-                                <Select class="flex-1 min-w-0">
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select customer" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="1">Juan Dela Cruz</SelectItem>
-                                        <SelectItem value="2">Maria Santos</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <Button variant="outline" size="icon" title="Add new customer" class="shrink-0">
-                                    <Plus class="h-4 w-4" />
-                                </Button>
-                            </div>
-                        </div>
-
-                        <!-- Add Item Button -->
-                        <div class="flex flex-col items-end gap-1 mb-2">
-                            <Button variant="secondary" size="lg" class="font-semibold px-4 py-2" @click="showAddModal = true">
-                                Add Item
-                                <span class="ml-2 text-xs opacity-70">(Ctrl+A)</span>
-                            </Button>
-                        </div>
+                <!-- Add Item Button -->
+                <div class="flex flex-col items-end gap-1 mb-6">
+                    <Button size="lg" @click="isAddModalOpen = true">
+                        Add Item
+                        <span class="ml-2 text-xs opacity-90">(Ctrl+A)</span>
+                    </Button>
+                </div>
 
                         <AddProductModal
-                            :open="showAddModal"
+                            :open="isAddModalOpen"
                             :products="products"
-                            @close="showAddModal = false"
-                            @add="handleAddProduct"
+                            @close="isAddModalOpen = false"
+                            @add="addProductToCart"
                         />
 
                         <!-- Items Table -->
-                        <div class="overflow-x-auto rounded-lg border border-gray-200">
+                        <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
                             <Table class="min-w-full text-sm">
                                 <TableHeader>
                                     <TableRow>
@@ -225,7 +285,7 @@ onUnmounted(() => {
                                 </TableHeader>
                                 <TableBody>
                                     <!-- Dynamic product rows -->
-                                    <TableRow v-for="(item, index) in saleItemsWithQty" :key="item.id">
+                                    <TableRow v-for="(item, index) in cartItems" :key="item.id">
                                         <TableCell class="flex items-center gap-3 py-3">
                                             <Avatar class="h-16 w-16 rounded-md">
                                                 <AvatarFallback class="text-lg font-semibold">{{ item.product_name.charAt(0).toUpperCase() }}</AvatarFallback>
@@ -241,40 +301,40 @@ onUnmounted(() => {
                                                 type="number" 
                                                 min="1" 
                                                 :value="item.quantity"
-                                                @input="updateQuantity(index, parseInt(($event.target as HTMLInputElement).value))"
+                                                @input="updateCartItemQuantity(index, parseInt(($event.target as HTMLInputElement).value))"
                                                 class="w-16 px-2 py-1 text-right border rounded text-sm"
                                             />
                                         </TableCell>
                                         <TableCell class="text-right align-middle">₱{{ Number(item.unit_price).toFixed(2) }}</TableCell>
-                                        <TableCell class="text-right align-middle">₱{{ item.discount.toFixed(2) }}</TableCell>
+                                        <TableCell class="text-right align-middle">₱{{ item.discountAmount.toFixed(2) }}</TableCell>
                                         <TableCell class="text-right align-middle">
-                                            ₱{{ ((Number(item.unit_price) * item.quantity - item.discount) * (item.vat?.rate_percentage || 0) / 100).toFixed(2) }}
+                                            ₱{{ calculateItemVat(item).toFixed(2) }}
                                         </TableCell>
                                         <TableCell class="text-right align-middle font-medium">
-                                            ₱{{ ((Number(item.unit_price) * item.quantity - item.discount) + ((Number(item.unit_price) * item.quantity - item.discount) * (item.vat?.rate_percentage || 0) / 100)).toFixed(2) }}
+                                            ₱{{ calculateItemTotal(item).toFixed(2) }}
                                         </TableCell>
                                         <TableCell class="align-middle">
-                                            <Button variant="ghost" size="icon" @click="removeItem(index)">
+                                            <Button variant="ghost" size="icon" @click="removeCartItem(index)">
                                                 <Trash2 class="h-4 w-4 text-red-500" />
                                             </Button>
                                         </TableCell>
                                     </TableRow>
 
                                     <!-- Empty state -->
-                                    <TableRow v-if="!saleItemsWithQty.length">
+                                    <TableRow v-if="!cartItems.length">
                                         <TableCell colspan="7" class="text-center py-8 text-muted-foreground">
                                             No items added. Click "+ Add Item" to start building your sale.
                                         </TableCell>
                                     </TableRow>
 
                                     <!-- Totals Row -->
-                                    <TableRow v-if="saleItemsWithQty.length" class="font-bold bg-gray-50 text-base border-t-2">
-                                        <TableCell>Totals</TableCell>
-                                        <TableCell class="text-right">{{ saleItemsWithQty.reduce((sum, item) => sum + item.quantity, 0) }}</TableCell>
+                                    <TableRow v-if="cartItems.length" class="font-bold bg-gray-50 dark:bg-gray-800 text-base border-t-2 border-gray-200 dark:border-gray-700">
+                                        <TableCell class="text-gray-900 dark:text-gray-100">Totals</TableCell>
+                                        <TableCell class="text-right text-gray-900 dark:text-gray-100">{{ totalItemsInCart }}</TableCell>
                                         <TableCell class="text-right"></TableCell>
-                                        <TableCell class="text-right">₱{{ totalDiscount.toFixed(2) }}</TableCell>
-                                        <TableCell class="text-right">₱{{ totalVat.toFixed(2) }}</TableCell>
-                                        <TableCell class="text-right">₱{{ grandTotal.toFixed(2) }}</TableCell>
+                                        <TableCell class="text-right text-gray-900 dark:text-gray-100">₱{{ cartTotalDiscount.toFixed(2) }}</TableCell>
+                                        <TableCell class="text-right text-gray-900 dark:text-gray-100">₱{{ cartTotalVat.toFixed(2) }}</TableCell>
+                                        <TableCell class="text-right text-gray-900 dark:text-gray-100">₱{{ cartGrandTotal.toFixed(2) }}</TableCell>
                                         <TableCell></TableCell>
                                     </TableRow>
                                 </TableBody>
@@ -282,22 +342,22 @@ onUnmounted(() => {
                         </div>
 
                         <!-- Payment Summary -->
-                        <div v-if="saleItemsWithQty.length" class="mt-6 space-y-4">
-                            <div class="border-t pt-6">
-                                <h3 class="text-lg font-semibold mb-4">Payment Summary</h3>
+                        <div v-if="cartItems.length" class="mt-6 space-y-4">
+                            <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
+                                <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Payment Summary</h3>
                                 
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                                     <!-- Net Amount Display -->
                                     <div class="space-y-2">
-                                        <Label class="text-sm font-medium">Net Amount</Label>
-                                        <div class="p-3 bg-orange-50 rounded-lg border">
-                                            <span class="text-2xl font-bold text-orange-700">₱{{ netAmount.toFixed(2) }}</span>
+                                        <Label class="text-sm font-medium text-gray-900 dark:text-gray-100">Net Amount</Label>
+                                        <div class="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
+                                            <span class="text-2xl font-bold text-orange-700 dark:text-orange-400">₱{{ cartNetAmount.toFixed(2) }}</span>
                                         </div>
                                     </div>
 
                                     <!-- Amount Tendered Input -->
                                     <div class="space-y-2">
-                                        <Label for="amountTendered" class="text-sm font-medium">Amount Tendered</Label>
+                                        <Label for="amountTendered" class="text-sm font-medium text-gray-900 dark:text-gray-100">Amount Tendered</Label>
                                         <Input
                                             id="amountTendered"
                                             v-model.number="amountTendered"
@@ -311,9 +371,9 @@ onUnmounted(() => {
 
                                     <!-- Change Display -->
                                     <div class="space-y-2">
-                                        <Label class="text-sm font-medium">Change</Label>
-                                        <div class="p-3 rounded-lg border h-12 flex items-center justify-end" :class="change > 0 ? 'bg-green-50 border-green-200' : 'bg-gray-50'">
-                                            <span class="text-lg font-bold" :class="change > 0 ? 'text-green-700' : 'text-gray-500'">₱{{ change.toFixed(2) }}</span>
+                                        <Label class="text-sm font-medium text-gray-900 dark:text-gray-100">Change</Label>
+                                        <div class="p-3 rounded-lg border h-12 flex items-center justify-end" :class="changeAmount > 0 ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'">
+                                            <span class="text-lg font-bold" :class="changeAmount > 0 ? 'text-green-700 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'">₱{{ changeAmount.toFixed(2) }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -321,21 +381,138 @@ onUnmounted(() => {
                                 <!-- Checkout Button -->
                                 <div class="flex justify-center">
                                     <Button 
-                                        variant="default" 
+                                        variant="destructive" 
                                         size="lg" 
                                         class="w-full md:w-auto min-w-[200px] h-12 text-lg font-semibold"
-                                        :disabled="!saleItemsWithQty.length || amountTendered < netAmount"
+                                        :disabled="!isCheckoutValid || isProcessing"
                                         @click="handleCheckout"
                                     >
-                                        Complete Checkout
-                                        <span class="ml-2 text-sm opacity-80">(Ctrl+Enter)</span>
+                                        <span v-if="isProcessing">Processing...</span>
+                                        <span v-else>Complete Checkout</span>
+                                        <span v-if="!isProcessing" class="ml-2 text-sm opacity-80">(Ctrl+Enter)</span>
                                     </Button>
                                 </div>
                             </div>
                         </div>
-                    </CardContent>
-                </Card>
+                </div>
+            </div>
+
+        <!-- Success Modal with Receipt -->
+        <div v-if="showSuccessModal" class="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+            <div class="bg-white dark:bg-gray-900 rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-hidden">
+                <!-- Modal Header -->
+                <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h2 class="text-xl font-bold text-green-600 dark:text-green-400">✅ Sale Completed!</h2>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">Transaction processed successfully</p>
+                </div>
+
+                <!-- Receipt Content -->
+                <div id="receipt-content" class="p-6 overflow-y-auto max-h-[60vh]">
+                    <div class="text-center mb-4">
+                        <h3 class="font-bold text-lg">JAYTECHPOS</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">Point of Sale Receipt</p>
+                        <div class="border-b border-gray-300 dark:border-gray-600 my-2"></div>
+                    </div>
+
+                    <!-- Receipt Details -->
+                    <div v-if="saleData" class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span>Invoice #:</span>
+                            <span class="font-mono">{{ saleData.invoice_number }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Receipt #:</span>
+                            <span class="font-mono">{{ saleData.receipt_number }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Date:</span>
+                            <span>{{ new Date(saleData.transaction_date).toLocaleString() }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Cashier:</span>
+                            <span>{{ saleData.cashier }}</span>
+                        </div>
+                        <div class="border-b border-gray-300 dark:border-gray-600 my-3"></div>
+
+                        <!-- Items -->
+                        <div class="space-y-1">
+                            <div v-for="item in saleData.items" :key="item.product_id" class="flex justify-between text-xs">
+                                <div class="flex-1">
+                                    <div class="font-medium">Product ID: {{ item.product_id }}</div>
+                                    <div class="text-gray-500">{{ item.quantity }}x ₱{{ item.unit_price }}</div>
+                                </div>
+                                <div class="text-right">
+                                    <div>₱{{ item.total_amount.toFixed(2) }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="border-b border-gray-300 dark:border-gray-600 my-3"></div>
+
+                        <!-- Totals -->
+                        <div class="space-y-1">
+                            <div class="flex justify-between">
+                                <span>Subtotal:</span>
+                                <span>₱{{ saleData.subtotal.toFixed(2) }}</span>
+                            </div>
+                            <div v-if="saleData.discount_amount > 0" class="flex justify-between">
+                                <span>Discount:</span>
+                                <span>-₱{{ saleData.discount_amount.toFixed(2) }}</span>
+                            </div>
+                            <div v-if="saleData.vat_amount > 0" class="flex justify-between">
+                                <span>VAT:</span>
+                                <span>₱{{ saleData.vat_amount.toFixed(2) }}</span>
+                            </div>
+                            <div class="flex justify-between font-bold text-lg border-t border-gray-300 dark:border-gray-600 pt-1">
+                                <span>TOTAL:</span>
+                                <span>₱{{ saleData.net_amount.toFixed(2) }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Amount Tendered:</span>
+                                <span>₱{{ saleData.amount_tendered.toFixed(2) }}</span>
+                            </div>
+                            <div class="flex justify-between font-semibold text-green-600 dark:text-green-400">
+                                <span>Change:</span>
+                                <span>₱{{ saleData.change_amount.toFixed(2) }}</span>
+                            </div>
+                        </div>
+
+                        <div class="border-b border-gray-300 dark:border-gray-600 my-3"></div>
+                        <div class="text-center text-xs text-gray-500">
+                            <p>Thank you for your business!</p>
+                            <p>{{ new Date().toLocaleString() }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Actions -->
+                <div class="p-6 border-t border-gray-200 dark:border-gray-700 flex gap-3">
+                    <Button variant="outline" class="flex-1" @click="printReceipt">
+                        🖨️ Print Receipt
+                    </Button>
+                    <Button variant="default" class="flex-1" @click="closeSuccessModal">
+                        Close & New Sale
+                    </Button>
+                </div>
             </div>
         </div>
     </AppLayout>
 </template>
+
+<style>
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #receipt-content,
+    #receipt-content * {
+        visibility: visible;
+    }
+    #receipt-content {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+}
+</style>

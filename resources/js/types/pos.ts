@@ -1,4 +1,5 @@
 import { User } from ".";
+import { Product } from "./inventory";
 
 export interface Customer {
     id: number;
@@ -38,4 +39,19 @@ export interface Sale {
     user: User;
     payment_method: PaymentMethod;
     sales_status: SalesStatus;
+}
+
+export interface SaleItem {
+    id: number;
+    product_id: number;
+    quantity: number;
+    unit_price: number;
+    discount_amount: number;
+    vat_amount: number;
+    total_amount: number;
+}
+
+export interface CartItem extends Product {
+    quantity: number;
+    discountAmount: number;
 }

@@ -34,6 +34,8 @@ Route::middleware(['throttle:global'])->group(function () {
 
     Route::get('sales/create', [SaleController::class, 'create'])->middleware(['auth', 'verified'])->name('sales.create');
 
+    Route::post('sales', [SaleController::class, 'store'])->middleware(['auth', 'verified'])->name('sales.store');
+
     Route::resource('categories', CategoryController::class)
         ->middleware(['auth', 'verified'])
         ->except(['show']);
