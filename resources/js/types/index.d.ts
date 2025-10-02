@@ -37,3 +37,6 @@ export interface User {
 }
 
 export type BreadcrumbItemType = BreadcrumbItem;
+
+export * from './inventory';
+export * from './pos';

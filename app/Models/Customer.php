@@ -14,8 +14,13 @@ class Customer extends Model
         'mobile_number',
     ];
 
+    protected $casts = [
+        'mobile_number' => 'string',
+    ];
+
     public function sales()
     {
         return $this->hasMany(Sale::class);
     }
 }
+

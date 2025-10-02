@@ -31,7 +31,7 @@ return new class extends Migration
         Schema::create('sales', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users', 'id')->restrictOnDelete();
-            $table->foreignId('customer_id')->constrained('customers', 'id')->restrictOnDelete();
+            $table->foreignId('customer_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('payment_method_id')->constrained('payment_methods', 'id')->restrictOnDelete();
             $table->foreignId('sales_status_id')->constrained('sales_statuses', 'id')->restrictOnDelete();
             $table->decimal('total_amount', 15, 2);

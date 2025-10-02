@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignId('unit_id')->constrained('units', 'id')->restrictOnDelete();
             $table->foreignId('vat_id')->constrained('vat_rates', 'id')->restrictOnDelete();
             $table->string('sku')->unique();
+            $table->string('barcode')->unique()->nullable();
             $table->string('product_name');
             $table->text('description')->nullable();
             $table->decimal('unit_price', 15, 2);

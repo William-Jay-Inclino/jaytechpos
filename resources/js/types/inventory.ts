@@ -55,6 +55,7 @@ export interface Product {
     unit_id: number;
     vat_id: number;
     sku: string;
+    barcode: string | null;
     product_name: string;
     description: string;
     unit_price: number;

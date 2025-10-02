@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\Inventory\CategoryController;
+use App\Http\Controllers\POS\SaleController;
 
 
 /*
@@ -31,10 +32,7 @@ Route::middleware(['throttle:global'])->group(function () {
         return Inertia::render('sales/Index');
     })->middleware(['auth', 'verified'])->name('sales.index');
 
-    Route::get('sales/create', function () {
-        return Inertia::render('sales/Create');
-    })->middleware(['auth', 'verified'])->name('sales.create');
-
+    Route::get('sales/create', [SaleController::class, 'create'])->middleware(['auth', 'verified'])->name('sales.create');
 
     Route::resource('categories', CategoryController::class)
         ->middleware(['auth', 'verified'])

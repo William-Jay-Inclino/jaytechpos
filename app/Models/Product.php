@@ -20,6 +20,7 @@ class Product extends Model
         'unit_id',
         'vat_id',
         'sku',
+        'barcode',
         'product_name',
         'description',
         'unit_price',
