@@ -46,6 +46,8 @@ interface SaleResponse {
     change_amount: number;
     items: Array<{
         product_id: number;
+        product_name: string;
+        sku: string;
         quantity: number;
         unit_price: number;
         discount_amount: number;
@@ -216,11 +218,6 @@ watch(() => props.sale, (newSale: SaleResponse | undefined) => {
             <!-- Page Header -->
             <div class="max-w-7xl mx-auto">
                 <div class="flex items-center gap-4 mb-6">
-                    <Link href="/sales">
-                        <Button variant="ghost" size="sm" class="p-2">
-                            <ArrowLeft class="h-5 w-5" />
-                        </Button>
-                    </Link>
                     <h1 class="text-xl md:text-2xl font-semibold tracking-tight">🛒 New Sale</h1>
                 </div>
 
@@ -311,7 +308,7 @@ watch(() => props.sale, (newSale: SaleResponse | undefined) => {
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                                     <!-- Net Amount Display -->
                                     <div class="space-y-2">
-                                        <Label class="text-sm font-medium text-gray-900 dark:text-gray-100">Net Amount</Label>
+                                        <Label class="text-sm font-medium text-gray-900 dark:text-gray-100">Total Amount</Label>
                                         <div class="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
                                             <span class="text-2xl font-bold text-orange-700 dark:text-orange-400">₱{{ cartNetAmount.toFixed(2) }}</span>
                                         </div>
@@ -397,14 +394,14 @@ watch(() => props.sale, (newSale: SaleResponse | undefined) => {
                         <div class="border-b border-gray-300 dark:border-gray-600 my-3"></div>
 
                         <!-- Items -->
-                        <div class="space-y-1">
-                            <div v-for="item in saleData.items" :key="item.product_id" class="flex justify-between text-xs">
-                                <div class="flex-1">
-                                    <div class="font-medium">Product ID: {{ item.product_id }}</div>
-                                    <div class="text-gray-500">{{ item.quantity }}x ₱{{ item.unit_price }}</div>
+                        <div class="space-y-2">
+                            <div v-for="item in saleData.items" :key="item.product_id" class="text-xs">
+                                <div class="flex justify-between">
+                                    <span class="font-medium">{{ item.product_name }} ({{ item.sku }})</span>
+                                    <span class="font-medium">₱{{ (item.quantity * item.unit_price).toFixed(2) }}</span>
                                 </div>
-                                <div class="text-right">
-                                    <div>₱{{ (item.quantity * item.unit_price).toFixed(2) }}</div>
+                                <div class="flex justify-between text-gray-500">
+                                    <span>{{ item.quantity }} × ₱{{ item.unit_price.toFixed(2) }}</span>
                                 </div>
                             </div>
                         </div>

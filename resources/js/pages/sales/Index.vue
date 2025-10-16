@@ -38,9 +38,6 @@ const sales = [
                 <h1 class="text-lg sm:text-xl lg:text-2xl font-semibold tracking-tight">
                     Sales
                 </h1>
-                <Link href="/sales/create" class="w-full sm:w-auto">
-                    <Button class="w-full sm:w-auto shadow-md">New Sale</Button>
-                </Link>
             </div>
 
             <!-- Search + Filters -->

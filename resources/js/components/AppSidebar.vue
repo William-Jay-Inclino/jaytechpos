@@ -25,8 +25,17 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Sales',
-        href: '/sales',
         icon: LayoutGrid,
+        items: [
+            {
+                title: 'View Sales',
+                href: '/sales',
+            },
+            {
+                title: 'New Sale',
+                href: '/sales/create',
+            },
+        ],
     },
     {
         title: 'Categories',

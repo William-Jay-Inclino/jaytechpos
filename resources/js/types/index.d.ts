@@ -12,9 +12,13 @@ export interface BreadcrumbItem {
 
 export interface NavItem {
     title: string;
-    href: NonNullable<InertiaLinkProps['href']>;
+    href?: NonNullable<InertiaLinkProps['href']>;
     icon?: LucideIcon;
     isActive?: boolean;
+    items?: Array<{
+        title: string;
+        href: NonNullable<InertiaLinkProps['href']>;
+    }>;
 }
 
 export type AppPageProps<

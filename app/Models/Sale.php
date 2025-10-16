@@ -15,6 +15,8 @@ class Sale extends Model
         'total_amount',
         'vat_amount',
         'net_amount',
+        'amount_tendered',
+        'change_amount',
         'invoice_number',
         'transaction_date',
         'receipt_number',
@@ -22,9 +24,11 @@ class Sale extends Model
     ];
 
     protected $casts = [
-        'total_amount' => 'decimal:2',
-        'vat_amount' => 'decimal:2',
-        'net_amount' => 'decimal:2',
+        'total_amount' => 'float',
+        'vat_amount' => 'float',
+        'net_amount' => 'float',
+        'amount_tendered' => 'float',
+        'change_amount' => 'float',
         'transaction_date' => 'datetime',
     ];
 
@@ -44,11 +48,6 @@ class Sale extends Model
         return $this->hasMany(SalesItem::class, 'sale_id');
     }
 
-    public function paymentTransactions()
-    {
-        return $this->hasMany(PaymentTransaction::class);
-    }
-
     public function receipts()
     {
         return $this->hasMany(Receipt::class, 'sale_id');
@@ -58,5 +57,4 @@ class Sale extends Model
     {
         return $this->hasMany(Refund::class, 'sale_id');
     }
-
 }

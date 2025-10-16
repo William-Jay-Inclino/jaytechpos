@@ -35,8 +35,8 @@ class Product extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'unit_price' => 'decimal:2',
-        'cost_price' => 'decimal:2',
+        'unit_price' => 'float',
+        'cost_price' => 'float',
     ];
 
     public function category()
@@ -68,5 +68,4 @@ class Product extends Model
     {
         return $this->hasMany(SalesItem::class, 'product_id');
     }
-
 }
