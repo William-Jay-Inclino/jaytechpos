@@ -47,14 +47,4 @@ class Sale extends Model
     {
         return $this->hasMany(SalesItem::class, 'sale_id');
     }
-
-    public function receipts()
-    {
-        return $this->hasMany(Receipt::class, 'sale_id');
-    }
-
-    public function refunds()
-    {
-        return $this->hasMany(Refund::class, 'sale_id');
-    }
 }

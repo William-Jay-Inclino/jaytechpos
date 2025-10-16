@@ -14,7 +14,19 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-vue-next';
+import { 
+    BookOpen, 
+    Folder, 
+    LayoutGrid, 
+    ShoppingCart, 
+    Package, 
+    Truck, 
+    Users, 
+    FolderTree, 
+    Scale, 
+    Calculator, 
+    Activity 
+} from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
 const mainNavItems: NavItem[] = [
@@ -24,8 +36,8 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: 'Sales',
-        icon: LayoutGrid,
+        title: 'POS',
+        icon: ShoppingCart,
         items: [
             {
                 title: 'View Sales',
@@ -38,9 +50,39 @@ const mainNavItems: NavItem[] = [
         ],
     },
     {
+        title: 'Products',
+        href: '',
+        icon: Package,
+    },
+    {
+        title: 'Suppliers',
+        href: '',
+        icon: Truck,
+    },
+    {
+        title: 'Customers',
+        href: '',
+        icon: Users,
+    },
+    {
         title: 'Categories',
         href: '/categories',
-        icon: LayoutGrid,
+        icon: FolderTree,
+    },
+    {
+        title: 'Units',
+        href: '',
+        icon: Scale,
+    },
+    {
+        title: 'VAT Rates',
+        href: '',
+        icon: Calculator,
+    },
+    {
+        title: 'Activity Logs',
+        href: '',
+        icon: Activity,
     },
 ];
 
