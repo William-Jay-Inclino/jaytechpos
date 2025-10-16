@@ -14,17 +14,11 @@ class SalesItem extends Model
         'product_id',
         'quantity',
         'unit_price',
-        'discount_amount',
-        'vat_amount',
-        'total_amount',
     ];
 
     protected $casts = [
         'quantity' => 'decimal:2',
         'unit_price' => 'decimal:2',
-        'discount_amount' => 'decimal:2',
-        'vat_amount' => 'decimal:2',
-        'total_amount' => 'decimal:2',
     ];
 
     /**

@@ -17,9 +17,6 @@ return new class extends Migration
             $table->foreignId('product_id')->constrained('products', 'id')->restrictOnDelete();
             $table->decimal('quantity', 10, 2)->unsigned()->default(1);
             $table->decimal('unit_price', 10, 2)->default(0);
-            $table->decimal('discount_amount', 10, 2)->default(0);
-            $table->decimal('vat_amount', 10, 2)->default(0);
-            $table->decimal('total_amount', 15, 2);
             $table->timestamps();
         });
     }

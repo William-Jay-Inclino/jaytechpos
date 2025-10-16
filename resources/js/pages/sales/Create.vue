@@ -12,7 +12,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 // Types
@@ -77,7 +76,6 @@ function addProductToCart(data: { product: Product; quantity: number }): void {
         cartItems.value.push({
             ...product,
             quantity,
-            discountAmount: 0
         });
     }
     
@@ -94,45 +92,22 @@ function updateCartItemQuantity(index: number, quantity: number): void {
     }
 }
 
-function calculateItemSubtotal(item: CartItem): number {
-    return (Number(item.unit_price) * item.quantity) - item.discountAmount;
-}
-
-function calculateItemVat(item: CartItem): number {
-    const subtotal = calculateItemSubtotal(item);
-    const vatRate = item.vat?.rate_percentage || 0;
-    return subtotal * (vatRate / 100);
-}
-
 function calculateItemTotal(item: CartItem): number {
-    return calculateItemSubtotal(item) + calculateItemVat(item);
+    return (Number(item.unit_price) * item.quantity);
 }
 
 // Computed Properties
-const cartSubtotal = computed((): number => {
-    return cartItems.value.reduce((sum: number, item: CartItem) => {
-        return sum + calculateItemSubtotal(item);
-    }, 0);
-});
 
 const cartTotalVat = computed((): number => {
-    return cartItems.value.reduce((sum: number, item: CartItem) => {
-        return sum + calculateItemVat(item);
-    }, 0);
+    return 0; // Assuming no VAT for simplicity
 });
 
-const cartTotalDiscount = computed((): number => {
-    return cartItems.value.reduce((sum: number, item: CartItem) => {
-        return sum + item.discountAmount;
-    }, 0);
-});
-
-const cartGrandTotal = computed((): number => {
-    return cartSubtotal.value + cartTotalVat.value;
+const cartTotalAmount = computed((): number => {
+    return cartItems.value.reduce((sum: number, item: CartItem) => sum + calculateItemTotal(item), 0);
 });
 
 const cartNetAmount = computed((): number => {
-    return cartGrandTotal.value;
+    return cartTotalAmount.value; // Assuming no discounts for simplicity
 });
 
 const totalItemsInCart = computed((): number => {
@@ -159,13 +134,8 @@ function handleCheckout(): void {
             product_id: item.id,
             quantity: item.quantity,
             unit_price: Number(item.unit_price),
-            discount_amount: item.discountAmount,
-            vat_amount: calculateItemVat(item),
-            total_amount: calculateItemTotal(item)
         })),
-        subtotal: cartSubtotal.value,
-        total_amount: cartGrandTotal.value,
-        discount_amount: cartTotalDiscount.value,
+        total_amount: cartTotalAmount.value,
         vat_amount: cartTotalVat.value,
         net_amount: cartNetAmount.value,
         amount_tendered: amountTendered.value,
@@ -277,8 +247,6 @@ watch(() => props.sale, (newSale: SaleResponse | undefined) => {
                                         <TableHead class="whitespace-nowrap">Product</TableHead>
                                         <TableHead class="text-right whitespace-nowrap">Qty</TableHead>
                                         <TableHead class="text-right whitespace-nowrap">Unit Price</TableHead>
-                                        <TableHead class="text-right whitespace-nowrap">Discount</TableHead>
-                                        <TableHead class="text-right whitespace-nowrap">VAT</TableHead>
                                         <TableHead class="text-right whitespace-nowrap">Total</TableHead>
                                         <TableHead></TableHead>
                                     </TableRow>
@@ -306,10 +274,6 @@ watch(() => props.sale, (newSale: SaleResponse | undefined) => {
                                             />
                                         </TableCell>
                                         <TableCell class="text-right align-middle">₱{{ Number(item.unit_price).toFixed(2) }}</TableCell>
-                                        <TableCell class="text-right align-middle">₱{{ item.discountAmount.toFixed(2) }}</TableCell>
-                                        <TableCell class="text-right align-middle">
-                                            ₱{{ calculateItemVat(item).toFixed(2) }}
-                                        </TableCell>
                                         <TableCell class="text-right align-middle font-medium">
                                             ₱{{ calculateItemTotal(item).toFixed(2) }}
                                         </TableCell>
@@ -332,9 +296,7 @@ watch(() => props.sale, (newSale: SaleResponse | undefined) => {
                                         <TableCell class="text-gray-900 dark:text-gray-100">Totals</TableCell>
                                         <TableCell class="text-right text-gray-900 dark:text-gray-100">{{ totalItemsInCart }}</TableCell>
                                         <TableCell class="text-right"></TableCell>
-                                        <TableCell class="text-right text-gray-900 dark:text-gray-100">₱{{ cartTotalDiscount.toFixed(2) }}</TableCell>
-                                        <TableCell class="text-right text-gray-900 dark:text-gray-100">₱{{ cartTotalVat.toFixed(2) }}</TableCell>
-                                        <TableCell class="text-right text-gray-900 dark:text-gray-100">₱{{ cartGrandTotal.toFixed(2) }}</TableCell>
+                                        <TableCell class="text-right text-gray-900 dark:text-gray-100">₱{{ cartTotalAmount.toFixed(2) }}</TableCell>
                                         <TableCell></TableCell>
                                     </TableRow>
                                 </TableBody>
@@ -442,7 +404,7 @@ watch(() => props.sale, (newSale: SaleResponse | undefined) => {
                                     <div class="text-gray-500">{{ item.quantity }}x ₱{{ item.unit_price }}</div>
                                 </div>
                                 <div class="text-right">
-                                    <div>₱{{ item.total_amount.toFixed(2) }}</div>
+                                    <div>₱{{ (item.quantity * item.unit_price).toFixed(2) }}</div>
                                 </div>
                             </div>
                         </div>
@@ -451,14 +413,6 @@ watch(() => props.sale, (newSale: SaleResponse | undefined) => {
 
                         <!-- Totals -->
                         <div class="space-y-1">
-                            <div class="flex justify-between">
-                                <span>Subtotal:</span>
-                                <span>₱{{ saleData.subtotal.toFixed(2) }}</span>
-                            </div>
-                            <div v-if="saleData.discount_amount > 0" class="flex justify-between">
-                                <span>Discount:</span>
-                                <span>-₱{{ saleData.discount_amount.toFixed(2) }}</span>
-                            </div>
                             <div v-if="saleData.vat_amount > 0" class="flex justify-between">
                                 <span>VAT:</span>
                                 <span>₱{{ saleData.vat_amount.toFixed(2) }}</span>

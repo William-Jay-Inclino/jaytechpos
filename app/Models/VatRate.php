@@ -32,11 +32,4 @@ class VatRate extends Model
         'is_active' => 'boolean',
     ];
 
-    /**
-     * A VAT rate can apply to many products.
-     */
-    public function products()
-    {
-        return $this->hasMany(Product::class, 'vat_id');
-    }
 }

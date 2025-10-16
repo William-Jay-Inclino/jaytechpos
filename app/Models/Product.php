@@ -18,13 +18,14 @@ class Product extends Model
         'category_id',
         'supplier_id',
         'unit_id',
-        'vat_id',
         'sku',
         'barcode',
         'product_name',
         'description',
         'unit_price',
         'cost_price',
+        'vat_type',
+        'image_path',
         'status',
     ];
 
@@ -51,11 +52,6 @@ class Product extends Model
     public function unit()
     {
         return $this->belongsTo(Unit::class);
-    }
-
-    public function vatRate()
-    {
-        return $this->belongsTo(VatRate::class, 'vat_id');
     }
 
     public function inventoryLevel()

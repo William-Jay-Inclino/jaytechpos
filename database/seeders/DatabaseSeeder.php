@@ -39,13 +39,6 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Ethan Hunt', 'mobile_number' => '09481234567'],
         ]);
 
-        // SEED SALES STATUSES - atleast 3 statuses
-        DB::table('sales_statuses')->insert([
-            ['name' => 'Completed', 'description' => 'Sale completed successfully', 'is_active' => true],
-            ['name' => 'Refunded', 'description' => 'Sale has been refunded', 'is_active' => true],
-            ['name' => 'Voided', 'description' => 'Sale was voided', 'is_active' => false],
-        ]);
-
         // SEED VAT RATES - atleast 3 rates
         DB::table('vat_rates')->insert([
             ['rate_name' => 'VAT 12%', 'rate_percentage' => 12.00],
@@ -91,60 +84,60 @@ class DatabaseSeeder extends Seeder
     
             // SEED PRODUCTS - atleast 40 products
             DB::table('products')->insert([
-                ['id' => 1, 'sku' => 'BEV-0001', 'product_name' => 'Orange Juice', 'category_id' => 1, 'supplier_id' => 9, 'unit_id' => 4, 'vat_id' => 1, 'cost_price' => 85.00, 'unit_price' => 95.00],
-                ['id' => 2, 'sku' => 'BEV-0002', 'product_name' => 'Milk', 'category_id' => 3, 'supplier_id' => 4, 'unit_id' => 4, 'vat_id' => 1, 'cost_price' => 60.00, 'unit_price' => 70.00],
-                ['id' => 3, 'sku' => 'BEV-0003', 'product_name' => 'Cola Drink', 'category_id' => 1, 'supplier_id' => 9, 'unit_id' => 4, 'vat_id' => 1, 'cost_price' => 25.00, 'unit_price' => 30.00],
-                ['id' => 4, 'sku' => 'BEV-0004', 'product_name' => 'Energy Drink', 'category_id' => 1, 'supplier_id' => 9, 'unit_id' => 4, 'vat_id' => 1, 'cost_price' => 45.00, 'unit_price' => 55.00],
+                ['id' => 1, 'sku' => 'BEV-0001', 'product_name' => 'Orange Juice', 'category_id' => 1, 'supplier_id' => 9, 'unit_id' => 4, 'vat_type' => 'non_vat', 'cost_price' => 85.00, 'unit_price' => 95.00],
+                ['id' => 2, 'sku' => 'BEV-0002', 'product_name' => 'Milk', 'category_id' => 3, 'supplier_id' => 4, 'unit_id' => 4, 'vat_type' => 'non_vat', 'cost_price' => 60.00, 'unit_price' => 70.00],
+                ['id' => 3, 'sku' => 'BEV-0003', 'product_name' => 'Cola Drink', 'category_id' => 1, 'supplier_id' => 9, 'unit_id' => 4, 'vat_type' => 'non_vat', 'cost_price' => 25.00, 'unit_price' => 30.00],
+                ['id' => 4, 'sku' => 'BEV-0004', 'product_name' => 'Energy Drink', 'category_id' => 1, 'supplier_id' => 9, 'unit_id' => 4, 'vat_type' => 'non_vat', 'cost_price' => 45.00, 'unit_price' => 55.00],
 
-                ['id' => 5, 'sku' => 'SNK-0001', 'product_name' => 'Chocolate Chip Cookies', 'category_id' => 2, 'supplier_id' => 8, 'unit_id' => 1, 'vat_id' => 1, 'cost_price' => 90.00, 'unit_price' => 110.00],
-                ['id' => 6, 'sku' => 'SNK-0002', 'product_name' => 'Potato Chips', 'category_id' => 2, 'supplier_id' => 8, 'unit_id' => 1, 'vat_id' => 1, 'cost_price' => 35.00, 'unit_price' => 45.00],
-                ['id' => 7, 'sku' => 'SNK-0003', 'product_name' => 'Granola Bars', 'category_id' => 2, 'supplier_id' => 8, 'unit_id' => 1, 'vat_id' => 1, 'cost_price' => 120.00, 'unit_price' => 140.00],
-                ['id' => 8, 'sku' => 'SNK-0004', 'product_name' => 'Pretzels', 'category_id' => 2, 'supplier_id' => 8, 'unit_id' => 1, 'vat_id' => 1, 'cost_price' => 40.00, 'unit_price' => 50.00],
+                ['id' => 5, 'sku' => 'SNK-0001', 'product_name' => 'Chocolate Chip Cookies', 'category_id' => 2, 'supplier_id' => 8, 'unit_id' => 1, 'vat_type' => 'non_vat', 'cost_price' => 90.00, 'unit_price' => 110.00],
+                ['id' => 6, 'sku' => 'SNK-0002', 'product_name' => 'Potato Chips', 'category_id' => 2, 'supplier_id' => 8, 'unit_id' => 1, 'vat_type' => 'non_vat', 'cost_price' => 35.00, 'unit_price' => 45.00],
+                ['id' => 7, 'sku' => 'SNK-0003', 'product_name' => 'Granola Bars', 'category_id' => 2, 'supplier_id' => 8, 'unit_id' => 1, 'vat_type' => 'non_vat', 'cost_price' => 120.00, 'unit_price' => 140.00],
+                ['id' => 8, 'sku' => 'SNK-0004', 'product_name' => 'Pretzels', 'category_id' => 2, 'supplier_id' => 8, 'unit_id' => 1, 'vat_type' => 'non_vat', 'cost_price' => 40.00, 'unit_price' => 50.00],
 
-                ['id' => 9, 'sku' => 'DAI-0001', 'product_name' => 'Cheddar Cheese', 'category_id' => 3, 'supplier_id' => 4, 'unit_id' => 2, 'vat_id' => 1, 'cost_price' => 180.00, 'unit_price' => 200.00],
-                ['id' => 10, 'sku' => 'DAI-0002', 'product_name' => 'Yogurt', 'category_id' => 3, 'supplier_id' => 4, 'unit_id' => 1, 'vat_id' => 1, 'cost_price' => 35.00, 'unit_price' => 45.00],
-                ['id' => 11, 'sku' => 'DAI-0003', 'product_name' => 'Butter', 'category_id' => 3, 'supplier_id' => 4, 'unit_id' => 1, 'vat_id' => 1, 'cost_price' => 150.00, 'unit_price' => 165.00],
+                ['id' => 9, 'sku' => 'DAI-0001', 'product_name' => 'Cheddar Cheese', 'category_id' => 3, 'supplier_id' => 4, 'unit_id' => 2, 'vat_type' => 'non_vat', 'cost_price' => 180.00, 'unit_price' => 200.00],
+                ['id' => 10, 'sku' => 'DAI-0002', 'product_name' => 'Yogurt', 'category_id' => 3, 'supplier_id' => 4, 'unit_id' => 1, 'vat_type' => 'non_vat', 'cost_price' => 35.00, 'unit_price' => 45.00],
+                ['id' => 11, 'sku' => 'DAI-0003', 'product_name' => 'Butter', 'category_id' => 3, 'supplier_id' => 4, 'unit_id' => 1, 'vat_type' => 'non_vat', 'cost_price' => 150.00, 'unit_price' => 165.00],
 
-                ['id' => 12, 'sku' => 'BAK-0001', 'product_name' => 'Whole Wheat Bread', 'category_id' => 4, 'supplier_id' => 7, 'unit_id' => 1, 'vat_id' => 1, 'cost_price' => 45.00, 'unit_price' => 55.00],
-                ['id' => 13, 'sku' => 'BAK-0002', 'product_name' => 'Bagels', 'category_id' => 4, 'supplier_id' => 7, 'unit_id' => 1, 'vat_id' => 1, 'cost_price' => 50.00, 'unit_price' => 65.00],
+                ['id' => 12, 'sku' => 'BAK-0001', 'product_name' => 'Whole Wheat Bread', 'category_id' => 4, 'supplier_id' => 7, 'unit_id' => 1, 'vat_type' => 'non_vat', 'cost_price' => 45.00, 'unit_price' => 55.00],
+                ['id' => 13, 'sku' => 'BAK-0002', 'product_name' => 'Bagels', 'category_id' => 4, 'supplier_id' => 7, 'unit_id' => 1, 'vat_type' => 'non_vat', 'cost_price' => 50.00, 'unit_price' => 65.00],
 
-                ['id' => 14, 'sku' => 'FRU-0001', 'product_name' => 'Apple', 'category_id' => 5, 'supplier_id' => 3, 'unit_id' => 2, 'vat_id' => 3, 'cost_price' => 120.00, 'unit_price' => 140.00],
-                ['id' => 15, 'sku' => 'FRU-0002', 'product_name' => 'Banana', 'category_id' => 5, 'supplier_id' => 3, 'unit_id' => 2, 'vat_id' => 3, 'cost_price' => 60.00, 'unit_price' => 75.00],
-                ['id' => 16, 'sku' => 'FRU-0003', 'product_name' => 'Grapes', 'category_id' => 5, 'supplier_id' => 3, 'unit_id' => 2, 'vat_id' => 3, 'cost_price' => 180.00, 'unit_price' => 200.00],
-                ['id' => 17, 'sku' => 'FRU-0004', 'product_name' => 'Strawberries', 'category_id' => 5, 'supplier_id' => 3, 'unit_id' => 2, 'vat_id' => 3, 'cost_price' => 200.00, 'unit_price' => 230.00],
+                ['id' => 14, 'sku' => 'FRU-0001', 'product_name' => 'Apple', 'category_id' => 5, 'supplier_id' => 3, 'unit_id' => 2, 'vat_type' => 'vat_zero_rated', 'cost_price' => 120.00, 'unit_price' => 140.00],
+                ['id' => 15, 'sku' => 'FRU-0002', 'product_name' => 'Banana', 'category_id' => 5, 'supplier_id' => 3, 'unit_id' => 2, 'vat_type' => 'vat_zero_rated', 'cost_price' => 60.00, 'unit_price' => 75.00],
+                ['id' => 16, 'sku' => 'FRU-0003', 'product_name' => 'Grapes', 'category_id' => 5, 'supplier_id' => 3, 'unit_id' => 2, 'vat_type' => 'vat_zero_rated', 'cost_price' => 180.00, 'unit_price' => 200.00],
+                ['id' => 17, 'sku' => 'FRU-0004', 'product_name' => 'Strawberries', 'category_id' => 5, 'supplier_id' => 3, 'unit_id' => 2, 'vat_type' => 'vat_zero_rated', 'cost_price' => 200.00, 'unit_price' => 230.00],
 
-                ['id' => 18, 'sku' => 'MEP-0001', 'product_name' => 'Chicken Breast', 'category_id' => 6, 'supplier_id' => 5, 'unit_id' => 2, 'vat_id' => 1, 'cost_price' => 180.00, 'unit_price' => 200.00],
-                ['id' => 19, 'sku' => 'MEP-0002', 'product_name' => 'Turkey Slices', 'category_id' => 6, 'supplier_id' => 5, 'unit_id' => 1, 'vat_id' => 1, 'cost_price' => 150.00, 'unit_price' => 170.00],
+                ['id' => 18, 'sku' => 'MEP-0001', 'product_name' => 'Chicken Breast', 'category_id' => 6, 'supplier_id' => 5, 'unit_id' => 2, 'vat_type' => 'non_vat', 'cost_price' => 180.00, 'unit_price' => 200.00],
+                ['id' => 19, 'sku' => 'MEP-0002', 'product_name' => 'Turkey Slices', 'category_id' => 6, 'supplier_id' => 5, 'unit_id' => 1, 'vat_type' => 'non_vat', 'cost_price' => 150.00, 'unit_price' => 170.00],
 
-                ['id' => 20, 'sku' => 'SEA-0001', 'product_name' => 'Salmon Fillet', 'category_id' => 7, 'supplier_id' => 6, 'unit_id' => 2, 'vat_id' => 1, 'cost_price' => 400.00, 'unit_price' => 450.00],
-                ['id' => 21, 'sku' => 'SEA-0002', 'product_name' => 'Shrimp', 'category_id' => 7, 'supplier_id' => 6, 'unit_id' => 2, 'vat_id' => 1, 'cost_price' => 350.00, 'unit_price' => 400.00],
+                ['id' => 20, 'sku' => 'SEA-0001', 'product_name' => 'Salmon Fillet', 'category_id' => 7, 'supplier_id' => 6, 'unit_id' => 2, 'vat_type' => 'non_vat', 'cost_price' => 400.00, 'unit_price' => 450.00],
+                ['id' => 21, 'sku' => 'SEA-0002', 'product_name' => 'Shrimp', 'category_id' => 7, 'supplier_id' => 6, 'unit_id' => 2, 'vat_type' => 'non_vat', 'cost_price' => 350.00, 'unit_price' => 400.00],
 
-                ['id' => 22, 'sku' => 'FF-0001', 'product_name' => 'Frozen Pizza', 'category_id' => 8, 'supplier_id' => 10, 'unit_id' => 1, 'vat_id' => 1, 'cost_price' => 220.00, 'unit_price' => 250.00],
-                ['id' => 23, 'sku' => 'FF-0002', 'product_name' => 'Ice Cream', 'category_id' => 8, 'supplier_id' => 10, 'unit_id' => 1, 'vat_id' => 1, 'cost_price' => 150.00, 'unit_price' => 180.00],
+                ['id' => 22, 'sku' => 'FF-0001', 'product_name' => 'Frozen Pizza', 'category_id' => 8, 'supplier_id' => 10, 'unit_id' => 1, 'vat_type' => 'non_vat', 'cost_price' => 220.00, 'unit_price' => 250.00],
+                ['id' => 23, 'sku' => 'FF-0002', 'product_name' => 'Ice Cream', 'category_id' => 8, 'supplier_id' => 10, 'unit_id' => 1, 'vat_type' => 'non_vat', 'cost_price' => 150.00, 'unit_price' => 180.00],
 
-                ['id' => 24, 'sku' => 'CAG-0001', 'product_name' => 'Canned Beans', 'category_id' => 9, 'supplier_id' => 2, 'unit_id' => 1, 'vat_id' => 1, 'cost_price' => 35.00, 'unit_price' => 45.00],
-                ['id' => 25, 'sku' => 'CAG-0002', 'product_name' => 'Tomato Soup', 'category_id' => 9, 'supplier_id' => 2, 'unit_id' => 1, 'vat_id' => 1, 'cost_price' => 40.00, 'unit_price' => 50.00],
-                ['id' => 26, 'sku' => 'CAG-0003', 'product_name' => 'Black Beans', 'category_id' => 9, 'supplier_id' => 2, 'unit_id' => 1, 'vat_id' => 1, 'cost_price' => 38.00, 'unit_price' => 48.00],
+                ['id' => 24, 'sku' => 'CAG-0001', 'product_name' => 'Canned Beans', 'category_id' => 9, 'supplier_id' => 2, 'unit_id' => 1, 'vat_type' => 'non_vat', 'cost_price' => 35.00, 'unit_price' => 45.00],
+                ['id' => 25, 'sku' => 'CAG-0002', 'product_name' => 'Tomato Soup', 'category_id' => 9, 'supplier_id' => 2, 'unit_id' => 1, 'vat_type' => 'non_vat', 'cost_price' => 40.00, 'unit_price' => 50.00],
+                ['id' => 26, 'sku' => 'CAG-0003', 'product_name' => 'Black Beans', 'category_id' => 9, 'supplier_id' => 2, 'unit_id' => 1, 'vat_type' => 'non_vat', 'cost_price' => 38.00, 'unit_price' => 48.00],
 
-                ['id' => 27, 'sku' => 'DRG-0001', 'product_name' => 'Rice', 'category_id' => 10, 'supplier_id' => 2, 'unit_id' => 2, 'vat_id' => 3, 'cost_price' => 1800.00, 'unit_price' => 2000.00],
-                ['id' => 28, 'sku' => 'DRG-0002', 'product_name' => 'Pasta', 'category_id' => 10, 'supplier_id' => 2, 'unit_id' => 2, 'vat_id' => 3, 'cost_price' => 70.00, 'unit_price' => 85.00],
+                ['id' => 27, 'sku' => 'DRG-0001', 'product_name' => 'Rice', 'category_id' => 10, 'supplier_id' => 2, 'unit_id' => 2, 'vat_type' => 'vat_zero_rated', 'cost_price' => 1800.00, 'unit_price' => 2000.00],
+                ['id' => 28, 'sku' => 'DRG-0002', 'product_name' => 'Pasta', 'category_id' => 10, 'supplier_id' => 2, 'unit_id' => 2, 'vat_type' => 'vat_zero_rated', 'cost_price' => 70.00, 'unit_price' => 85.00],
 
-                ['id' => 29, 'sku' => 'CON-0001', 'product_name' => 'Ketchup', 'category_id' => 11, 'supplier_id' => 2, 'unit_id' => 1, 'vat_id' => 1, 'cost_price' => 55.00, 'unit_price' => 65.00],
-                ['id' => 30, 'sku' => 'CON-0002', 'product_name' => 'Olive Oil', 'category_id' => 11, 'supplier_id' => 2, 'unit_id' => 1, 'vat_id' => 1, 'cost_price' => 300.00, 'unit_price' => 350.00],
+                ['id' => 29, 'sku' => 'CON-0001', 'product_name' => 'Ketchup', 'category_id' => 11, 'supplier_id' => 2, 'unit_id' => 1, 'vat_type' => 'non_vat', 'cost_price' => 55.00, 'unit_price' => 65.00],
+                ['id' => 30, 'sku' => 'CON-0002', 'product_name' => 'Olive Oil', 'category_id' => 11, 'supplier_id' => 2, 'unit_id' => 1, 'vat_type' => 'non_vat', 'cost_price' => 300.00, 'unit_price' => 350.00],
 
-                ['id' => 31, 'sku' => 'HHS-0001', 'product_name' => 'Dish Soap', 'category_id' => 12, 'supplier_id' => 2, 'unit_id' => 1, 'vat_id' => 1, 'cost_price' => 90.00, 'unit_price' => 110.00],
-                ['id' => 32, 'sku' => 'HHS-0002', 'product_name' => 'Laundry Detergent', 'category_id' => 12, 'supplier_id' => 2, 'unit_id' => 1, 'vat_id' => 1, 'cost_price' => 250.00, 'unit_price' => 280.00],
+                ['id' => 31, 'sku' => 'HHS-0001', 'product_name' => 'Dish Soap', 'category_id' => 12, 'supplier_id' => 2, 'unit_id' => 1, 'vat_type' => 'non_vat', 'cost_price' => 90.00, 'unit_price' => 110.00],
+                ['id' => 32, 'sku' => 'HHS-0002', 'product_name' => 'Laundry Detergent', 'category_id' => 12, 'supplier_id' => 2, 'unit_id' => 1, 'vat_type' => 'non_vat', 'cost_price' => 250.00, 'unit_price' => 280.00],
 
-                ['id' => 33, 'sku' => 'PER-0001', 'product_name' => 'Shampoo', 'category_id' => 13, 'supplier_id' => 2, 'unit_id' => 1, 'vat_id' => 1, 'cost_price' => 150.00, 'unit_price' => 170.00],
-                ['id' => 34, 'sku' => 'PER-0002', 'product_name' => 'Body Wash', 'category_id' => 13, 'supplier_id' => 2, 'unit_id' => 1, 'vat_id' => 1, 'cost_price' => 130.00, 'unit_price' => 150.00],
+                ['id' => 33, 'sku' => 'PER-0001', 'product_name' => 'Shampoo', 'category_id' => 13, 'supplier_id' => 2, 'unit_id' => 1, 'vat_type' => 'non_vat', 'cost_price' => 150.00, 'unit_price' => 170.00],
+                ['id' => 34, 'sku' => 'PER-0002', 'product_name' => 'Body Wash', 'category_id' => 13, 'supplier_id' => 2, 'unit_id' => 1, 'vat_type' => 'non_vat', 'cost_price' => 130.00, 'unit_price' => 150.00],
 
-                ['id' => 35, 'sku' => 'HEA-0001', 'product_name' => 'Multivitamins', 'category_id' => 14, 'supplier_id' => 2, 'unit_id' => 1, 'vat_id' => 1, 'cost_price' => 400.00, 'unit_price' => 450.00],
-                ['id' => 36, 'sku' => 'HEA-0002', 'product_name' => 'Vitamin C', 'category_id' => 14, 'supplier_id' => 2, 'unit_id' => 1, 'vat_id' => 1, 'cost_price' => 250.00, 'unit_price' => 280.00],
+                ['id' => 35, 'sku' => 'HEA-0001', 'product_name' => 'Multivitamins', 'category_id' => 14, 'supplier_id' => 2, 'unit_id' => 1, 'vat_type' => 'non_vat', 'cost_price' => 400.00, 'unit_price' => 450.00],
+                ['id' => 36, 'sku' => 'HEA-0002', 'product_name' => 'Vitamin C', 'category_id' => 14, 'supplier_id' => 2, 'unit_id' => 1, 'vat_type' => 'non_vat', 'cost_price' => 250.00, 'unit_price' => 280.00],
 
-                ['id' => 37, 'sku' => 'BAB-0001', 'product_name' => 'Diapers', 'category_id' => 15, 'supplier_id' => 2, 'unit_id' => 1, 'vat_id' => 1, 'cost_price' => 850.00, 'unit_price' => 950.00],
-                ['id' => 38, 'sku' => 'BAB-0002', 'product_name' => 'Baby Wipes', 'category_id' => 15, 'supplier_id' => 2, 'unit_id' => 1, 'vat_id' => 1, 'cost_price' => 120.00, 'unit_price' => 140.00],
-                ['id' => 39, 'sku' => 'BAB-0003', 'product_name' => 'Infant Formula', 'category_id' => 15, 'supplier_id' => 2, 'unit_id' => 1, 'vat_id' => 1, 'cost_price' => 950.00, 'unit_price' => 1050.00],
-                ['id' => 40, 'sku' => 'BAB-0004', 'product_name' => 'Baby Lotion', 'category_id' => 15, 'supplier_id' => 2, 'unit_id' => 1, 'vat_id' => 1, 'cost_price' => 180.00, 'unit_price' => 200.00],
+                ['id' => 37, 'sku' => 'BAB-0001', 'product_name' => 'Diapers', 'category_id' => 15, 'supplier_id' => 2, 'unit_id' => 1, 'vat_type' => 'vat_exempt', 'cost_price' => 850.00, 'unit_price' => 950.00],
+                ['id' => 38, 'sku' => 'BAB-0002', 'product_name' => 'Baby Wipes', 'category_id' => 15, 'supplier_id' => 2, 'unit_id' => 1, 'vat_type' => 'vat_exempt', 'cost_price' => 120.00, 'unit_price' => 140.00],
+                ['id' => 39, 'sku' => 'BAB-0003', 'product_name' => 'Infant Formula', 'category_id' => 15, 'supplier_id' => 2, 'unit_id' => 1, 'vat_type' => 'vat_exempt', 'cost_price' => 950.00, 'unit_price' => 1050.00],
+                ['id' => 40, 'sku' => 'BAB-0004', 'product_name' => 'Baby Lotion', 'category_id' => 15, 'supplier_id' => 2, 'unit_id' => 1, 'vat_type' => 'vat_exempt', 'cost_price' => 180.00, 'unit_price' => 200.00],
             ]);
         
             // SEED INVENTORY LEVELS - atleast 40 match products above. Reorder level set to 20% of stock quantity

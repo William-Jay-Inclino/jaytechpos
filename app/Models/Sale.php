@@ -12,10 +12,7 @@ class Sale extends Model
     protected $fillable = [
         'user_id',
         'customer_id',
-        'sales_status_id',
-        'subtotal',
         'total_amount',
-        'discount_amount',
         'vat_amount',
         'net_amount',
         'invoice_number',
@@ -25,9 +22,7 @@ class Sale extends Model
     ];
 
     protected $casts = [
-        'subtotal' => 'decimal:2',
         'total_amount' => 'decimal:2',
-        'discount_amount' => 'decimal:2',
         'vat_amount' => 'decimal:2',
         'net_amount' => 'decimal:2',
         'transaction_date' => 'datetime',
@@ -42,11 +37,6 @@ class Sale extends Model
     public function customer()
     {
         return $this->belongsTo(Customer::class);
-    }
-
-    public function salesStatus()
-    {
-        return $this->belongsTo(SalesStatus::class);
     }
 
     public function salesItems()
@@ -67,33 +57,6 @@ class Sale extends Model
     public function refunds()
     {
         return $this->hasMany(Refund::class, 'sale_id');
-    }
-
-    // Business Logic Methods
-    public function getTotalPaidAttribute()
-    {
-        return $this->paymentTransactions()->where('status', 'completed')->sum('amount');
-    }
-
-    public function getTotalChangeAttribute()
-    {
-        return $this->paymentTransactions()->where('status', 'completed')->sum('change_amount');
-    }
-
-    public function isFullyPaid(): bool
-    {
-        return $this->total_paid >= $this->net_amount;
-    }
-
-    public function getPaymentMethodsAttribute()
-    {
-        return $this->paymentTransactions()
-            ->with('paymentMethod')
-            ->where('status', 'completed')
-            ->get()
-            ->pluck('paymentMethod.name')
-            ->unique()
-            ->implode(', ');
     }
 
 }

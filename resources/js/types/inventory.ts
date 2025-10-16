@@ -53,7 +53,7 @@ export interface Product {
     category_id: number;
     supplier_id: number;
     unit_id: number;
-    vat_id: number;
+    vat_type: 'vat' | 'vat_exempt' | 'vat_zero_rated' | 'non_vat';
     sku: string;
     barcode: string | null;
     product_name: string;
