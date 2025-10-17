@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
-import { Head, Link, router } from '@inertiajs/vue3';
-import { Trash2, ArrowLeft } from 'lucide-vue-next';
+import { Head, router } from '@inertiajs/vue3';
+import { Trash2 } from 'lucide-vue-next';
 
 // Layout & Components
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -16,7 +16,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 
 // Types
 import type { BreadcrumbItem } from '@/types';
-import { Product } from '@/types/inventory';
+import { Product } from '@/types/pos';
 import { Customer, CartItem } from '@/types/pos';
 
 const props = defineProps<{ 
@@ -34,24 +34,14 @@ const breadcrumbs: BreadcrumbItem[] = [
 interface SaleResponse {
     id: number;
     invoice_number: string;
-    receipt_number: string;
     transaction_date: string;
     customer_id: number | null;
-    subtotal: number;
     total_amount: number;
-    discount_amount: number;
-    vat_amount: number;
-    net_amount: number;
-    amount_tendered: number;
-    change_amount: number;
     items: Array<{
         product_id: number;
         product_name: string;
-        sku: string;
         quantity: number;
         unit_price: number;
-        discount_amount: number;
-        vat_amount: number;
         total_amount: number;
     }>;
     cashier: string;
@@ -99,17 +89,8 @@ function calculateItemTotal(item: CartItem): number {
 }
 
 // Computed Properties
-
-const cartTotalVat = computed((): number => {
-    return 0; // Assuming no VAT for simplicity
-});
-
 const cartTotalAmount = computed((): number => {
     return cartItems.value.reduce((sum: number, item: CartItem) => sum + calculateItemTotal(item), 0);
-});
-
-const cartNetAmount = computed((): number => {
-    return cartTotalAmount.value; // Assuming no discounts for simplicity
 });
 
 const totalItemsInCart = computed((): number => {
@@ -117,11 +98,11 @@ const totalItemsInCart = computed((): number => {
 });
 
 const changeAmount = computed((): number => {
-    return Math.max(0, amountTendered.value - cartNetAmount.value);
+    return Math.max(0, amountTendered.value - cartTotalAmount.value);
 });
 
 const isCheckoutValid = computed((): boolean => {
-    return cartItems.value.length > 0 && amountTendered.value >= cartNetAmount.value;
+    return cartItems.value.length > 0 && amountTendered.value >= cartTotalAmount.value;
 });
 
 // Event Handlers
@@ -138,10 +119,6 @@ function handleCheckout(): void {
             unit_price: Number(item.unit_price),
         })),
         total_amount: cartTotalAmount.value,
-        vat_amount: cartTotalVat.value,
-        net_amount: cartNetAmount.value,
-        amount_tendered: amountTendered.value,
-        change_amount: changeAmount.value
     };
     
     console.log('Processing checkout...', checkoutData);
@@ -257,8 +234,6 @@ watch(() => props.sale, (newSale: SaleResponse | undefined) => {
                                             </Avatar>
                                             <div class="min-w-0 flex-1">
                                                 <span class="truncate block font-medium text-sm">{{ item.product_name }}</span>
-                                                <span class="text-xs text-muted-foreground block">SKU: {{ item.sku }}</span>
-                                                <span v-if="item.barcode" class="text-xs text-muted-foreground block">Barcode: {{ item.barcode }}</span>
                                             </div>
                                         </TableCell>
                                         <TableCell class="text-right align-middle">
@@ -310,7 +285,7 @@ watch(() => props.sale, (newSale: SaleResponse | undefined) => {
                                     <div class="space-y-2">
                                         <Label class="text-sm font-medium text-gray-900 dark:text-gray-100">Total Amount</Label>
                                         <div class="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
-                                            <span class="text-2xl font-bold text-orange-700 dark:text-orange-400">₱{{ cartNetAmount.toFixed(2) }}</span>
+                                            <span class="text-2xl font-bold text-orange-700 dark:text-orange-400">₱{{ cartTotalAmount.toFixed(2) }}</span>
                                         </div>
                                     </div>
 
@@ -368,7 +343,7 @@ watch(() => props.sale, (newSale: SaleResponse | undefined) => {
                 <!-- Receipt Content -->
                 <div id="receipt-content" class="p-6 overflow-y-auto max-h-[60vh]">
                     <div class="text-center mb-4">
-                        <h3 class="font-bold text-lg">JAYTECHPOS</h3>
+                        <h3 class="font-bold text-lg">Free POS</h3>
                         <p class="text-sm text-gray-600 dark:text-gray-300">Point of Sale Receipt</p>
                         <div class="border-b border-gray-300 dark:border-gray-600 my-2"></div>
                     </div>
@@ -378,10 +353,6 @@ watch(() => props.sale, (newSale: SaleResponse | undefined) => {
                         <div class="flex justify-between">
                             <span>Invoice #:</span>
                             <span class="font-mono">{{ saleData.invoice_number }}</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>Receipt #:</span>
-                            <span class="font-mono">{{ saleData.receipt_number }}</span>
                         </div>
                         <div class="flex justify-between">
                             <span>Date:</span>
@@ -397,7 +368,7 @@ watch(() => props.sale, (newSale: SaleResponse | undefined) => {
                         <div class="space-y-2">
                             <div v-for="item in saleData.items" :key="item.product_id" class="text-xs">
                                 <div class="flex justify-between">
-                                    <span class="font-medium">{{ item.product_name }} ({{ item.sku }})</span>
+                                    <span class="font-medium">{{ item.product_name }}</span>
                                     <span class="font-medium">₱{{ (item.quantity * item.unit_price).toFixed(2) }}</span>
                                 </div>
                                 <div class="flex justify-between text-gray-500">
@@ -410,21 +381,17 @@ watch(() => props.sale, (newSale: SaleResponse | undefined) => {
 
                         <!-- Totals -->
                         <div class="space-y-1">
-                            <div v-if="saleData.vat_amount > 0" class="flex justify-between">
-                                <span>VAT:</span>
-                                <span>₱{{ saleData.vat_amount.toFixed(2) }}</span>
-                            </div>
                             <div class="flex justify-between font-bold text-lg border-t border-gray-300 dark:border-gray-600 pt-1">
                                 <span>TOTAL:</span>
-                                <span>₱{{ saleData.net_amount.toFixed(2) }}</span>
+                                <span>₱{{ saleData.total_amount.toFixed(2) }}</span>
                             </div>
                             <div class="flex justify-between">
                                 <span>Amount Tendered:</span>
-                                <span>₱{{ saleData.amount_tendered.toFixed(2) }}</span>
+                                <span>₱{{ amountTendered.toFixed(2) }}</span>
                             </div>
                             <div class="flex justify-between font-semibold text-green-600 dark:text-green-400">
                                 <span>Change:</span>
-                                <span>₱{{ saleData.change_amount.toFixed(2) }}</span>
+                                <span>₱{{ changeAmount.toFixed(2) }}</span>
                             </div>
                         </div>
 

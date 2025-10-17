@@ -28,10 +28,6 @@ class StoreSaleRequest extends FormRequest
             'items.*.quantity' => ['required', 'numeric', 'min:0.01'],
             'items.*.unit_price' => ['required', 'numeric', 'min:0'],
             'total_amount' => ['required', 'numeric', 'min:0'],
-            'vat_amount' => ['required', 'numeric', 'min:0'],
-            'net_amount' => ['required', 'numeric', 'min:0'],
-            'amount_tendered' => ['required', 'numeric', 'min:0'],
-            'change_amount' => ['required', 'numeric', 'min:0'],
         ];
     }
 
@@ -49,7 +45,6 @@ class StoreSaleRequest extends FormRequest
             'items.*.quantity.min' => 'Item quantity must be greater than 0.',
             'items.*.unit_price.required' => 'Item price is required.',
             'items.*.unit_price.min' => 'Item price must be greater than or equal to 0.',
-            'amount_tendered.min' => 'Amount tendered must be greater than or equal to 0.',
         ];
     }
 }

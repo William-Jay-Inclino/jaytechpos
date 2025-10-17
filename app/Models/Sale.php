@@ -42,4 +42,29 @@ class Sale extends Model
     {
         return $this->hasMany(SalesItem::class, 'sale_id');
     }
+
+    public function utangTracking()
+    {
+        return $this->hasOne(UtangTracking::class);
+    }
+
+    // Helper methods for utang functionality
+    public function hasUtang(): bool
+    {
+        return $this->utangTracking()->exists();
+    }
+
+    public function isUtangFullyPaid(): bool
+    {
+        return $this->hasUtang() && $this->utangTracking->isFullyPaid();
+    }
+
+    public function getUtangBalance(): float
+    {
+        if (! $this->hasUtang()) {
+            return 0;
+        }
+
+        return $this->utangTracking->remaining_amount;
+    }
 }

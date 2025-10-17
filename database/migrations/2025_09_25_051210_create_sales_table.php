@@ -17,9 +17,8 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users', 'id')->restrictOnDelete();
             $table->foreignId('customer_id')->nullable()->constrained()->nullOnDelete();
             $table->decimal('total_amount', 15, 2);
-            $table->decimal('amount_tendered', 15, 2)->nullable();
-            $table->decimal('change_amount', 15, 2)->nullable();
             $table->string('invoice_number')->unique();
+            $table->enum('payment_type', ['cash', 'utang'])->default('cash');
             $table->timestamp('transaction_date')->useCurrent();
             $table->text('notes')->nullable();
             $table->timestamps();

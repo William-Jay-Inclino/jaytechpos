@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref, watch, computed, nextTick } from 'vue';
-import type { Product } from '@/types/inventory';
+import type { Product } from '@/types/pos';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -41,11 +41,7 @@ const searchResults = computed((): Product[] => {
     
     const searchTerm = query.toLowerCase();
     return props.products.filter((product: Product) => {
-        const matchesName = product.product_name.toLowerCase().includes(searchTerm);
-        const matchesSku = product.sku.toLowerCase().includes(searchTerm);
-        const matchesBarcode = product.barcode?.toLowerCase().includes(searchTerm) ?? false;
-        
-        return matchesName || matchesSku || matchesBarcode;
+        return product.product_name.toLowerCase().includes(searchTerm);
     });
 });
 
@@ -88,36 +84,11 @@ function handleEnterKey(event: KeyboardEvent): void {
 function focusSearchInput(): void {
     nextTick(() => {
         setTimeout(() => {
-            try {
-                if (!searchInputRef.value) return;
-                
-                let inputElement: HTMLInputElement | null = null;
-                
-                // Method 1: Check if it's already an input element
-                if (searchInputRef.value.tagName === 'INPUT') {
-                    inputElement = searchInputRef.value;
+            if (searchInputRef.value?.$el) {
+                const input = searchInputRef.value.$el.querySelector('input');
+                if (input) {
+                    input.focus();
                 }
-                // Method 2: Check if it's a Vue component with $el
-                else if (searchInputRef.value.$el) {
-                    if (searchInputRef.value.$el.tagName === 'INPUT') {
-                        inputElement = searchInputRef.value.$el;
-                    } else {
-                        inputElement = searchInputRef.value.$el.querySelector('input');
-                    }
-                }
-                // Method 3: Look for input inside the element
-                else if (searchInputRef.value.querySelector) {
-                    inputElement = searchInputRef.value.querySelector('input');
-                }
-                
-                if (inputElement && typeof inputElement.focus === 'function') {
-                    inputElement.focus();
-                    if (typeof inputElement.select === 'function') {
-                        inputElement.select();
-                    }
-                }
-            } catch (error) {
-                console.warn('Could not focus search input:', error);
             }
         }, 100);
     });
@@ -162,7 +133,7 @@ watch(() => props.open, (isOpen: boolean) => {
                         ref="searchInputRef"
                         v-model="searchQuery"
                         type="text"
-                        placeholder="Search by name, SKU, or barcode"
+                        placeholder="Search by product name"
                         autocomplete="off"
                         @keydown="handleEnterKey"
                     />
@@ -185,10 +156,6 @@ watch(() => props.open, (isOpen: boolean) => {
                             <div class="flex justify-between items-start">
                                 <div class="space-y-1">
                                     <p class="font-medium">{{ product.product_name }}</p>
-                                    <p class="text-sm text-muted-foreground">SKU: {{ product.sku }}</p>
-                                    <p v-if="product.barcode" class="text-sm text-muted-foreground">
-                                        Barcode: {{ product.barcode }}
-                                    </p>
                                 </div>
                                 <Badge variant="outline">₱{{ product.unit_price }}</Badge>
                             </div>
@@ -204,22 +171,6 @@ watch(() => props.open, (isOpen: boolean) => {
                                 <div>
                                     <span class="text-muted-foreground">Name:</span>
                                     <p class="font-medium">{{ selectedProduct!.product_name }}</p>
-                                </div>
-                                <div>
-                                    <span class="text-muted-foreground">SKU:</span>
-                                    <p class="font-medium">{{ selectedProduct!.sku }}</p>
-                                </div>
-                                <div v-if="selectedProduct!.barcode">
-                                    <span class="text-muted-foreground">Barcode:</span>
-                                    <p class="font-medium">{{ selectedProduct!.barcode }}</p>
-                                </div>
-                                <div>
-                                    <span class="text-muted-foreground">Category:</span>
-                                    <p class="font-medium">{{ selectedProduct!.category?.category_name || '-' }}</p>
-                                </div>
-                                <div>
-                                    <span class="text-muted-foreground">Supplier:</span>
-                                    <p class="font-medium">{{ selectedProduct!.supplier?.supplier_name || '-' }}</p>
                                 </div>
                                 <div>
                                     <span class="text-muted-foreground">Unit Price:</span>

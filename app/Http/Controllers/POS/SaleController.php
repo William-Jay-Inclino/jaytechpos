@@ -33,21 +33,16 @@ class SaleController extends Controller
         try {
             DB::beginTransaction();
 
-            // Generate unique invoice and receipt numbers
+            // Generate unique invoice number
             $invoiceNumber = $this->generateInvoiceNumber();
-            $receiptNumber = $this->generateReceiptNumber();
 
             // Create the sale record
             $sale = Sale::create([
                 'user_id' => auth()->id(),
                 'customer_id' => $request->validated('customer_id'),
                 'total_amount' => $request->validated('total_amount'),
-                'vat_amount' => $request->validated('vat_amount'),
-                'net_amount' => $request->validated('net_amount'),
-                'amount_tendered' => $request->validated('amount_tendered'),
-                'change_amount' => $request->validated('change_amount'),
                 'invoice_number' => $invoiceNumber,
-                'receipt_number' => $receiptNumber,
+                'payment_type' => 'cash',
                 'transaction_date' => now(),
             ]);
 
@@ -67,7 +62,6 @@ class SaleController extends Controller
                 $items[] = [
                     'product_id' => $salesItem->product_id,
                     'product_name' => $product->product_name,
-                    'sku' => $product->sku,
                     'quantity' => $salesItem->quantity,
                     'unit_price' => $salesItem->unit_price,
                     'total_amount' => $salesItem->quantity * $salesItem->unit_price,
@@ -80,14 +74,9 @@ class SaleController extends Controller
             $saleData = [
                 'id' => $sale->id,
                 'invoice_number' => $sale->invoice_number,
-                'receipt_number' => $sale->receipt_number,
                 'transaction_date' => $sale->transaction_date->toISOString(),
                 'customer_id' => $sale->customer_id,
                 'total_amount' => $sale->total_amount,
-                'vat_amount' => $sale->vat_amount,
-                'net_amount' => $sale->net_amount,
-                'amount_tendered' => $sale->amount_tendered,
-                'change_amount' => $sale->change_amount,
                 'items' => $items,
                 'cashier' => auth()->user()->name ?? 'System User',
             ];
@@ -126,25 +115,5 @@ class SaleController extends Controller
         }
 
         return $prefix.str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
-    }
-
-    /**
-     * Generate a unique receipt number.
-     */
-    private function generateReceiptNumber(): string
-    {
-        $prefix = 'RCP-';
-        $lastSale = Sale::where('receipt_number', 'like', $prefix.'%')
-            ->orderBy('id', 'desc')
-            ->first();
-
-        if ($lastSale) {
-            $lastNumber = (int) substr($lastSale->receipt_number, strlen($prefix));
-            $nextNumber = $lastNumber + 1;
-        } else {
-            $nextNumber = 1;
-        }
-
-        return $prefix.str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
     }
 }
