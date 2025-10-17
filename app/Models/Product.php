@@ -39,9 +39,9 @@ class Product extends Model
         'cost_price' => 'float',
     ];
 
-    public function category()
+    public function productCategory()
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(ProductCategory::class);
     }
 
     public function supplier()
@@ -52,16 +52,6 @@ class Product extends Model
     public function unit()
     {
         return $this->belongsTo(Unit::class);
-    }
-
-    public function inventoryLevel()
-    {
-        return $this->hasOne(InventoryLevel::class);
-    }
-
-    public function stockMovements()
-    {
-        return $this->hasMany(StockMovement::class);
     }
 
     public function salesItems()

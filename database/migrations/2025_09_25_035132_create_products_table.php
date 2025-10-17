@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('category_id')->constrained('categories', 'id')->restrictOnDelete();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('category_id')->constrained('product_categories', 'id')->restrictOnDelete();
             $table->foreignId('supplier_id')->constrained('suppliers', 'id')->restrictOnDelete();
             $table->foreignId('unit_id')->constrained('units', 'id')->restrictOnDelete();
             $table->string('sku')->unique();
