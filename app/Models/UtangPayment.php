@@ -14,9 +14,8 @@ class UtangPayment extends Model
     protected $table = 'utang_payments';
 
     protected $fillable = [
-        'utang_tracking_id',
-        'customer_id',
         'user_id',
+        'customer_id',
         'payment_amount',
         'payment_date',
         'notes',
@@ -28,9 +27,10 @@ class UtangPayment extends Model
     ];
 
     // Relationships
-    public function utangTracking(): BelongsTo
+
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(UtangTracking::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function customer(): BelongsTo
@@ -38,20 +38,11 @@ class UtangPayment extends Model
         return $this->belongsTo(Customer::class);
     }
 
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'user_id');
-    }
 
     // Scopes
     public function scopeByCustomer($query, int $customerId)
     {
         return $query->where('customer_id', $customerId);
-    }
-
-    public function scopeByUtang($query, int $utangTrackingId)
-    {
-        return $query->where('utang_tracking_id', $utangTrackingId);
     }
 
     public function scopeThisMonth($query)

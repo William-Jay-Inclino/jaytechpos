@@ -13,14 +13,11 @@ return new class extends Migration
     {
         Schema::create('utang_trackings', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('sale_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('customer_id')->constrained()->cascadeOnDelete();
-            $table->decimal('total_amount', 15, 2); // with interest computed
-            $table->decimal('paid_amount', 15, 2)->default(0);
+            $table->foreignId('user_id')->constrained()->restrictOnDelete();
+            $table->foreignId('customer_id')->constrained()->restrictOnDelete();
+            $table->decimal('beginning_balance', 15, 2)->default(0);
+            $table->timestamp('computation_date'); // every 1st of the month
             $table->decimal('interest_rate', 5, 2)->default(0);
-            $table->enum('status', ['paid', 'partial', 'unpaid', 'overdue'])->default('unpaid');
-            $table->date('due_date')->nullable();
-            $table->text('notes')->nullable();
             $table->timestamps();
         });
     }

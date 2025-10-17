@@ -14,31 +14,25 @@ class UtangTracking extends Model
     protected $table = 'utang_trackings';
 
     protected $fillable = [
-        'sale_id',
+        'user_id',
         'customer_id',
-        'total_amount',
-        'paid_amount',
+        'beginning_balance',
+        'computation_date',
         'interest_rate',
-        'status',
-        'due_date',
-        'notes',
     ];
 
     protected $casts = [
-        'total_amount' => 'float',
-        'paid_amount' => 'float',
+        'beginning_balance' => 'float',
+        'computation_date' => 'float',
         'interest_rate' => 'float',
-        'due_date' => 'date',
     ];
 
-    protected $appends = [
-        'remaining_amount',
-    ];
 
     // Relationships
-    public function sale(): BelongsTo
+
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(Sale::class);
+        return $this->belongsTo(User::class);
     }
 
     public function customer(): BelongsTo
@@ -46,34 +40,4 @@ class UtangTracking extends Model
         return $this->belongsTo(Customer::class);
     }
 
-    public function payments(): HasMany
-    {
-        return $this->hasMany(UtangPayment::class);
-    }
-
-    // Computed Properties
-    public function getRemainingAmountAttribute(): float
-    {
-        return max(0, $this->total_amount - $this->paid_amount);
-    }
-
-    // Helper methods for business logic
-    public function isFullyPaid(): bool
-    {
-        return $this->getRemainingAmountAttribute() <= 0;
-    }
-
-    public function isOverdue(): bool
-    {
-        return $this->due_date < now() && ! $this->isFullyPaid();
-    }
-
-    public function getDaysOverdue(): int
-    {
-        if (! $this->isOverdue()) {
-            return 0;
-        }
-
-        return now()->diffInDays($this->due_date);
-    }
 }

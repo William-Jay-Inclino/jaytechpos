@@ -13,6 +13,7 @@ class Sale extends Model
         'user_id',
         'customer_id',
         'total_amount',
+        'paid_amount',
         'amount_tendered',
         'change_amount',
         'invoice_number',
@@ -22,6 +23,7 @@ class Sale extends Model
 
     protected $casts = [
         'total_amount' => 'float',
+        'paid_amount' => 'float',
         'amount_tendered' => 'float',
         'change_amount' => 'float',
         'transaction_date' => 'datetime',
@@ -43,28 +45,4 @@ class Sale extends Model
         return $this->hasMany(SalesItem::class, 'sale_id');
     }
 
-    public function utangTracking()
-    {
-        return $this->hasOne(UtangTracking::class);
-    }
-
-    // Helper methods for utang functionality
-    public function hasUtang(): bool
-    {
-        return $this->utangTracking()->exists();
-    }
-
-    public function isUtangFullyPaid(): bool
-    {
-        return $this->hasUtang() && $this->utangTracking->isFullyPaid();
-    }
-
-    public function getUtangBalance(): float
-    {
-        if (! $this->hasUtang()) {
-            return 0;
-        }
-
-        return $this->utangTracking->remaining_amount;
-    }
 }

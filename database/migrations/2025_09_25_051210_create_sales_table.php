@@ -15,8 +15,9 @@ return new class extends Migration
         Schema::create('sales', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users', 'id')->restrictOnDelete();
-            $table->foreignId('customer_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('customer_id')->nullable()->constrained('customers', 'id')->restrictOnDelete();
             $table->decimal('total_amount', 15, 2);
+            $table->decimal('paid_amount', 15, 2)->default(0);
             $table->string('invoice_number')->unique();
             $table->enum('payment_type', ['cash', 'utang'])->default('cash');
             $table->timestamp('transaction_date')->useCurrent();
