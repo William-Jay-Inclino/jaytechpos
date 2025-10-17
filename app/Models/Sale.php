@@ -13,20 +13,15 @@ class Sale extends Model
         'user_id',
         'customer_id',
         'total_amount',
-        'vat_amount',
-        'net_amount',
         'amount_tendered',
         'change_amount',
         'invoice_number',
         'transaction_date',
-        'receipt_number',
         'notes',
     ];
 
     protected $casts = [
         'total_amount' => 'float',
-        'vat_amount' => 'float',
-        'net_amount' => 'float',
         'amount_tendered' => 'float',
         'change_amount' => 'float',
         'transaction_date' => 'datetime',

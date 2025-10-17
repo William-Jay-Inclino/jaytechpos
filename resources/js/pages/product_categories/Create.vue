@@ -11,8 +11,8 @@ import { Link } from '@inertiajs/vue3'
 import { showSuccessToast } from '@/lib/toast';
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Categories', href: '/product-categories' },
-    { title: 'Create Category', href: '/product-categories/create' },
+    { title: 'Product Categories', href: '/product-categories' },
+    { title: 'Create Product Category', href: '/product-categories/create' },
 ];
 
 const form = useForm({
@@ -32,14 +32,14 @@ function submit() {
 </script>
 
 <template>
-    <Head title="Create Category" />
+    <Head title="Create Product Category" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
             <!-- Header -->
             <div class="mb-6">
                 <h1 class="text-lg sm:text-xl lg:text-2xl font-semibold tracking-tight">
-                    Create Category
+                    Create Product Category
                 </h1>
             </div>
 
@@ -48,7 +48,7 @@ function submit() {
                 <form @submit.prevent="submit" class="space-y-6">
                     <!-- Category Name -->
                     <div class="grid gap-2">
-                        <Label for="category_name">Category Name</Label>
+                        <Label for="category_name">Product Category Name</Label>
                         <Input
                             id="category_name"
                             v-model="form.name"

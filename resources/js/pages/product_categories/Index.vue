@@ -49,17 +49,17 @@ async function onClickDelete(categoryId: number) {
 </script>
 
 <template>
-    <Head title="Categories" />
+    <Head title="Product Categories" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
             <!-- Header -->
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                 <h1 class="text-lg sm:text-xl lg:text-2xl font-semibold tracking-tight">
-                    Categories
+                    Product Categories
                 </h1>
                 <Link href="/product-categories/create" class="w-full sm:w-auto">
-                    <Button class="w-full sm:w-auto shadow-md">Add Category</Button>
+                    <Button class="w-full sm:w-auto shadow-md">Add Product Category</Button>
                 </Link>
             </div>
 

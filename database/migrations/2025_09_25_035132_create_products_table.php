@@ -17,15 +17,11 @@ return new class extends Migration
             $table->foreignId('category_id')->constrained('product_categories', 'id')->restrictOnDelete();
             $table->foreignId('supplier_id')->constrained('suppliers', 'id')->restrictOnDelete();
             $table->foreignId('unit_id')->constrained('units', 'id')->restrictOnDelete();
-            $table->string('sku')->unique();
-            $table->string('barcode')->unique()->nullable();
-            $table->string('product_name');
+            $table->string('product_name')->unique();
             $table->text('description')->nullable();
             $table->decimal('unit_price', 15, 2);
             $table->decimal('cost_price', 15, 2);
-            $table->enum('vat_type', ['vat', 'vat_exempt', 'vat_zero_rated', 'non_vat'])->default('non_vat');
             $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->string('image_path')->nullable();
             $table->timestamps();
         });
     }

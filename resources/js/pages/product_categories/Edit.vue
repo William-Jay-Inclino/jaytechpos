@@ -36,23 +36,23 @@ function submit() {
 </script>
 
 <template>
-    <Head title="Edit Category" />
+    <Head title="Edit Product Category" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
             <!-- Header -->
             <div class="mb-6">
                 <h1 class="text-lg sm:text-xl lg:text-2xl font-semibold tracking-tight">
-                    Edit Category
+                    Edit Product Category
                 </h1>
             </div>
 
             <!-- Form Card -->
             <div class="rounded-xl border bg-white dark:bg-gray-900 dark:border-gray-700 shadow-sm p-6 sm:p-8">
                 <form @submit.prevent="submit" class="space-y-6">
-                    <!-- Category Name -->
+                    <!-- Product Category Name -->
                     <div class="grid gap-2">
-                        <Label for="category_name">Category Name</Label>
+                        <Label for="category_name">Product Category Name</Label>
                         <Input
                             id="category_name"
                             v-model="form.name"

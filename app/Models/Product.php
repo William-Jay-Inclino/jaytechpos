@@ -19,14 +19,10 @@ class Product extends Model
         'category_id',
         'supplier_id',
         'unit_id',
-        'sku',
-        'barcode',
         'product_name',
         'description',
         'unit_price',
         'cost_price',
-        'vat_type',
-        'image_path',
         'status',
     ];
 
