@@ -25,7 +25,11 @@ import {
     FolderTree, 
     Scale, 
     Calculator, 
-    Activity 
+    Activity,
+    CreditCard,
+    Receipt,
+    Banknote,
+    CircleDollarSign
 } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
@@ -36,7 +40,7 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: 'POS',
+        title: 'Sales',
         icon: ShoppingCart,
         items: [
             {
@@ -55,6 +59,21 @@ const mainNavItems: NavItem[] = [
         icon: Package,
     },
     {
+        title: 'Product Categories',
+        href: '/product-categories',
+        icon: FolderTree,
+    },
+    {
+        title: 'Utang Tracker',
+        href: '/',
+        icon: Banknote,
+    },
+    {
+        title: 'Expenses',
+        href: '/',
+        icon: CircleDollarSign,
+    },
+    {
         title: 'Suppliers',
         href: '',
         icon: Truck,
@@ -65,21 +84,6 @@ const mainNavItems: NavItem[] = [
         icon: Users,
     },
     {
-        title: 'Categories',
-        href: '/categories',
-        icon: FolderTree,
-    },
-    {
-        title: 'Units',
-        href: '',
-        icon: Scale,
-    },
-    {
-        title: 'VAT Rates',
-        href: '',
-        icon: Calculator,
-    },
-    {
         title: 'Activity Logs',
         href: '',
         icon: Activity,
@@ -87,16 +91,16 @@ const mainNavItems: NavItem[] = [
 ];
 
 const footerNavItems: NavItem[] = [
-    {
-        title: 'Github Repo',
-        href: 'https://github.com/laravel/vue-starter-kit',
-        icon: Folder,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#vue',
-        icon: BookOpen,
-    },
+    // {
+    //     title: 'Github Repo',
+    //     href: 'https://github.com/laravel/vue-starter-kit',
+    //     icon: Folder,
+    // },
+    // {
+    //     title: 'Documentation',
+    //     href: 'https://laravel.com/docs/starter-kits#vue',
+    //     icon: BookOpen,
+    // },
 ];
 </script>
 

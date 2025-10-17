@@ -16,13 +16,13 @@ import { LucideEdit, LucideTrash } from 'lucide-vue-next';
 import { showConfirmDelete, showSuccessToast } from '@/lib';
 
 defineProps<{
-    categories: Array<any>,
+    product_categories: Array<any>,
 }>()
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Categories',
-        href: '/categories',
+        title: 'Product Categories',
+        href: '/product-categories',
     },
 ];
 
@@ -37,7 +37,7 @@ async function onClickDelete(categoryId: number) {
     });
 
     if (result.isConfirmed) {
-        form.delete(`/categories/${categoryId}`, {
+        form.delete(`/product-categories/${categoryId}`, {
             preserveScroll: true,
             onSuccess: () => {
                 showSuccessToast('Category deleted successfully!');
@@ -58,7 +58,7 @@ async function onClickDelete(categoryId: number) {
                 <h1 class="text-lg sm:text-xl lg:text-2xl font-semibold tracking-tight">
                     Categories
                 </h1>
-                <Link href="/categories/create" class="w-full sm:w-auto">
+                <Link href="/product-categories/create" class="w-full sm:w-auto">
                     <Button class="w-full sm:w-auto shadow-md">Add Category</Button>
                 </Link>
             </div>
@@ -81,19 +81,19 @@ async function onClickDelete(categoryId: number) {
                     </TableHeader>
                     <TableBody>
                         <TableRow
-                            v-for="category in categories"
+                            v-for="category in product_categories"
                             :key="category.id"
                             class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                         >
                             <TableCell class="px-4 sm:px-6 py-4 font-medium text-gray-800 dark:text-gray-100">
-                                {{ category.category_name }}
+                                {{ category.name }}
                             </TableCell>
                             <TableCell class="px-4 sm:px-6 py-4 text-gray-600 dark:text-gray-300">
                                 {{ category.description }}
                             </TableCell>
                             <TableCell class="px-4 sm:px-6 py-4 text-center">
                                 <div class="flex items-center justify-center gap-3">
-                                    <Link :href="`/categories/${category.id}/edit`">
+                                    <Link :href="`/product-categories/${category.id}/edit`">
                                         <Button variant="ghost" size="icon" class="h-8 w-8 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-500">
                                             <lucide-edit class="h-4 w-4" />
                                         </Button>

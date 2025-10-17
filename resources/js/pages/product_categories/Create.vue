@@ -9,41 +9,37 @@ import { Label } from '@/components/ui/label';
 import InputError from '@/components/InputError.vue';
 import { Link } from '@inertiajs/vue3'
 import { showSuccessToast } from '@/lib/toast';
-import { Category } from '@/types/inventory';
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Categories', href: '/categories' },
-    { title: 'Edit Category', href: '/categories/edit' },
+    { title: 'Categories', href: '/product-categories' },
+    { title: 'Create Category', href: '/product-categories/create' },
 ];
 
-const props = defineProps<{
-    category: Category
-}>()
-
 const form = useForm({
-    category_name: props.category.category_name,
-    description: props.category.description,
+    name: '',
+    description: '',
 });
 
 function submit() {
-    form.put(`/categories/${props.category.id}`, {
+    form.post('/product-categories', {
         preserveScroll: true,
         onSuccess: () => {
-            showSuccessToast('Category updated successfully!');
+            form.reset();
+            showSuccessToast('Category created successfully!');
         },
     });
 };
 </script>
 
 <template>
-    <Head title="Edit Category" />
+    <Head title="Create Category" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
             <!-- Header -->
             <div class="mb-6">
                 <h1 class="text-lg sm:text-xl lg:text-2xl font-semibold tracking-tight">
-                    Edit Category
+                    Create Category
                 </h1>
             </div>
 
@@ -55,12 +51,12 @@ function submit() {
                         <Label for="category_name">Category Name</Label>
                         <Input
                             id="category_name"
-                            v-model="form.category_name"
+                            v-model="form.name"
                             type="text"
                             required
                             class="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
                         />
-                        <InputError :message="form.errors.category_name" class="mt-1" />
+                        <InputError :message="form.errors.name" class="mt-1" />
                     </div>
 
                     <!-- Description -->
@@ -80,7 +76,7 @@ function submit() {
                         <Button type="submit" :disabled="form.processing">
                             Save
                         </Button>
-                        <Link href="/categories">
+                        <Link href="/product-categories">
                             <Button variant="outline" type="button">
                                 Cancel
                             </Button>

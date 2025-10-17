@@ -9,12 +9,8 @@ class Supplier extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
+        'user_id',
         'supplier_name',
         'contact_name',
         'address',
@@ -22,12 +18,13 @@ class Supplier extends Model
         'email',
     ];
 
-    /**
-     * Define relationships (if needed later).
-     * Example: A supplier might supply many products.
-     */
     public function products()
     {
         return $this->hasMany(Product::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

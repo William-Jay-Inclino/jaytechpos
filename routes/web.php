@@ -1,10 +1,9 @@
 <?php
 
+use App\Http\Controllers\POS\ProductCategoryController;
+use App\Http\Controllers\POS\SaleController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Http\Controllers\Inventory\CategoryController;
-use App\Http\Controllers\POS\SaleController;
-
 
 /*
 |--------------------------------------------------------------------------
@@ -22,7 +21,6 @@ Route::middleware(['throttle:global'])->group(function () {
     Route::get('/', function () {
         return Inertia::render('Welcome');
     })->name('home');
-    
 
     Route::get('dashboard', function () {
         return Inertia::render('Dashboard');
@@ -36,12 +34,11 @@ Route::middleware(['throttle:global'])->group(function () {
 
     Route::post('sales', [SaleController::class, 'store'])->middleware(['auth', 'verified'])->name('sales.store');
 
-    Route::resource('categories', CategoryController::class)
+    Route::resource('product-categories', ProductCategoryController::class)
         ->middleware(['auth', 'verified'])
         ->except(['show']);
 
 });
-
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

@@ -15,6 +15,7 @@ class Product extends Model
      * @var list<string>
      */
     protected $fillable = [
+        'user_id',
         'category_id',
         'supplier_id',
         'unit_id',
@@ -57,5 +58,10 @@ class Product extends Model
     public function salesItems()
     {
         return $this->hasMany(SalesItem::class, 'product_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }
