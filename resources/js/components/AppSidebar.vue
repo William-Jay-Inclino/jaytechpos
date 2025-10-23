@@ -34,75 +34,27 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: 'Sales',
+        title: 'New Sale',
+        href: 'sales',
         icon: ShoppingCart,
-        items: [
-            {
-                title: 'View Sales',
-                href: '/sales',
-            },
-            {
-                title: 'New Sale',
-                href: '/sales/create',
-            },
-        ],
     },
     {
-        title: 'Utang Tracker',
+        title: 'Utang Payment',
+        href: 'sales/create',
         icon: Banknote,
-        items: [
-            {
-                title: 'Utang List',
-                href: '/utang',
-            },
-            {
-                title: 'Payment',
-                href: '/utang/payment',
-            },
-            {
-                title: 'Interest Rate',
-                href: '/utang/interest-rate',
-            },
-        ],
     },
     {
-        title: 'Products',
-        icon: Package,
-        items: [
-            {
-                title: 'Product List',
-                href: '/products',
-            },
-            {
-                title: 'Categories',
-                href: '/product-categories',
-            },
-            {
-                title: 'New Product',
-                href: '/products/create',
-            },
-        ],
-    },
-    {
-        title: 'Expenses',
+        title: 'Expense Tracker',
+        href: '',
         icon: CircleDollarSign,
-        items: [
-            {
-                title: 'Expense List',
-                href: '/expenses',
-            },
-            {
-                title: 'Categories',
-                href: '/expense-categories',
-            },
-            {
-                title: 'New Expense',
-                href: '/expenses/create',
-            },
-        ],
     },
     {
-        title: 'Customers',
+        title: 'Product Management',
+        href: '',
+        icon: Package,
+    },
+    {
+        title: 'Customer Management',
         href: '',
         icon: Users,
     },
@@ -115,13 +67,13 @@ const mainNavItems: NavItem[] = [
 
 const footerNavItems: NavItem[] = [
     {
-        title: 'Developer',
+        title: 'Meet the Developer',
         href: 'https://www.facebook.com/jewell.inclino/',
         icon: UserCircle,
     },
     {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#vue',
+        title: 'Read the Documentation',
+        href: '',
         icon: BookOpen,
     },
 ];

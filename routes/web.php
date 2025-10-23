@@ -26,11 +26,11 @@ Route::middleware(['throttle:global'])->group(function () {
         return Inertia::render('Dashboard');
     })->middleware(['auth', 'verified'])->name('dashboard');
 
-    Route::get('sales', function () {
-        return Inertia::render('sales/Index');
-    })->middleware(['auth', 'verified'])->name('sales.index');
+    // Route::get('sales', function () {
+    //     return Inertia::render('sales/Index');
+    // })->middleware(['auth', 'verified'])->name('sales.index');
 
-    Route::get('sales/create', [SaleController::class, 'create'])->middleware(['auth', 'verified'])->name('sales.create');
+    Route::get('sales', [SaleController::class, 'create'])->middleware(['auth', 'verified'])->name('sales.create');
 
     Route::post('sales', [SaleController::class, 'store'])->middleware(['auth', 'verified'])->name('sales.store');
 

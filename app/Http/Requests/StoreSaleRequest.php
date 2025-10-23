@@ -21,14 +21,25 @@ class StoreSaleRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            'customer_id' => ['nullable', 'exists:customers,id'],
+        $rules = [
             'items' => ['required', 'array', 'min:1'],
             'items.*.product_id' => ['required', 'exists:products,id'],
             'items.*.quantity' => ['required', 'numeric', 'min:0.01'],
             'items.*.unit_price' => ['required', 'numeric', 'min:0'],
             'total_amount' => ['required', 'numeric', 'min:0'],
+            'paid_amount' => ['required', 'numeric', 'min:0'],
+            'payment_type' => ['required', 'string', 'in:cash,utang'],
+            'notes' => ['nullable', 'string', 'max:1000'],
         ];
+
+        // Conditional validation based on payment type
+        if ($this->input('payment_type') === 'utang') {
+            $rules['customer_id'] = ['required', 'exists:customers,id'];
+        } else {
+            $rules['customer_id'] = ['nullable', 'exists:customers,id'];
+        }
+
+        return $rules;
     }
 
     /**
@@ -37,6 +48,8 @@ class StoreSaleRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'customer_id.required' => 'Customer is required for utang payments.',
+            'customer_id.exists' => 'Selected customer does not exist.',
             'items.required' => 'At least one item is required for the sale.',
             'items.min' => 'At least one item is required for the sale.',
             'items.*.product_id.required' => 'Each item must have a valid product.',
@@ -45,6 +58,11 @@ class StoreSaleRequest extends FormRequest
             'items.*.quantity.min' => 'Item quantity must be greater than 0.',
             'items.*.unit_price.required' => 'Item price is required.',
             'items.*.unit_price.min' => 'Item price must be greater than or equal to 0.',
+            'paid_amount.required' => 'Paid amount is required.',
+            'paid_amount.min' => 'Paid amount must be greater than or equal to 0.',
+            'payment_type.required' => 'Payment type is required.',
+            'payment_type.in' => 'Payment type must be either cash or utang.',
+            'notes.max' => 'Notes cannot exceed 1000 characters.',
         ];
     }
 }

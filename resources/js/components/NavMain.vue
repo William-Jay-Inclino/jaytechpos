@@ -28,7 +28,7 @@ const page = usePage();
         <SidebarMenu>
             <SidebarMenuItem v-for="item in items" :key="item.title">
                 <!-- Dropdown item with subitems -->
-                <Collapsible v-if="item.items" as-child default-open class="group/collapsible">
+                <Collapsible v-if="item.items" as-child default-close class="group/collapsible">
                     <SidebarMenuItem>
                         <CollapsibleTrigger as-child>
                             <SidebarMenuButton :tooltip="item.title">
