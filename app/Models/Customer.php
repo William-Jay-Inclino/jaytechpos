@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -13,10 +14,14 @@ class Customer extends Model
         'user_id',
         'name',
         'mobile_number',
+        'has_utang',
+        'interest_rate',
     ];
 
     protected $casts = [
         'mobile_number' => 'string',
+        'has_utang' => 'boolean',
+        'interest_rate' => 'float',
     ];
 
     public function sales()
@@ -39,36 +44,40 @@ class Customer extends Model
         return $this->hasMany(UtangPayment::class);
     }
 
-    // Helper methods for utang functionality
-    public function hasActiveUtang(): bool
+    // Computed Properties
+
+    /**
+     * Get the running balance of utang for the current month
+     */
+    protected function runningUtangBalance(): Attribute
     {
-        return $this->utangTrackings()->active()->exists();
+        return Attribute::make(
+            get: function () {
+                $currentMonth = now()->month;
+                $currentYear = now()->year;
+
+                // Get the most recent UtangTracking record for the current month
+                $utangTracking = $this->utangTrackings()
+                    ->whereMonth('computation_date', $currentMonth)
+                    ->whereYear('computation_date', $currentYear)
+                    ->latest('computation_date')
+                    ->first();
+
+                return $utangTracking ? $utangTracking->beginning_balance : 0;
+            }
+        );
     }
 
-    public function getTotalUtangBalance(): float
+    /**
+     * Get the effective interest rate for this customer
+     * Returns customer-specific rate if set, otherwise default rate
+     */
+    public function getEffectiveInterestRate(): float
     {
-        return $this->utangTrackings()
-            ->active()
-            ->sum('remaining_amount');
-    }
+        if ($this->interest_rate !== null) {
+            return $this->interest_rate;
+        }
 
-    public function getOverdueUtangCount(): int
-    {
-        return $this->utangTrackings()
-            ->overdue()
-            ->count();
-    }
-
-    public function getTotalPaidAmount(): float
-    {
-        return $this->utangPayments()
-            ->sum('payment_amount');
-    }
-
-    public function getPaymentHistory()
-    {
-        return $this->utangPayments()
-            ->with('utangTracking')
-            ->orderBy('payment_date', 'desc');
+        return \App\Models\Setting::getDefaultUtangInterestRate();
     }
 }

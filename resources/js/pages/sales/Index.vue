@@ -28,7 +28,7 @@ const props = defineProps<{
 
 const breadcrumbs: BreadcrumbItem[] = [
     // { title: 'Sales', href: '/sales' },
-    { title: 'New Sale', href: '/sales/create' },
+    { title: 'New Sale', href: '/sales' },
 ];
 
 // Types for sale response

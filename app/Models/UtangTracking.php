@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class UtangTracking extends Model
 {
@@ -23,10 +22,9 @@ class UtangTracking extends Model
 
     protected $casts = [
         'beginning_balance' => 'float',
-        'computation_date' => 'float',
+        'computation_date' => 'date',
         'interest_rate' => 'float',
     ];
-
 
     // Relationships
 
@@ -39,5 +37,4 @@ class UtangTracking extends Model
     {
         return $this->belongsTo(Customer::class);
     }
-
 }
