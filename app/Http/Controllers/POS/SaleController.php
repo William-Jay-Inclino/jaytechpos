@@ -75,6 +75,23 @@ class SaleController extends Controller
                 $this->deductFromRunningBalance($sale->customer_id, $request->validated('deduct_from_balance'));
             }
 
+            // Capture original customer balance before any modifications
+            $originalBalance = 0;
+            if ($sale->customer_id) {
+                $customer = Customer::find($sale->customer_id);
+                if ($customer) {
+                    if ($request->validated('payment_type') === 'utang') {
+                        // For utang, get balance before adding new utang
+                        $originalBalance = $customer->running_utang_balance - ($sale->total_amount - $sale->paid_amount);
+                    } else {
+                        // For cash with balance deduction, get balance before deduction
+                        $originalBalance = $request->validated('deduct_from_balance') > 0 
+                            ? $customer->running_utang_balance + $request->validated('deduct_from_balance')
+                            : $customer->running_utang_balance;
+                    }
+                }
+            }
+
             DB::commit();
 
             // Load relationships for the resource
@@ -82,22 +99,16 @@ class SaleController extends Controller
 
             // Add payment calculation details to the sale object for the resource
             $sale->amount_tendered = $request->validated('payment_type') === 'cash' 
-                ? ($request->validated('deduct_from_balance') > 0 
-                    ? $sale->total_amount + $request->validated('deduct_from_balance') 
-                    : $request->validated('amount_tendered', $sale->paid_amount)) 
+                ? $request->validated('amount_tendered', $sale->paid_amount)
                 : null;
             
             $sale->change_amount = $request->validated('payment_type') === 'cash'
-                ? ($request->validated('deduct_from_balance') > 0 
-                    ? 0 
-                    : max(0, $request->validated('amount_tendered', 0) - $sale->total_amount))
+                ? max(0, $request->validated('amount_tendered', 0) - $sale->total_amount - $request->validated('deduct_from_balance', 0))
                 : null;
             
             $sale->balance_payment = $request->validated('deduct_from_balance', 0);
             
-            $sale->original_customer_balance = $request->validated('deduct_from_balance') > 0 && $sale->customer
-                ? $sale->customer->running_utang_balance + $request->validated('deduct_from_balance')
-                : ($sale->customer ? $sale->customer->running_utang_balance : 0);
+            $sale->original_customer_balance = $originalBalance;
             
             $sale->new_customer_balance = $sale->customer ? $sale->customer->running_utang_balance : 0;
 

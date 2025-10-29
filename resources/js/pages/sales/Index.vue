@@ -723,8 +723,12 @@ watch(amountTendered, () => {
                                     <span>Amount Paid:</span>
                                     <span>₱{{ saleData.paid_amount.toFixed(2) }}</span>
                                 </div>
+                                <div v-if="saleData.original_customer_balance !== undefined" class="flex justify-between text-gray-600 dark:text-gray-400">
+                                    <span>Previous Balance:</span>
+                                    <span>₱{{ (saleData.original_customer_balance || 0).toFixed(2) }}</span>
+                                </div>
                                 <div class="flex justify-between font-semibold text-red-600 dark:text-red-400">
-                                    <span>Current Utang:</span>
+                                    <span>New Balance:</span>
                                     <span>₱{{ (saleData.new_customer_balance || 0).toFixed(2) }}</span>
                                 </div>
                             </div>
