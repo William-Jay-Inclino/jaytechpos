@@ -6,6 +6,12 @@ export interface Customer {
     name: string;
     mobile_number: string;
     remarks: string | null;
+    has_utang: boolean;
+    interest_rate: number | null;
+    effective_interest_rate: number;
+    running_utang_balance: number;
+    created_at: string;
+    updated_at: string;
 }
 
 export interface Sale {

@@ -118,7 +118,7 @@ watch(() => props.open, (isOpen: boolean) => {
         <div class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-white dark:bg-gray-900 rounded-lg shadow-lg w-[600px] max-h-[80vh] overflow-hidden" @keydown="handleEnterKey">
             <div class="p-6 pb-4 border-b">
                 <div class="flex items-center justify-between">
-                    <h2 class="text-lg font-semibold">Add Product</h2>
+                    <h2 class="text-lg font-semibold">Add Item</h2>
                     <Button variant="ghost" size="icon" @click="closeModal">
                         <X class="h-4 w-4" />
                     </Button>

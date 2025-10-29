@@ -28,8 +28,10 @@ class StoreSaleRequest extends FormRequest
             'items.*.unit_price' => ['required', 'numeric', 'min:0'],
             'total_amount' => ['required', 'numeric', 'min:0'],
             'paid_amount' => ['required', 'numeric', 'min:0'],
+            'amount_tendered' => ['nullable', 'numeric', 'min:0'],
             'payment_type' => ['required', 'string', 'in:cash,utang'],
             'notes' => ['nullable', 'string', 'max:1000'],
+            'deduct_from_balance' => ['nullable', 'numeric', 'min:0'],
         ];
 
         // Conditional validation based on payment type
@@ -37,6 +39,11 @@ class StoreSaleRequest extends FormRequest
             $rules['customer_id'] = ['required', 'exists:customers,id'];
         } else {
             $rules['customer_id'] = ['nullable', 'exists:customers,id'];
+        }
+
+        // If deducting from balance, customer is required
+        if ($this->input('deduct_from_balance') > 0) {
+            $rules['customer_id'] = ['required', 'exists:customers,id'];
         }
 
         return $rules;

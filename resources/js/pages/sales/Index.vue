@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 
 // Types
 import type { BreadcrumbItem } from '@/types';
@@ -40,6 +41,11 @@ interface SaleResponse {
     customer_name: string | null;
     total_amount: number;
     paid_amount: number;
+    amount_tendered?: number;
+    change_amount?: number;
+    balance_payment?: number;
+    original_customer_balance?: number;
+    new_customer_balance?: number;
     payment_type: string;
     is_utang: boolean;
     notes: string | null;
@@ -68,9 +74,13 @@ const selectedCustomerId = ref<string>('0');
 const paymentMethod = ref<string>('cash');
 const paidAmount = ref(0);
 const amountTendered = ref(0);
+const payTowardsBalance = ref(false);
+const deductFromBalance = ref(0);
 const showSuccessModal = ref(false);
 const saleData = ref<SaleResponse | null>(null);
 const isProcessing = ref(false);
+
+// No need to store original values - use server response data
 
 // Business Logic Functions
 function addProductToCart(data: { product: Product; quantity: number }): void {
@@ -114,14 +124,38 @@ const totalItemsInCart = computed((): number => {
 });
 
 const changeAmount = computed((): number => {
+    if (payTowardsBalance.value) {
+        return Math.max(0, amountTendered.value - cartTotalAmount.value - deductFromBalance.value);
+    }
     return Math.max(0, amountTendered.value - cartTotalAmount.value);
+});
+
+const selectedCustomer = computed((): Customer | null => {
+    if (selectedCustomerId.value === '0') return null;
+    return props.customers.find(customer => customer.id.toString() === selectedCustomerId.value) || null;
+});
+
+// Customer data for form display - just use current customer since form is reset after checkout
+const displayCustomer = computed((): Customer | null => {
+    return selectedCustomer.value;
 });
 
 const isCheckoutValid = computed((): boolean => {
     const hasItems = cartItems.value.length > 0;
     
     if (paymentMethod.value === 'cash') {
-        return hasItems && amountTendered.value >= cartTotalAmount.value;
+        const hasValidCustomer = !payTowardsBalance.value || selectedCustomerId.value !== '0';
+        const hasEnoughMoney = amountTendered.value >= cartTotalAmount.value;
+        
+        if (payTowardsBalance.value) {
+            const maxDeductible = Math.min(
+                selectedCustomer.value?.running_utang_balance || 0,
+                amountTendered.value - cartTotalAmount.value
+            );
+            return hasItems && hasValidCustomer && hasEnoughMoney && deductFromBalance.value <= maxDeductible;
+        }
+        
+        return hasItems && hasEnoughMoney;
     } else if (paymentMethod.value === 'utang') {
         return hasItems && selectedCustomerId.value !== '0' && paidAmount.value >= 0;
     }
@@ -129,11 +163,55 @@ const isCheckoutValid = computed((): boolean => {
     return false;
 });
 
+// Helper text for disabled checkout button
+const checkoutHelperText = computed((): string | null => {
+    if (isProcessing.value) {
+        return 'Processing transaction...';
+    }
+    
+    if (cartItems.value.length === 0) {
+        return 'Add items to your cart to proceed';
+    }
+    
+    if (paymentMethod.value === 'cash') {
+        if (amountTendered.value < cartTotalAmount.value) {
+            return `Amount tendered (₱${amountTendered.value.toFixed(2)}) must be at least ₱${cartTotalAmount.value.toFixed(2)}`;
+        }
+        
+        if (payTowardsBalance.value) {
+            if (selectedCustomerId.value === '0') {
+                return 'Please select a customer to pay towards their balance';
+            }
+            
+            const maxDeductible = Math.min(
+                selectedCustomer.value?.running_utang_balance || 0,
+                amountTendered.value - cartTotalAmount.value
+            );
+            
+            if (deductFromBalance.value > maxDeductible) {
+                return `Payment towards balance cannot exceed ₱${maxDeductible.toFixed(2)}`;
+            }
+        }
+    } else if (paymentMethod.value === 'utang') {
+        if (selectedCustomerId.value === '0') {
+            return 'Please select a customer for credit transactions';
+        }
+        
+        if (paidAmount.value < 0) {
+            return 'Amount paid cannot be negative';
+        }
+    }
+    
+    return null;
+});
+
 // Event Handlers
 function handleCheckout(): void {
     if (!isCheckoutValid.value || isProcessing.value) return;
     
     isProcessing.value = true;
+    
+    // No need to store original values - server will provide all payment details
     
     const checkoutData = {
         customer_id: selectedCustomerId.value !== '0' ? parseInt(selectedCustomerId.value) : null,
@@ -144,8 +222,10 @@ function handleCheckout(): void {
         })),
         total_amount: cartTotalAmount.value,
         paid_amount: paymentMethod.value === 'cash' ? cartTotalAmount.value : paidAmount.value,
+        amount_tendered: paymentMethod.value === 'cash' ? amountTendered.value : null,
         payment_type: paymentMethod.value,
         notes: null,
+        deduct_from_balance: payTowardsBalance.value ? deductFromBalance.value : 0,
     };
     
     console.log('Processing checkout...', checkoutData);
@@ -154,7 +234,8 @@ function handleCheckout(): void {
     router.post('/sales', checkoutData, {
         onSuccess: () => {
             console.log('✅ Sale completed successfully!');
-            // Sale data will be available in props after successful submission
+            // Reset form immediately after successful checkout
+            resetFormData();
         },
         onError: (errors) => {
             console.error('❌ Checkout failed:', errors);
@@ -166,12 +247,18 @@ function handleCheckout(): void {
     });
 }
 
-function resetForm(): void {
+function resetFormData(): void {
     cartItems.value = [];
     selectedCustomerId.value = '0';
     paymentMethod.value = 'cash';
     paidAmount.value = 0;
     amountTendered.value = 0;
+    payTowardsBalance.value = false;
+    deductFromBalance.value = 0;
+}
+
+function resetForm(): void {
+    resetFormData();
     showSuccessModal.value = false;
     saleData.value = null;
 }
@@ -214,6 +301,33 @@ watch(() => props.sale, (newSale: SaleData | undefined) => {
     }
 }, { immediate: true });
 
+// Watch for checkbox changes to set default deduction amount
+watch(payTowardsBalance, (isChecked: boolean) => {
+    console.log('payTowardsBalance changed:', isChecked);
+    if (isChecked) {
+        // Set default to available change amount, but not more than running balance
+        const availableChange = Math.max(0, amountTendered.value - cartTotalAmount.value);
+        const maxDeductible = selectedCustomer.value?.running_utang_balance || 0;
+        deductFromBalance.value = Math.min(availableChange, maxDeductible);
+        console.log('Setting deductFromBalance to:', deductFromBalance.value);
+    } else {
+        deductFromBalance.value = 0;
+        console.log('Reset deductFromBalance to 0');
+    }
+});
+
+// Watch for amount tendered changes to update deduction when checkbox is active
+watch(amountTendered, () => {
+    if (payTowardsBalance.value) {
+        const availableChange = Math.max(0, amountTendered.value - cartTotalAmount.value);
+        const maxDeductible = selectedCustomer.value?.running_utang_balance || 0;
+        // Only update if current deduction is more than what's available
+        if (deductFromBalance.value > Math.min(availableChange, maxDeductible)) {
+            deductFromBalance.value = Math.min(availableChange, maxDeductible);
+        }
+    }
+});
+
 </script>
 
 <template>
@@ -239,7 +353,7 @@ watch(() => props.sale, (newSale: SaleData | undefined) => {
                 <div class="mb-6">
                     <Label for="customer" class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2 block">
                         Customer 
-                        <span v-if="paymentMethod === 'utang'" class="text-red-500">*</span>
+                        <span v-if="paymentMethod === 'utang' || payTowardsBalance" class="text-red-500">*</span>
                         <span v-else class="text-gray-500">(Optional)</span>
                     </Label>
                     <Select v-model="selectedCustomerId">
@@ -260,6 +374,17 @@ watch(() => props.sale, (newSale: SaleData | undefined) => {
                             </SelectItem>
                         </SelectContent>
                     </Select>
+
+                    <!-- Customer Running Balance Display -->
+                    <div v-if="displayCustomer && displayCustomer.running_utang_balance > 0" class="mt-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-medium text-yellow-800 dark:text-yellow-200">Current Balance or Utang:</span>
+                            <span class="text-lg font-bold text-yellow-900 dark:text-yellow-100">₱{{ displayCustomer.running_utang_balance.toFixed(2) }}</span>
+                        </div>
+                        <!-- <p class="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
+                            This customer has an outstanding balance from previous transactions.
+                        </p> -->
+                    </div>
                 </div>
 
                 <!-- Payment Method Selection -->
@@ -351,34 +476,78 @@ watch(() => props.sale, (newSale: SaleData | undefined) => {
                                 <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Payment Summary</h3>
                                 
                                 <!-- Cash Payment Layout -->
-                                <div v-if="paymentMethod === 'cash'" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                                    <!-- Total Amount Display -->
-                                    <div class="space-y-2">
-                                        <Label class="text-sm font-medium text-gray-900 dark:text-gray-100">Total Amount</Label>
-                                        <div class="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
-                                            <span class="text-2xl font-bold text-orange-700 dark:text-orange-400">₱{{ cartTotalAmount.toFixed(2) }}</span>
+                                <div v-if="paymentMethod === 'cash'" class="space-y-6 mb-6">
+                                    <!-- Pay towards balance checkbox (only show if customer has running balance) -->
+                                    <div v-if="selectedCustomer && selectedCustomer.running_utang_balance > 0" class="flex items-center space-x-2">
+                                        <Checkbox 
+                                            id="payTowardsBalance" 
+                                            v-model="payTowardsBalance"
+                                        />
+                                        <Label for="payTowardsBalance" class="text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer">
+                                            Use change to pay towards utang
+                                        </Label>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <!-- Total Amount Display -->
+                                        <div class="space-y-2">
+                                            <Label class="text-sm font-medium text-gray-900 dark:text-gray-100">Total Amount</Label>
+                                            <div class="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
+                                                <span class="text-2xl font-bold text-orange-700 dark:text-orange-400">₱{{ cartTotalAmount.toFixed(2) }}</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Amount Tendered Input -->
+                                        <div class="space-y-2">
+                                            <Label for="amountTendered" class="text-sm font-medium text-gray-900 dark:text-gray-100">Amount Tendered</Label>
+                                            <Input
+                                                id="amountTendered"
+                                                v-model.number="amountTendered"
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                placeholder="0.00"
+                                                class="text-right text-lg font-semibold h-12"
+                                            />
+                                        </div>
+
+                                        <!-- Change Display -->
+                                        <div class="space-y-2">
+                                            <Label class="text-sm font-medium text-gray-900 dark:text-gray-100">Change</Label>
+                                            <div class="p-3 rounded-lg border h-12 flex items-center justify-end" :class="changeAmount > 0 ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'">
+                                                <span class="text-lg font-bold" :class="changeAmount > 0 ? 'text-green-700 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'">₱{{ changeAmount.toFixed(2) }}</span>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <!-- Amount Tendered Input -->
-                                    <div class="space-y-2">
-                                        <Label for="amountTendered" class="text-sm font-medium text-gray-900 dark:text-gray-100">Amount Tendered</Label>
-                                        <Input
-                                            id="amountTendered"
-                                            v-model.number="amountTendered"
-                                            type="number"
-                                            min="0"
-                                            step="0.01"
-                                            placeholder="0.00"
-                                            class="text-right text-lg font-semibold h-12"
-                                        />
-                                    </div>
-
-                                    <!-- Change Display -->
-                                    <div class="space-y-2">
-                                        <Label class="text-sm font-medium text-gray-900 dark:text-gray-100">Change</Label>
-                                        <div class="p-3 rounded-lg border h-12 flex items-center justify-end" :class="changeAmount > 0 ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'">
-                                            <span class="text-lg font-bold" :class="changeAmount > 0 ? 'text-green-700 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'">₱{{ changeAmount.toFixed(2) }}</span>
+                                    <!-- Balance Deduction Section -->
+                                    <div v-if="payTowardsBalance" class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                                        <div class="space-y-2">
+                                            <Label for="deductFromBalance" class="text-sm font-medium text-blue-800 dark:text-blue-200">
+                                                Payment towards Utang
+                                            </Label>
+                                            <Input
+                                                id="deductFromBalance"
+                                                v-model.number="deductFromBalance"
+                                                type="number"
+                                                min="0"
+                                                :max="Math.min(selectedCustomer?.running_utang_balance || 0, Math.max(0, amountTendered - cartTotalAmount))"
+                                                step="0.01"
+                                                placeholder="0.00"
+                                                class="text-right text-lg font-semibold h-12"
+                                            />
+                                            <p class="text-xs text-blue-700 dark:text-blue-300">
+                                                Max: ₱{{ Math.min(selectedCustomer?.running_utang_balance || 0, Math.max(0, amountTendered - cartTotalAmount)).toFixed(2) }}
+                                                (available change or balance, whichever is lower)
+                                            </p>
+                                        </div>
+                                        <div class="space-y-2">
+                                            <Label class="text-sm font-medium text-blue-800 dark:text-blue-200">New Balance</Label>
+                                            <div class="p-3 bg-blue-100 dark:bg-blue-800/40 rounded-lg border border-blue-300 dark:border-blue-600 h-12 flex items-center justify-end">
+                                                <span class="text-lg font-bold text-blue-900 dark:text-blue-100">
+                                                    ₱{{ ((selectedCustomer?.running_utang_balance || 0) - deductFromBalance).toFixed(2) }}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -409,15 +578,19 @@ watch(() => props.sale, (newSale: SaleData | undefined) => {
 
                                     <!-- Balance Display -->
                                     <div v-if="paidAmount < cartTotalAmount" class="md:col-span-2 space-y-2">
-                                        <Label class="text-sm font-medium text-gray-900 dark:text-gray-100">Remaining Balance</Label>
+                                        <Label class="text-sm font-medium text-gray-900 dark:text-gray-100">New Balance After Transaction</Label>
                                         <div class="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
-                                            <span class="text-xl font-bold text-red-700 dark:text-red-400">₱{{ (cartTotalAmount - paidAmount).toFixed(2) }}</span>
+                                            <span class="text-xl font-bold text-red-700 dark:text-red-400">₱{{ ((selectedCustomer?.running_utang_balance || 0) + (cartTotalAmount - paidAmount)).toFixed(2) }}</span>
                                         </div>
+                                        <p class="text-xs text-red-600 dark:text-red-400 mt-1">
+                                            Current Balance: ₱{{ (selectedCustomer?.running_utang_balance || 0).toFixed(2) }} + 
+                                            Unpaid Amount: ₱{{ (cartTotalAmount - paidAmount).toFixed(2) }}
+                                        </p>
                                     </div>
                                 </div>
 
                                 <!-- Checkout Button -->
-                                <div class="flex justify-center">
+                                <div class="flex flex-col items-center space-y-2">
                                     <Button 
                                         variant="destructive" 
                                         size="lg" 
@@ -429,6 +602,13 @@ watch(() => props.sale, (newSale: SaleData | undefined) => {
                                         <span v-else>Complete Checkout</span>
                                         <span v-if="!isProcessing" class="ml-2 text-sm opacity-80">(Ctrl+Enter)</span>
                                     </Button>
+                                    
+                                    <!-- Helper Text -->
+                                    <div v-if="checkoutHelperText" class="text-center max-w-md">
+                                        <p class="text-sm text-gray-600 dark:text-gray-400 px-4">
+                                            {{ checkoutHelperText }}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -447,7 +627,7 @@ watch(() => props.sale, (newSale: SaleData | undefined) => {
                 <!-- Receipt Content -->
                 <div id="receipt-content" class="p-6 overflow-y-auto max-h-[60vh]">
                     <div class="text-center mb-4">
-                        <h3 class="font-bold text-lg">Free POS</h3>
+                        <h3 class="font-bold text-lg">JTech POS</h3>
                         <p class="text-sm text-gray-600 dark:text-gray-300">Point of Sale Receipt</p>
                         <div class="border-b border-gray-300 dark:border-gray-600 my-2"></div>
                     </div>
@@ -487,23 +667,66 @@ watch(() => props.sale, (newSale: SaleData | undefined) => {
 
                         <div class="border-b border-gray-300 dark:border-gray-600 my-3"></div>
 
-                        <!-- Totals -->
+                        <!-- Total -->
                         <div class="space-y-1">
                             <div class="flex justify-between font-bold text-lg border-t border-gray-300 dark:border-gray-600 pt-1">
                                 <span>TOTAL:</span>
                                 <span>₱{{ saleData.total_amount.toFixed(2) }}</span>
                             </div>
-                            <div class="flex justify-between">
-                                <span>{{ saleData.payment_type === 'cash' ? 'Amount Tendered:' : 'Amount Paid:' }}</span>
-                                <span>₱{{ saleData.paid_amount.toFixed(2) }}</span>
+                        </div>
+
+                        <!-- Payment Details Section -->
+                        <div class="border-b border-gray-300 dark:border-gray-600 my-3"></div>
+                        <div class="space-y-1">
+                            
+                            <!-- Cash Payment Details -->
+                            <div v-if="saleData.payment_type === 'cash'">
+                                <div class="flex justify-between">
+                                    <span>Payment Method:</span>
+                                    <span>Cash</span>
+                                </div>
+                                
+                                <!-- Cash Payment Details - Use Server Response Data -->
+                                <div class="flex justify-between">
+                                    <span>Total Amount:</span>
+                                    <span>₱{{ saleData.total_amount.toFixed(2) }}</span>
+                                </div>
+                                <div v-if="saleData.amount_tendered" class="flex justify-between">
+                                    <span>Amount Tendered:</span>
+                                    <span>₱{{ saleData.amount_tendered.toFixed(2) }}</span>
+                                </div>
+                                <div v-if="saleData.change_amount !== undefined && saleData.change_amount !== null" class="flex justify-between">
+                                    <span>Change:</span>
+                                    <span>₱{{ (saleData.change_amount || 0).toFixed(2) }}</span>
+                                </div>
+                                <div v-if="saleData.balance_payment && saleData.balance_payment > 0" class="flex justify-between font-semibold text-blue-600 dark:text-blue-400">
+                                    <span>Payment Towards Utang:</span>
+                                    <span>₱{{ (saleData.balance_payment || 0).toFixed(2) }}</span>
+                                </div>
+                                <div v-if="saleData.customer_id" class="flex justify-between font-semibold text-blue-600 dark:text-blue-400">
+                                    <span>Current Utang:</span>
+                                    <span>₱{{ (saleData.new_customer_balance || 0).toFixed(2) }}</span>
+                                </div>
                             </div>
-                            <div v-if="saleData.payment_type === 'cash'" class="flex justify-between font-semibold text-green-600 dark:text-green-400">
-                                <span>Change:</span>
-                                <span>₱{{ (saleData.paid_amount - saleData.total_amount).toFixed(2) }}</span>
-                            </div>
-                            <div v-if="saleData.payment_type === 'utang' && saleData.paid_amount < saleData.total_amount" class="flex justify-between font-semibold text-red-600 dark:text-red-400">
-                                <span>Balance Due:</span>
-                                <span>₱{{ (saleData.total_amount - saleData.paid_amount).toFixed(2) }}</span>
+                            
+                            <!-- Utang Payment Details -->
+                            <div v-else-if="saleData.payment_type === 'utang'">
+                                <div class="flex justify-between">
+                                    <span>Payment Method:</span>
+                                    <span>Credit (Utang)</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Total Amount:</span>
+                                    <span>₱{{ saleData.total_amount.toFixed(2) }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Amount Paid:</span>
+                                    <span>₱{{ saleData.paid_amount.toFixed(2) }}</span>
+                                </div>
+                                <div class="flex justify-between font-semibold text-red-600 dark:text-red-400">
+                                    <span>Current Utang:</span>
+                                    <span>₱{{ (saleData.new_customer_balance || 0).toFixed(2) }}</span>
+                                </div>
                             </div>
                         </div>
 

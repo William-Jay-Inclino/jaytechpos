@@ -70,10 +70,36 @@ class SaleController extends Controller
                 $this->updateUtangTracking($sale);
             }
 
+            // Handle balance deduction for cash payments
+            if ($request->validated('payment_type') === 'cash' && $request->validated('deduct_from_balance') > 0) {
+                $this->deductFromRunningBalance($sale->customer_id, $request->validated('deduct_from_balance'));
+            }
+
             DB::commit();
 
             // Load relationships for the resource
             $sale->load(['user', 'customer', 'salesItems.product']);
+
+            // Add payment calculation details to the sale object for the resource
+            $sale->amount_tendered = $request->validated('payment_type') === 'cash' 
+                ? ($request->validated('deduct_from_balance') > 0 
+                    ? $sale->total_amount + $request->validated('deduct_from_balance') 
+                    : $request->validated('amount_tendered', $sale->paid_amount)) 
+                : null;
+            
+            $sale->change_amount = $request->validated('payment_type') === 'cash'
+                ? ($request->validated('deduct_from_balance') > 0 
+                    ? 0 
+                    : max(0, $request->validated('amount_tendered', 0) - $sale->total_amount))
+                : null;
+            
+            $sale->balance_payment = $request->validated('deduct_from_balance', 0);
+            
+            $sale->original_customer_balance = $request->validated('deduct_from_balance') > 0 && $sale->customer
+                ? $sale->customer->running_utang_balance + $request->validated('deduct_from_balance')
+                : ($sale->customer ? $sale->customer->running_utang_balance : 0);
+            
+            $sale->new_customer_balance = $sale->customer ? $sale->customer->running_utang_balance : 0;
 
             // Prepare response data using the resource
             $saleData = new SaleResource($sale);
@@ -166,5 +192,56 @@ class SaleController extends Controller
 
         // Update customer's has_utang status
         Customer::where('id', $sale->customer_id)->update(['has_utang' => true]);
+    }
+
+    /**
+     * Deduct amount from customer's running balance.
+     */
+    private function deductFromRunningBalance(int $customerId, float $deductionAmount): void
+    {
+        $currentMonth = now()->month;
+        $currentYear = now()->year;
+
+        // Find existing utang tracking for current month
+        $currentTracking = UtangTracking::where('customer_id', $customerId)
+            ->whereMonth('computation_date', $currentMonth)
+            ->whereYear('computation_date', $currentYear)
+            ->first();
+
+        if ($currentTracking) {
+            // Deduct from existing record
+            $currentTracking->decrement('beginning_balance', $deductionAmount);
+            
+            // If balance is now zero or negative, update customer's has_utang status
+            if ($currentTracking->fresh()->beginning_balance <= 0) {
+                Customer::where('id', $customerId)->update(['has_utang' => false]);
+            }
+        } else {
+            // Get the most recent tracking from previous months
+            $previousTracking = UtangTracking::where('customer_id', $customerId)
+                ->where('computation_date', '<', now()->startOfMonth())
+                ->orderBy('computation_date', 'desc')
+                ->first();
+
+            if ($previousTracking) {
+                $customer = Customer::find($customerId);
+                $interestRate = $customer->getEffectiveInterestRate();
+                
+                // Calculate balance with interest from previous month and subtract deduction
+                $balanceWithInterest = $previousTracking->beginning_balance * (1 + ($interestRate / 100));
+                $newBalance = $balanceWithInterest - $deductionAmount;
+
+                UtangTracking::create([
+                    'user_id' => auth()->id(),
+                    'customer_id' => $customerId,
+                    'beginning_balance' => max(0, $newBalance), // Ensure non-negative
+                    'computation_date' => now()->startOfMonth(),
+                    'interest_rate' => $interestRate,
+                ]);
+
+                // Update customer's has_utang status
+                Customer::where('id', $customerId)->update(['has_utang' => $newBalance > 0]);
+            }
+        }
     }
 }
