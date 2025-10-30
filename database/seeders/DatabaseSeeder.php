@@ -40,11 +40,11 @@ class DatabaseSeeder extends Seeder
 
         // SEED CUSTOMER - atleast 5 customers
         DB::table('customers')->insert([
-            ['user_id' => $user->id, 'name' => 'Alice Johnson', 'mobile_number' => '09171234567'],
-            ['user_id' => $user->id, 'name' => 'Bob Smith', 'mobile_number' => '09179876543'],
-            ['user_id' => $user->id, 'name' => 'Charlie Brown', 'mobile_number' => '09281234567'],
-            ['user_id' => $user->id, 'name' => 'Diana Prince', 'mobile_number' => '09381234567'],
-            ['user_id' => $user->id, 'name' => 'Ethan Hunt', 'mobile_number' => '09481234567'],
+            ['user_id' => $user->id, 'name' => 'Alice Johnson', 'mobile_number' => '09171234567', 'interest_rate' => 3.00],
+            ['user_id' => $user->id, 'name' => 'Bob Smith', 'mobile_number' => '09179876543', 'interest_rate' => 3.00],
+            ['user_id' => $user->id, 'name' => 'Charlie Brown', 'mobile_number' => '09281234567', 'interest_rate' => 3.00],
+            ['user_id' => $user->id, 'name' => 'Diana Prince', 'mobile_number' => '09381234567', 'interest_rate' => 3.00],
+            ['user_id' => $user->id, 'name' => 'Ethan Hunt', 'mobile_number' => '09481234567', 'interest_rate' => 3.00],
         ]);
 
         // SEED CATEGORIES - context mini grocery store atleast 5 categories. Group by type of products

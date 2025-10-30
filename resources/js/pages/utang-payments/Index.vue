@@ -405,14 +405,8 @@ watch(selectedCustomerId, (newCustomerId) => {
                                             </button>
                                             
                                             <!-- Amount -->
-                                            <span 
-                                                :class="{
-                                                    'text-green-600 dark:text-green-400': transaction.type === 'payment',
-                                                    'text-red-600 dark:text-red-400': transaction.type !== 'payment'
-                                                }"
-                                                class="text-sm font-semibold"
-                                            >
-                                                {{ transaction.type === 'payment' ? '-' : '+' }}{{ transaction.formatted_amount }}
+                                            <span class="text-sm font-semibold text-green-600 dark:text-green-400">
+                                                {{ transaction.formatted_amount }}
                                             </span>
                                         </div>
                                     </div>
