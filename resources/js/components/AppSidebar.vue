@@ -40,7 +40,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Utang Payment',
-        href: '',
+        href: '/utang-payments',
         icon: Banknote,
     },
     {

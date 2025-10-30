@@ -16,6 +16,8 @@ class Sale extends Model
         'customer_id',
         'total_amount',
         'paid_amount',
+        'previous_balance',
+        'new_balance',
         'invoice_number',
         'payment_type',
         'transaction_date',
@@ -27,6 +29,8 @@ class Sale extends Model
         return [
             'total_amount' => 'decimal:2',
             'paid_amount' => 'decimal:2',
+            'previous_balance' => 'decimal:2',
+            'new_balance' => 'decimal:2',
             'transaction_date' => 'datetime',
         ];
     }

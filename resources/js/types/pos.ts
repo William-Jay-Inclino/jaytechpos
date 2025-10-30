@@ -14,13 +14,67 @@ export interface Customer {
     updated_at: string;
 }
 
+export interface UtangPayment {
+    id: number;
+    user_id: number;
+    customer_id: number;
+    payment_amount: number;
+    payment_date: string;
+    notes: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface UtangTracking {
+    id: number;
+    user_id: number;
+    customer_id: number;
+    beginning_balance: number;
+    computation_date: string;
+    interest_rate: number;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface CustomerTransaction {
+    id: number;
+    type: 'payment' | 'tracking' | 'sale';
+    date: string;
+    amount: number;
+    formatted_amount: string;
+    description: string;
+    notes?: string;
+    interest_rate?: number;
+    invoice_number?: string;
+    payment_type?: 'cash' | 'utang';
+    total_amount?: number;
+    paid_amount?: number;
+    previous_balance?: number;
+    new_balance?: number;
+    formatted_previous_balance?: string;
+    formatted_new_balance?: string;
+    computation_date?: string;
+    sales_items?: Array<{
+        id: number;
+        product_name: string;
+        quantity: number;
+        unit_price: number;
+        total_price: number;
+    }>;
+}
+
 export interface Sale {
     id: number;
     user_id: number;
     customer_id: number;
     total_amount: number;
-    vat_amount: number;
-    net_amount: number;
+    paid_amount: number;
+    previous_balance: number;
+    new_balance: number;
+    invoice_number: string;
+    payment_type: 'cash' | 'utang';
+    transaction_date: string;
+    notes: string | null;
     created_at: string;
     updated_at: string;
 

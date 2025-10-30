@@ -17,13 +17,17 @@ class UtangPayment extends Model
         'user_id',
         'customer_id',
         'payment_amount',
+        'previous_balance',
+        'new_balance',
         'payment_date',
         'notes',
     ];
 
     protected $casts = [
         'payment_amount' => 'float',
-        'payment_date' => 'date',
+        'previous_balance' => 'float',
+        'new_balance' => 'float',
+        'payment_date' => 'datetime',
     ];
 
     // Relationships
@@ -37,7 +41,6 @@ class UtangPayment extends Model
     {
         return $this->belongsTo(Customer::class);
     }
-
 
     // Scopes
     public function scopeByCustomer($query, int $customerId)

@@ -19,6 +19,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 // Types
 import type { BreadcrumbItem } from '@/types';
 import { Product } from '@/types/pos';
+import { formatManilaDateTime, getCurrentManilaDateTime } from '@/utils/timezone';
 import { Customer, CartItem } from '@/types/pos';
 
 const props = defineProps<{ 
@@ -640,7 +641,7 @@ watch(amountTendered, () => {
                         </div>
                         <div class="flex justify-between">
                             <span>Date:</span>
-                            <span>{{ new Date(saleData.transaction_date).toLocaleString() }}</span>
+                            <span>{{ formatManilaDateTime(saleData.transaction_date) }}</span>
                         </div>
                         <div class="flex justify-between">
                             <span>Customer:</span>
@@ -741,7 +742,7 @@ watch(amountTendered, () => {
                         <div class="border-b border-gray-300 dark:border-gray-600 my-3"></div>
                         <div class="text-center text-xs text-gray-500">
                             <p>Thank you for your business!</p>
-                            <p>{{ new Date().toLocaleString() }}</p>
+                            <p>{{ formatManilaDateTime(getCurrentManilaDateTime()) }}</p>
                         </div>
                     </div>
                 </div>
