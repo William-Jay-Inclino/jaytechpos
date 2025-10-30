@@ -31,7 +31,7 @@ class SaleResource extends JsonResource
             'is_utang' => $this->payment_type === 'utang',
             'notes' => $this->notes,
             'cashier' => $this->user->name,
-            'items' => SalesItemResource::collection($this->whenLoaded('salesItems')),
+            'items' => SalesItemResource::collection($this->whenLoaded('salesItems'))->resolve(),
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
         ];

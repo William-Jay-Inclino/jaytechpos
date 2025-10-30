@@ -47,12 +47,17 @@ class UtangPaymentController extends Controller
                 'payment_amount' => $request->payment_amount,
                 'previous_balance' => $currentBalance,
                 'new_balance' => $newBalance,
-                'payment_date' => $request->payment_date,
+                'payment_date' => now(), // Use current timestamp for accurate ordering
                 'notes' => $request->notes,
             ]);
 
             // Update the customer's utang tracking balance
             $this->updateUtangBalance($customer, $request->payment_amount);
+
+            // Update has_utang status if balance is now zero
+            if ($newBalance <= 0) {
+                $customer->update(['has_utang' => false]);
+            }
 
             return $payment;
         });

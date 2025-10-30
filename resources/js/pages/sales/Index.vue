@@ -25,7 +25,7 @@ import { Customer, CartItem } from '@/types/pos';
 const props = defineProps<{ 
     products: Product[];
     customers: Customer[];
-    sale?: SaleData;
+    sale?: SaleResponse;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -293,10 +293,10 @@ onUnmounted(() => {
 });
 
 // Watch for sale prop changes to show success modal
-watch(() => props.sale, (newSale: SaleData | undefined) => {
-    if (newSale && newSale.data) {
-        console.log('✅ Sale completed successfully!', newSale.data.invoice_number);
-        saleData.value = newSale.data;
+watch(() => props.sale, (newSale: SaleResponse | undefined) => {
+    if (newSale) {
+        console.log('✅ Sale completed successfully!', newSale);
+        saleData.value = newSale;
         showSuccessModal.value = true;
         isProcessing.value = false;
     }

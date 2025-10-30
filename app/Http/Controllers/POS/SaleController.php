@@ -120,7 +120,7 @@ class SaleController extends Controller
             $sale->new_customer_balance = $sale->new_balance;
 
             // Prepare response data using the resource
-            $saleData = new SaleResource($sale);
+            $saleData = (new SaleResource($sale))->resolve();
 
             return Inertia::render('sales/Index', [
                 'products' => Product::orderBy('product_name')->get(),
@@ -136,7 +136,13 @@ class SaleController extends Controller
             DB::rollback();
             Log::error('Sale creation failed: '.$e->getMessage());
 
-            return back()->withErrors([
+            return Inertia::render('sales/Index', [
+                'products' => Product::orderBy('product_name')->get(),
+                'customers' => CustomerResource::collection(
+                    Customer::where('user_id', auth()->id())
+                        ->orderBy('name')
+                        ->get()
+                )->resolve(),
                 'error' => 'Failed to process the sale. Please try again.',
             ]);
         }
@@ -148,16 +154,17 @@ class SaleController extends Controller
     private function generateInvoiceNumber(): string
     {
         $prefix = 'INV-'.date('Y').'-';
-        $lastSale = Sale::where('invoice_number', 'like', $prefix.'%')
-            ->orderBy('id', 'desc')
-            ->first();
+        
+        // Get all sales with the current year prefix and extract numbers
+        $existingNumbers = Sale::where('invoice_number', 'like', $prefix.'%')
+            ->pluck('invoice_number')
+            ->map(function ($invoiceNumber) use ($prefix) {
+                $numberPart = substr($invoiceNumber, strlen($prefix));
+                return (int) $numberPart;
+            })
+            ->max();
 
-        if ($lastSale) {
-            $lastNumber = (int) substr($lastSale->invoice_number, strlen($prefix));
-            $nextNumber = $lastNumber + 1;
-        } else {
-            $nextNumber = 1;
-        }
+        $nextNumber = $existingNumbers ? $existingNumbers + 1 : 1;
 
         return $prefix.str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
     }

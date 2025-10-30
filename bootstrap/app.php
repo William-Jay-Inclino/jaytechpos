@@ -22,6 +22,20 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
         ]);
     })
+    ->withSchedule(function ($schedule) {
+        // Run monthly utang tracking on 1st of every month at 12:01 AM
+        $schedule->command('utang:process-monthly-tracking')
+            ->monthlyOn(1, '00:01')
+            ->withoutOverlapping()
+            ->onOneServer();
+            
+        // Also run once when application starts (if not already run this month)
+        $schedule->command('utang:process-monthly-tracking')
+            ->daily()
+            ->at('00:05')
+            ->withoutOverlapping()
+            ->onOneServer();
+    })
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();
