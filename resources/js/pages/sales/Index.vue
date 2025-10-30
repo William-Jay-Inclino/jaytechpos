@@ -699,12 +699,16 @@ watch(amountTendered, () => {
                                     <span>Change:</span>
                                     <span>₱{{ (saleData.change_amount || 0).toFixed(2) }}</span>
                                 </div>
-                                <div v-if="saleData.balance_payment && saleData.balance_payment > 0" class="flex justify-between font-semibold text-blue-600 dark:text-blue-400">
-                                    <span>Payment Towards Utang:</span>
+                                <div v-if="saleData.balance_payment && saleData.balance_payment > 0" class="flex justify-between">
+                                    <span>Payment Towards Balance:</span>
                                     <span>₱{{ (saleData.balance_payment || 0).toFixed(2) }}</span>
                                 </div>
-                                <div v-if="saleData.customer_id" class="flex justify-between font-semibold text-blue-600 dark:text-blue-400">
-                                    <span>Current Utang:</span>
+                                <div v-if="saleData.customer_id && saleData.original_customer_balance !== undefined" class="flex justify-between">
+                                    <span>Previous Balance:</span>
+                                    <span>₱{{ (saleData.original_customer_balance || 0).toFixed(2) }}</span>
+                                </div>
+                                <div v-if="saleData.customer_id" class="flex justify-between">
+                                    <span>New Balance:</span>
                                     <span>₱{{ (saleData.new_customer_balance || 0).toFixed(2) }}</span>
                                 </div>
                             </div>
@@ -723,11 +727,11 @@ watch(amountTendered, () => {
                                     <span>Amount Paid:</span>
                                     <span>₱{{ saleData.paid_amount.toFixed(2) }}</span>
                                 </div>
-                                <div v-if="saleData.original_customer_balance !== undefined" class="flex justify-between text-gray-600 dark:text-gray-400">
+                                <div v-if="saleData.original_customer_balance !== undefined" class="flex justify-between">
                                     <span>Previous Balance:</span>
                                     <span>₱{{ (saleData.original_customer_balance || 0).toFixed(2) }}</span>
                                 </div>
-                                <div class="flex justify-between font-semibold text-red-600 dark:text-red-400">
+                                <div class="flex justify-between">
                                     <span>New Balance:</span>
                                     <span>₱{{ (saleData.new_customer_balance || 0).toFixed(2) }}</span>
                                 </div>

@@ -35,12 +35,12 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'New Sale',
-        href: 'sales',
+        href: '/sales',
         icon: ShoppingCart,
     },
     {
         title: 'Utang Payment',
-        href: 'sales/create',
+        href: '',
         icon: Banknote,
     },
     {
