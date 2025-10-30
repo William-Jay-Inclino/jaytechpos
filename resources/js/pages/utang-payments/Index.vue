@@ -172,27 +172,22 @@ watch(selectedCustomerId, (newCustomerId) => {
     <Head title="Utang Payment" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-            <!-- Header -->
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-                <h1 class="text-lg sm:text-xl lg:text-2xl font-semibold tracking-tight">
-                    Utang Payment
-                </h1>
-            </div>
+        <div class="w-full px-4 py-6 lg:px-8 lg:py-10">
+            <!-- Page Header -->
+            <div class="max-w-7xl mx-auto">
+                <div class="flex items-center gap-4 mb-8">
+                    <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">💳 Utang Payment</h1>
+                </div>
 
-            <!-- Main Content - Two Column Layout -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                
-                <!-- Left Column - Payment Form -->
-                <div class="space-y-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Record Payment</CardTitle>
-                            <CardDescription>
-                                Record a new utang payment for a customer
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
+                <!-- Main Layout - 2 Columns on Desktop, 1 Column on Mobile -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 lg:items-start">
+                    
+                    <!-- Left Column - Payment Form (4 columns on desktop) -->
+                    <div class="lg:col-span-4 space-y-6 flex flex-col">
+                        <!-- Payment Form Card -->
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">💰 Record Payment</h2>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">Record a new utang payment for a customer</p>
                             <Form
                                 action="/utang-payments"
                                 method="post"
@@ -200,13 +195,15 @@ watch(selectedCustomerId, (newCustomerId) => {
                                 v-slot="{ errors, processing }"
                                 @success="handleFormSuccess"
                                 @error="handleFormError"
-                                class="space-y-4"
+                                class="space-y-6"
                             >
                                 <!-- Customer Selection -->
-                                <div class="space-y-2">
-                                    <Label for="customer_id">Customer *</Label>
+                                <div class="space-y-3">
+                                    <Label for="customer_id" class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Customer <span class="text-red-500">*</span>
+                                    </Label>
                                     <Select v-model="selectedCustomerId" name="customer_id">
-                                        <SelectTrigger>
+                                        <SelectTrigger class="h-12">
                                             <SelectValue placeholder="Select a customer" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -216,17 +213,22 @@ watch(selectedCustomerId, (newCustomerId) => {
                                                 :value="customer.id.toString()"
                                             >
                                                 {{ customer.name }}
+                                                <span v-if="customer.mobile_number" class="text-gray-500 ml-2">
+                                                    ({{ customer.mobile_number }})
+                                                </span>
                                             </SelectItem>
                                         </SelectContent>
                                     </Select>
-                                    <div v-if="errors.customer_id" class="text-sm text-red-600">
+                                    <div v-if="errors.customer_id" class="text-sm text-red-600 dark:text-red-400 px-4 py-2 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
                                         {{ errors.customer_id }}
                                     </div>
                                 </div>
 
                                 <!-- Payment Amount -->
-                                <div class="space-y-2">
-                                    <Label for="payment_amount">Payment Amount *</Label>
+                                <div class="space-y-3">
+                                    <Label for="payment_amount" class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Payment Amount <span class="text-red-500">*</span>
+                                    </Label>
                                     <Input
                                         id="payment_amount"
                                         name="payment_amount"
@@ -235,29 +237,35 @@ watch(selectedCustomerId, (newCustomerId) => {
                                         min="0.01"
                                         placeholder="0.00"
                                         v-model="paymentAmount"
+                                        class="h-12 text-right text-lg font-semibold border-2 focus:ring-2 focus:ring-blue-500"
                                     />
-                                    <div v-if="errors.payment_amount" class="text-sm text-red-600">
+                                    <div v-if="errors.payment_amount" class="text-sm text-red-600 dark:text-red-400 px-4 py-2 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
                                         {{ errors.payment_amount }}
                                     </div>
                                 </div>
 
                                 <!-- Payment Date -->
-                                <div class="space-y-2">
-                                    <Label for="payment_date">Payment Date & Time *</Label>
+                                <div class="space-y-3">
+                                    <Label for="payment_date" class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Payment Date & Time <span class="text-red-500">*</span>
+                                    </Label>
                                     <Input
                                         id="payment_date"
                                         name="payment_date"
                                         type="datetime-local"
                                         v-model="paymentDate"
+                                        class="h-12 border-2 focus:ring-2 focus:ring-blue-500"
                                     />
-                                    <div v-if="errors.payment_date" class="text-sm text-red-600">
+                                    <div v-if="errors.payment_date" class="text-sm text-red-600 dark:text-red-400 px-4 py-2 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
                                         {{ errors.payment_date }}
                                     </div>
                                 </div>
 
                                 <!-- Notes -->
-                                <div class="space-y-2">
-                                    <Label for="notes">Notes</Label>
+                                <div class="space-y-3">
+                                    <Label for="notes" class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Notes <span class="text-gray-500">(Optional)</span>
+                                    </Label>
                                     <Textarea
                                         id="notes"
                                         name="notes"
@@ -265,8 +273,9 @@ watch(selectedCustomerId, (newCustomerId) => {
                                         rows="3"
                                         maxlength="1000"
                                         v-model="notes"
+                                        class="border-2 focus:ring-2 focus:ring-blue-500"
                                     />
-                                    <div v-if="errors.notes" class="text-sm text-red-600">
+                                    <div v-if="errors.notes" class="text-sm text-red-600 dark:text-red-400 px-4 py-2 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
                                         {{ errors.notes }}
                                     </div>
                                 </div>
@@ -275,145 +284,162 @@ watch(selectedCustomerId, (newCustomerId) => {
                                 <Button 
                                     type="submit" 
                                     :disabled="processing || !isFormValid"
-                                    class="w-full"
+                                    class="w-full h-12 text-lg font-semibold bg-green-600 hover:bg-green-700 text-white shadow-lg"
                                 >
-                                    <span v-if="processing">Recording Payment...</span>
-                                    <span v-else>Record Payment</span>
+                                    <span v-if="processing" class="flex items-center gap-2">
+                                        <div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                        Recording Payment...
+                                    </span>
+                                    <span v-else class="flex items-center gap-2">
+                                        💰 Record Payment
+                                    </span>
                                 </Button>
                             </Form>
-                        </CardContent>
-                    </Card>
+                        </div>
 
-                    <!-- Customer Information Card -->
-                    <Card v-if="selectedCustomer">
-                        <CardHeader>
-                            <CardTitle>Customer Information</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div class="space-y-3">
-                                <div class="flex justify-between">
-                                    <span class="text-sm text-muted-foreground">Mobile Number:</span>
-                                    <span class="text-sm font-medium">{{ selectedCustomer.mobile_number || 'N/A' }}</span>
+                        <!-- Customer Information Card -->
+                        <div v-if="selectedCustomer" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">👤 Customer Information</h2>
+                            
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Mobile Number:</span>
+                                    <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ selectedCustomer.mobile_number || 'N/A' }}</span>
                                 </div>
-                                <div class="flex justify-between">
-                                    <span class="text-sm text-muted-foreground">Interest Rate:</span>
-                                    <span class="text-sm font-medium">{{ selectedCustomer.effective_interest_rate?.toFixed(2) || '0.00' }}%</span>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Interest Rate:</span>
+                                    <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ selectedCustomer.effective_interest_rate?.toFixed(2) || '0.00' }}%</span>
                                 </div>
-                                <div class="flex justify-between">
-                                    <span class="text-sm text-muted-foreground">Current Balance:</span>
-                                    <span class="text-sm font-medium text-red-600 dark:text-red-400">
+                                <div class="flex justify-between items-center p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                                    <span class="text-sm font-medium text-red-800 dark:text-red-200">Current Balance:</span>
+                                    <span class="text-xl font-bold text-red-900 dark:text-red-100">
                                         {{ formatCurrency(selectedCustomer.running_utang_balance || 0) }}
                                     </span>
                                 </div>
                             </div>
-                        </CardContent>
-                    </Card>
-                </div>
+                        </div>
+                    </div>
 
-                <!-- Right Column - Transaction History -->
-                <div>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Transaction History</CardTitle>
-                            <CardDescription>
+                    <!-- Right Column - Transaction History (8 columns on desktop) -->
+                    <div class="lg:col-span-8 flex flex-col h-full">
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6 flex-1 flex flex-col">
+                            <h2 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4">📋 Transaction History</h2>
+                            <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-4 sm:mb-6">
                                 <span v-if="selectedCustomer">
-                                    Recent transactions for {{ selectedCustomer.name }}
+                                    Recent transactions for <span class="font-semibold">{{ selectedCustomer.name }}</span>
                                 </span>
                                 <span v-else>
                                     Select a customer to view transaction history
                                 </span>
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
+                            </p>
                             <!-- Loading State -->
-                            <div v-if="loadingTransactions" class="flex items-center justify-center py-8">
-                                <div class="text-sm text-muted-foreground">Loading transactions...</div>
+                            <div v-if="loadingTransactions" class="flex flex-col items-center justify-center py-8 sm:py-12 space-y-3">
+                                <div class="w-6 h-6 sm:w-8 sm:h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Loading transactions...</div>
                             </div>
 
                             <!-- No Customer Selected -->
-                            <div v-else-if="!selectedCustomer" class="flex items-center justify-center py-8">
-                                <div class="text-sm text-muted-foreground">No customer selected</div>
+                            <div v-else-if="!selectedCustomer" class="text-center py-8 sm:py-12 space-y-3">
+                                <div class="w-12 h-12 sm:w-16 sm:h-16 mx-auto bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                                    <span class="text-xl sm:text-2xl">👤</span>
+                                </div>
+                                <div>
+                                    <p class="text-sm sm:text-base font-medium text-gray-600 dark:text-gray-400">No customer selected</p>
+                                    <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-500">Choose a customer to view their transaction history</p>
+                                </div>
                             </div>
 
                             <!-- No Transactions -->
-                            <div v-else-if="transactions.length === 0" class="flex items-center justify-center py-8">
-                                <div class="text-sm text-muted-foreground">No transactions found</div>
+                            <div v-else-if="transactions.length === 0" class="text-center py-8 sm:py-12 space-y-3">
+                                <div class="w-12 h-12 sm:w-16 sm:h-16 mx-auto bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                                    <span class="text-xl sm:text-2xl">📄</span>
+                                </div>
+                                <div>
+                                    <p class="text-sm sm:text-base font-medium text-gray-600 dark:text-gray-400">No transactions found</p>
+                                    <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-500">This customer has no transaction history yet</p>
+                                </div>
                             </div>
 
                             <!-- Transaction List -->
-                            <div v-else class="space-y-3 max-h-96 overflow-y-auto">
+                            <div v-else class="space-y-3 sm:space-y-4 flex-1 overflow-y-auto">
                                 <div 
                                     v-for="transaction in transactions" 
                                     :key="`${transaction.type}-${transaction.id}`"
-                                    class="p-3 bg-muted/30 rounded-lg border"
+                                    class="p-3 sm:p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                                 >
-                                    <div class="flex items-start justify-between">
+                                    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-3 sm:space-y-0">
                                         <div class="flex-1 min-w-0">
-                                            <div class="flex items-center gap-2 mb-1">
+                                            <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
                                                 <span 
-                                                    :class="getTransactionTypeColor(transaction.type)"
-                                                    class="text-xs font-medium px-2 py-1 rounded-full bg-muted"
+                                                    :class="[
+                                                        'text-xs font-semibold px-2 sm:px-3 py-1 rounded-full w-fit',
+                                                        transaction.type === 'payment' ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400' :
+                                                        transaction.type === 'tracking' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400' :
+                                                        'bg-orange-100 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400'
+                                                    ]"
                                                 >
                                                     {{ getTransactionTypeLabel(transaction.type) }}
                                                 </span>
-                                                <span class="text-xs text-muted-foreground">
+                                                <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">
                                                     {{ formatDate(transaction.date) }}
                                                 </span>
                                             </div>
                                             
-                                            <p class="text-sm font-medium truncate mb-2">
+                                            <p class="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white mb-3 break-words">
                                                 {{ transaction.description }}
                                             </p>
 
                                             <!-- Sale-specific fields -->
-                                            <div v-if="transaction.type === 'sale'" class="space-y-1 mb-2">
-                                                <div class="flex items-center gap-4 text-xs">
-                                                    <span class="text-muted-foreground">
-                                                        Total: {{ formatCurrency(transaction.total_amount || 0) }}
+                                            <div v-if="transaction.type === 'sale'" class="space-y-2 mb-3">
+                                                <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm">
+                                                    <span class="text-gray-600 dark:text-gray-400">
+                                                        Total: <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(transaction.total_amount || 0) }}</span>
                                                     </span>
-                                                    <span class="text-muted-foreground">
-                                                        Paid: {{ getFormattedPaidAmount(transaction) }}
+                                                    <span class="text-gray-600 dark:text-gray-400">
+                                                        Paid: <span class="font-semibold text-gray-900 dark:text-white">{{ getFormattedPaidAmount(transaction) }}</span>
                                                     </span>
-                                                    <Badge :variant="transaction.payment_type === 'cash' ? 'default' : 'destructive'" class="text-xs">
+                                                    <Badge :variant="transaction.payment_type === 'cash' ? 'default' : 'destructive'" class="text-xs font-medium w-fit">
                                                         {{ transaction.payment_type?.toUpperCase() }}
                                                     </Badge>
                                                 </div>
-                                                <div v-if="transaction.notes" class="text-xs text-muted-foreground">
-                                                    Notes: {{ transaction.notes }}
+                                                <div v-if="transaction.notes" class="text-xs text-gray-600 dark:text-gray-400 p-2 bg-gray-100 dark:bg-gray-600 rounded">
+                                                    <span class="font-medium">Notes:</span> {{ transaction.notes }}
                                                 </div>
                                             </div>
                                             
                                             <!-- Balance changes -->
-                                            <div v-if="(transaction.type === 'payment' || transaction.type === 'sale' || transaction.type === 'tracking') && transaction.previous_balance !== undefined" class="text-xs text-muted-foreground">
-                                                <span v-if="transaction.type === 'tracking'">
+                                            <div v-if="(transaction.type === 'payment' || transaction.type === 'sale' || transaction.type === 'tracking') && transaction.previous_balance !== undefined" class="text-xs text-gray-600 dark:text-gray-400 p-2 bg-gray-100 dark:bg-gray-600 rounded">
+                                                <span v-if="transaction.type === 'tracking'" class="font-medium break-words">
                                                     Previous Month: {{ transaction.formatted_previous_balance }} → Current Month: {{ transaction.formatted_new_balance }}
                                                 </span>
-                                                <span v-else>
+                                                <span v-else class="font-medium break-words">
                                                     Balance: {{ transaction.formatted_previous_balance }} → {{ transaction.formatted_new_balance }}
                                                 </span>
                                             </div>
                                         </div>
                                         
-                                        <div class="flex items-center gap-2 ml-4">
+                                        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 sm:ml-4">
                                             <!-- View Details Button for Sales -->
-                                            <button 
+                                            <Button
                                                 v-if="transaction.type === 'sale'"
+                                                variant="ghost"
+                                                size="sm"
                                                 @click="openSaleDetails(transaction)"
-                                                class="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                                                class="text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 w-fit"
                                             >
                                                 View Details
-                                            </button>
+                                            </Button>
                                             
                                             <!-- Amount -->
-                                            <span class="text-sm font-semibold text-green-600 dark:text-green-400">
+                                            <span class="text-sm sm:text-lg font-bold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2 sm:px-3 py-1 rounded-lg w-fit">
                                                 {{ transaction.formatted_amount }}
                                             </span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </CardContent>
-                    </Card>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
