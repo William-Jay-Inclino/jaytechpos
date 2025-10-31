@@ -25,8 +25,13 @@ class ProductController extends Controller
             ->orderBy('product_name')
             ->get();
 
+        $categories = ProductCategory::activeOwned()
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
         return Inertia::render('products/Index', [
             'products' => ProductResource::collection($products)->resolve(),
+            'categories' => $categories,
         ]);
     }
 

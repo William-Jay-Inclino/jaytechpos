@@ -28,7 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
             ->monthlyOn(1, '00:01')
             ->withoutOverlapping()
             ->onOneServer();
-            
+
         // Also run once when application starts (if not already run this month)
         $schedule->command('utang:process-monthly-tracking')
             ->daily()

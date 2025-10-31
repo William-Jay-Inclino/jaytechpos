@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
 import ProductSuccessModal from '@/components/modals/ProductSuccessModal.vue';
+import ProductCategoryModal from '@/components/modals/ProductCategoryModal.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,6 +16,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { showSuccessToast } from '@/lib/toast';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Settings } from 'lucide-vue-next';
 import { ref } from 'vue';
 import axios from 'axios';
 
@@ -52,6 +54,8 @@ const form = useForm({
 const showSuccessModal = ref(false);
 const createdProduct = ref(null);
 const isSubmitting = ref(false);
+const showCategoryModal = ref(false);
+const categories = ref<Category[]>([...props.categories]);
 
 async function submit() {
     if (isSubmitting.value) return;
@@ -95,6 +99,18 @@ async function submit() {
         isSubmitting.value = false;
     }
 }
+
+async function handleCategoryUpdated() {
+    // Refresh only active categories without page reload
+    try {
+        const response = await axios.get('/api/product-categories/active');
+        if (response.data.success) {
+            categories.value = response.data.categories;
+        }
+    } catch (error) {
+        console.error('Error refreshing categories:', error);
+    }
+}
 </script>
 
 <template>
@@ -136,7 +152,19 @@ async function submit() {
                     <div class="grid gap-6 md:grid-cols-2">
                         <!-- Category -->
                         <div class="grid gap-2">
-                            <Label for="category_id">Category</Label>
+                            <div class="flex items-center justify-between">
+                                <Label for="category_id">Category</Label>
+                                <Button 
+                                    @click="showCategoryModal = true" 
+                                    variant="outline" 
+                                    size="sm" 
+                                    type="button"
+                                    class="gap-1 text-xs"
+                                >
+                                    <Settings class="h-3 w-3" />
+                                    Manage Categories
+                                </Button>
+                            </div>
                             <Select v-model="form.category_id">
                                 <SelectTrigger
                                     class="dark:border-gray-700 dark:bg-gray-800"
@@ -279,6 +307,12 @@ async function submit() {
             v-model:open="showSuccessModal" 
             :product="createdProduct"
             mode="create"
+        />
+
+        <!-- Category Management Modal -->
+        <ProductCategoryModal 
+            v-model:open="showCategoryModal"
+            @category-updated="handleCategoryUpdated"
         />
     </AppLayout>
 </template>

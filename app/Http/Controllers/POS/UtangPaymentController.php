@@ -9,6 +9,7 @@ use App\Models\Customer;
 use App\Models\UtangPayment;
 use App\Services\UtangTrackingService;
 use App\Traits\HandlesTimezone;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -16,7 +17,7 @@ use Inertia\Response;
 
 class UtangPaymentController extends Controller
 {
-    use HandlesTimezone;
+    use AuthorizesRequests, HandlesTimezone;
 
     public function __construct(
         protected UtangTrackingService $utangTrackingService
@@ -24,6 +25,8 @@ class UtangPaymentController extends Controller
 
     public function index(): Response
     {
+        $this->authorize('viewAny', UtangPayment::class);
+
         $customers = CustomerResource::collection(
             Customer::ownedBy()
                 ->orderBy('name')
@@ -37,6 +40,8 @@ class UtangPaymentController extends Controller
 
     public function store(StoreUtangPaymentRequest $request): RedirectResponse
     {
+        $this->authorize('createForCustomer', [UtangPayment::class, $request->customer_id]);
+
         $payment = DB::transaction(function () use ($request) {
             // Get current balance before payment
             $customer = Customer::findOrFail($request->customer_id);

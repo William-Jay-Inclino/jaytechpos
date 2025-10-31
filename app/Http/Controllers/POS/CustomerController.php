@@ -9,6 +9,7 @@ use App\Http\Resources\CustomerResource;
 use App\Models\Customer;
 use App\Models\Setting;
 use App\Services\CustomerService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -16,6 +17,8 @@ use Inertia\Response;
 
 class CustomerController extends Controller
 {
+    use AuthorizesRequests;
+
     public function __construct(
         protected CustomerService $customerService
     ) {}
@@ -68,10 +71,7 @@ class CustomerController extends Controller
      */
     public function edit(Customer $customer): Response
     {
-        // Ensure customer belongs to authenticated user
-        if ($customer->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized access to customer data.');
-        }
+        $this->authorize('view', $customer);
 
         return Inertia::render('customers/Edit', [
             'customer' => (new CustomerResource($customer))->resolve(),
@@ -84,6 +84,8 @@ class CustomerController extends Controller
      */
     public function update(UpdateCustomerRequest $request, Customer $customer): RedirectResponse
     {
+        $this->authorize('update', $customer);
+
         $customer->update([
             'name' => $request->validated('name'),
             'mobile_number' => $request->validated('mobile_number'),
@@ -100,10 +102,7 @@ class CustomerController extends Controller
      */
     public function destroy(Customer $customer): RedirectResponse
     {
-        // Ensure customer belongs to authenticated user
-        if ($customer->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized access to customer data.');
-        }
+        $this->authorize('delete', $customer);
 
         // Check if customer has any related records
         if ($customer->sales()->exists() ||
@@ -124,10 +123,7 @@ class CustomerController extends Controller
      */
     public function transactions(Customer $customer): Response
     {
-        // Ensure customer belongs to authenticated user
-        if ($customer->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized access to customer data.');
-        }
+        $this->authorize('view', $customer);
 
         return Inertia::render('customers/Transactions', [
             'customer' => (new CustomerResource($customer))->resolve(),
@@ -139,10 +135,7 @@ class CustomerController extends Controller
      */
     public function getTransactions(Customer $customer): JsonResponse
     {
-        // Ensure customer belongs to authenticated user
-        if ($customer->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized access to customer data.');
-        }
+        $this->authorize('view', $customer);
 
         $transactions = $this->customerService->getCustomerTransactions($customer);
 

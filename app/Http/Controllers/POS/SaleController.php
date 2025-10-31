@@ -12,6 +12,7 @@ use App\Models\Sale;
 use App\Models\SalesItem;
 use App\Services\SaleService;
 use App\Services\UtangTrackingService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
@@ -19,6 +20,8 @@ use Inertia\Response;
 
 class SaleController extends Controller
 {
+    use AuthorizesRequests;
+
     public function __construct(
         protected SaleService $saleService,
         protected UtangTrackingService $utangTrackingService
@@ -26,6 +29,8 @@ class SaleController extends Controller
 
     public function index(): Response
     {
+        $this->authorize('viewAny', Sale::class);
+
         $products = Product::availableForSale()
             ->orderBy('product_name')
             ->get();
@@ -44,6 +49,8 @@ class SaleController extends Controller
 
     public function store(StoreSaleRequest $request): Response
     {
+        $this->authorize('createForCustomer', [Sale::class, $request->validated('customer_id')]);
+
         try {
             DB::beginTransaction();
 

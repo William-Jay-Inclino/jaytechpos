@@ -4,85 +4,101 @@ namespace App\Http\Controllers\POS;
 
 use App\Http\Controllers\Controller;
 use App\Models\ProductCategory;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Inertia\Response;
 
 class ProductCategoryController extends Controller
 {
-    use AuthorizesRequests;
-
-    public function index(): Response
+    public function index()
     {
-        $this->authorize('viewAny', ProductCategory::class);
-
-        $product_categories = ProductCategory::where('user_id', auth()->id())
+        $categories = ProductCategory::ownedBy()
             ->orderBy('name')
             ->get();
 
-        return Inertia::render('product_categories/Index', [
-            'product_categories' => $product_categories,
+        return response()->json([
+            'success' => true,
+            'categories' => $categories,
         ]);
     }
 
-    public function create(): Response
+    public function active()
     {
-        $this->authorize('create', ProductCategory::class);
+        $categories = ProductCategory::activeOwned()
+            ->orderBy('name')
+            ->get(['id', 'name']);
 
-        return Inertia::render('product_categories/Create');
+        return response()->json([
+            'success' => true,
+            'categories' => $categories,
+        ]);
     }
 
     public function store(Request $request)
     {
-        $this->authorize('create', ProductCategory::class);
-
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:255',
+            'name' => 'required|string|max:255|unique:product_categories,name',
+            'description' => 'nullable|string|max:500',
+            'status' => 'required|in:active,inactive',
         ]);
 
         $validated['user_id'] = auth()->id();
 
-        ProductCategory::create($validated);
+        $category = ProductCategory::create($validated);
 
-        return redirect()
-            ->route('product-categories.index')
-            ->with('success', 'Product Category created successfully.');
+        return response()->json([
+            'success' => true,
+            'category' => $category,
+            'message' => 'Category created successfully!',
+        ], 201);
     }
 
-    public function edit(ProductCategory $product_category)
+    public function update(Request $request, ProductCategory $productCategory)
     {
-        $this->authorize('update', $product_category);
-
-        return Inertia::render('product_categories/Edit', [
-            'product_category' => $product_category,
-        ]);
-    }
-
-    public function update(Request $request, ProductCategory $product_category)
-    {
-        $this->authorize('update', $product_category);
+        // Ensure the category belongs to the authenticated user
+        if ($productCategory->user_id !== auth()->id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 403);
+        }
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:255',
+            'name' => 'required|string|max:255|unique:product_categories,name,'.$productCategory->id,
+            'description' => 'nullable|string|max:500',
+            'status' => 'required|in:active,inactive',
         ]);
 
-        $product_category->update($validated);
+        $productCategory->update($validated);
 
-        return back()->with('success', 'Product Category updated successfully.');
-
+        return response()->json([
+            'success' => true,
+            'category' => $productCategory->fresh(),
+            'message' => 'Category updated successfully!',
+        ]);
     }
 
-    public function destroy(ProductCategory $product_category)
+    public function destroy(ProductCategory $productCategory)
     {
-        $this->authorize('delete', $product_category);
+        // Ensure the category belongs to the authenticated user
+        if ($productCategory->user_id !== auth()->id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 403);
+        }
 
-        $product_category->delete();
+        // Check if category has products
+        if ($productCategory->products()->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cannot delete category with existing products',
+            ], 422);
+        }
 
-        return redirect()
-            ->route('product-categories.index')
-            ->with('success', 'Product Category deleted successfully.');
+        $productCategory->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Category deleted successfully!',
+        ]);
     }
 }

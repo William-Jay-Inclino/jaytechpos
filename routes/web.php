@@ -39,13 +39,7 @@ Route::middleware(['throttle:global'])->group(function () {
 
     // customers
     Route::get('customers/{customer}/transactions', [CustomerController::class, 'transactions'])->middleware(['auth', 'verified'])->name('customers.transactions');
-    Route::get('api/customers/{customer}/transactions', [CustomerController::class, 'getTransactions'])->middleware(['auth', 'verified'])->name('customers.api.transactions');
     Route::resource('customers', CustomerController::class)
-        ->middleware(['auth', 'verified'])
-        ->except(['show']);
-
-    // product categories
-    Route::resource('product-categories', ProductCategoryController::class)
         ->middleware(['auth', 'verified'])
         ->except(['show']);
 
@@ -53,6 +47,19 @@ Route::middleware(['throttle:global'])->group(function () {
     Route::resource('products', ProductController::class)
         ->middleware(['auth', 'verified'])
         ->except(['show']);
+
+    // API endpoints (JSON responses for AJAX calls)
+    Route::prefix('api')->middleware(['auth', 'verified'])->group(function () {
+        // Customer API endpoints
+        Route::get('customers/{customer}/transactions', [CustomerController::class, 'getTransactions'])->name('customers.api.transactions');
+
+        // Product Category API endpoints
+        Route::get('product-categories', [ProductCategoryController::class, 'index'])->name('product-categories.api.index');
+        Route::get('product-categories/active', [ProductCategoryController::class, 'active'])->name('product-categories.api.active');
+        Route::post('product-categories', [ProductCategoryController::class, 'store'])->name('product-categories.api.store');
+        Route::put('product-categories/{productCategory}', [ProductCategoryController::class, 'update'])->name('product-categories.api.update');
+        Route::delete('product-categories/{productCategory}', [ProductCategoryController::class, 'destroy'])->name('product-categories.api.destroy');
+    });
 
 });
 

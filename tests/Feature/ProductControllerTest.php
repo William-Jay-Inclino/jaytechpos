@@ -26,6 +26,7 @@ test('products index returns products with correct structure', function () {
     $response->assertInertia(fn ($assert) => $assert
         ->component('products/Index')
         ->has('products')
+        ->has('categories')
     );
 });
 
