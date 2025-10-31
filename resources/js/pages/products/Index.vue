@@ -11,9 +11,9 @@ import {
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { showConfirmDelete } from '@/lib/swal';
-import { showSuccessToast, showErrorToast } from '@/lib/toast';
+import { showSuccessToast } from '@/lib/toast';
 import { Product, type BreadcrumbItem } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import { LucideEdit, LucideTrash } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import axios from 'axios';
@@ -29,9 +29,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 const props = defineProps<{
     products: Product[];
 }>();
-
-// Form for deletion
-const form = useForm({});
 
 // Search functionality
 const search = ref('');

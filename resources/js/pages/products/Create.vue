@@ -114,7 +114,7 @@ async function submit() {
 
             <!-- Form Card -->
             <div
-                class="rounded-xl border bg-white p-6 shadow-sm sm:p-8 dark:border-gray-700 dark:bg-gray-900"
+                class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 sm:p-8 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none"
             >
                 <form @submit.prevent="submit" class="space-y-6">
                     <!-- Product Name -->

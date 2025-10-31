@@ -422,7 +422,7 @@ watch(amountTendered, () => {
                     <div class="space-y-6 lg:col-span-4">
                         <!-- Customer Selection Card -->
                         <div
-                            class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                            class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none"
                         >
                             <h2
                                 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white"
@@ -511,7 +511,7 @@ watch(amountTendered, () => {
 
                         <!-- Payment Method Card -->
                         <div
-                            class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                            class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none"
                         >
                             <h2
                                 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white"
@@ -602,7 +602,7 @@ watch(amountTendered, () => {
                     <div class="space-y-6 lg:col-span-8">
                         <!-- Add Item Section -->
                         <div
-                            class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                            class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none"
                         >
                             <div class="mb-4 flex items-center justify-between">
                                 <h2
@@ -796,7 +796,7 @@ watch(amountTendered, () => {
                         <!-- Payment Summary -->
                         <div
                             v-if="cartItems.length"
-                            class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                            class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none"
                         >
                             <h2
                                 class="mb-6 text-lg font-semibold text-gray-900 dark:text-white"
@@ -1065,7 +1065,7 @@ watch(amountTendered, () => {
                         <!-- Checkout Button -->
                         <div
                             v-if="cartItems.length"
-                            class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                            class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none"
                         >
                             <div class="space-y-4">
                                 <Button
