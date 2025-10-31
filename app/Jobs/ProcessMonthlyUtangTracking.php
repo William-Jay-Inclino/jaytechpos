@@ -42,15 +42,15 @@ class ProcessMonthlyUtangTracking implements ShouldQueue
                     $currentMonth = $currentDate->month;
                     $currentYear = $currentDate->year;
 
-                    // Check if record already exists for current month
+                    // Check if we already processed this customer for the current month
                     $existingRecord = UtangTracking::where('customer_id', $customer->id)
-                        ->whereMonth('computation_date', $currentMonth)
-                        ->whereYear('computation_date', $currentYear)
+                        ->whereMonth('created_at', $currentMonth)
+                        ->whereYear('created_at', $currentYear)
                         ->first();
 
                     if ($existingRecord) {
                         $skippedCount++;
-                        Log::debug("Skipping customer {$customer->id} - record already exists for current month");
+                        Log::debug("Skipping customer {$customer->id} - already processed this month");
                         return;
                     }
 
@@ -70,12 +70,13 @@ class ProcessMonthlyUtangTracking implements ShouldQueue
                     // Calculate new balance with interest (simple interest)
                     $newBalance = $currentBalance * (1 + $interestRate / 100);
 
-                    // Create new utang tracking record
+                    // Create new utang tracking record with computation_date as exact current date and time
+                    // This represents when the interest calculation was performed
                     UtangTracking::create([
                         'user_id' => $customer->user_id,
                         'customer_id' => $customer->id,
                         'beginning_balance' => $newBalance,
-                        'computation_date' => $currentDate->startOfMonth(),
+                        'computation_date' => $currentDate,
                         'interest_rate' => $interestRate,
                     ]);
 

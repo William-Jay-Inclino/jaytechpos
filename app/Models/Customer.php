@@ -77,20 +77,15 @@ class Customer extends Model
     // Computed Properties
 
     /**
-     * Get the running balance of utang for the current month
+     * Get the running balance of utang (most recent balance)
      */
     protected function runningUtangBalance(): Attribute
     {
         return Attribute::make(
             get: function () {
-                $currentMonth = now()->month;
-                $currentYear = now()->year;
-
-                // Get the most recent UtangTracking record for the current month
+                // Get the most recent UtangTracking record regardless of month
                 $utangTracking = $this->utangTrackings()
-                    ->whereMonth('computation_date', $currentMonth)
-                    ->whereYear('computation_date', $currentYear)
-                    ->latest('computation_date')
+                    ->latest('created_at')
                     ->first();
 
                 return $utangTracking ? $utangTracking->beginning_balance : 0;
