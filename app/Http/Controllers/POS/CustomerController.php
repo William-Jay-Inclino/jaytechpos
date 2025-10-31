@@ -7,6 +7,7 @@ use App\Http\Requests\StoreCustomerRequest;
 use App\Http\Requests\UpdateCustomerRequest;
 use App\Http\Resources\CustomerResource;
 use App\Models\Customer;
+use App\Models\Setting;
 use App\Services\CustomerService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -40,7 +41,9 @@ class CustomerController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('customers/Create');
+        return Inertia::render('customers/Create', [
+            'defaultInterestRate' => Setting::getDefaultUtangInterestRate(),
+        ]);
     }
 
     /**
@@ -71,7 +74,8 @@ class CustomerController extends Controller
         }
 
         return Inertia::render('customers/Edit', [
-            'customer' => new CustomerResource($customer),
+            'customer' => (new CustomerResource($customer))->resolve(),
+            'defaultInterestRate' => Setting::getDefaultUtangInterestRate(),
         ]);
     }
 
@@ -116,9 +120,24 @@ class CustomerController extends Controller
     }
 
     /**
-     * Get all transactions for a customer.
+     * Show the transaction history for a customer.
      */
-    public function transactions(Customer $customer): JsonResponse
+    public function transactions(Customer $customer): Response
+    {
+        // Ensure customer belongs to authenticated user
+        if ($customer->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized access to customer data.');
+        }
+
+        return Inertia::render('customers/Transactions', [
+            'customer' => (new CustomerResource($customer))->resolve(),
+        ]);
+    }
+
+    /**
+     * Get transaction data for a customer via API.
+     */
+    public function getTransactions(Customer $customer): JsonResponse
     {
         // Ensure customer belongs to authenticated user
         if ($customer->user_id !== auth()->id()) {

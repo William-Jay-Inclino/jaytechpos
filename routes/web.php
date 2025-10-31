@@ -39,6 +39,7 @@ Route::middleware(['throttle:global'])->group(function () {
 
     // customers
     Route::get('customers/{customer}/transactions', [CustomerController::class, 'transactions'])->middleware(['auth', 'verified'])->name('customers.transactions');
+    Route::get('api/customers/{customer}/transactions', [CustomerController::class, 'getTransactions'])->middleware(['auth', 'verified'])->name('customers.api.transactions');
     Route::resource('customers', CustomerController::class)
         ->middleware(['auth', 'verified'])
         ->except(['show']);

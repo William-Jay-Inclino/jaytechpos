@@ -2,14 +2,20 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { type BreadcrumbItem } from '@/types';
-import { Form, Head } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { Form, Head, router } from '@inertiajs/vue3';
+import { ref, withDefaults } from 'vue';
 
 // UI Components
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+
+const props = withDefaults(defineProps<{
+    defaultInterestRate: number;
+}>(), {
+    defaultInterestRate: 3.0
+});
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -26,13 +32,13 @@ const breadcrumbs: BreadcrumbItem[] = [
 const name = ref<string>('');
 const mobileNumber = ref<string>('');
 const remarks = ref<string>('');
-const interestRate = ref<string>('');
+const interestRate = ref<string>(props.defaultInterestRate.toString());
 
 const resetForm = () => {
     name.value = '';
     mobileNumber.value = '';
     remarks.value = '';
-    interestRate.value = '';
+    interestRate.value = props.defaultInterestRate.toString();
 };
 
 const handleFormSuccess = () => {
@@ -135,8 +141,8 @@ const handleFormError = () => {
                                 for="interest_rate"
                                 class="text-sm font-medium text-gray-700 dark:text-gray-300"
                             >
-                                Custom Interest Rate (%)
-                                <span class="text-gray-500">(Optional - Leave blank to use default)</span>
+                                Interest Rate (%)
+                                <span class="text-gray-500">(Default: {{ defaultInterestRate }}%)</span>
                             </Label>
                             <Input
                                 id="interest_rate"
@@ -145,10 +151,13 @@ const handleFormError = () => {
                                 step="0.01"
                                 min="0"
                                 max="100"
-                                placeholder="e.g., 5.0"
+                                :placeholder="`Default: ${defaultInterestRate}%`"
                                 v-model="interestRate"
                                 class="h-12 border-2 text-right focus:ring-2 focus:ring-blue-500"
                             />
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                This will be used for calculating utang interest. Current value: {{ interestRate || defaultInterestRate }}%
+                            </p>
                             <div
                                 v-if="errors.interest_rate"
                                 class="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400"
@@ -204,7 +213,7 @@ const handleFormError = () => {
                             <Button
                                 type="button"
                                 variant="outline"
-                                @click="$inertia.visit('/customers')"
+                                @click="router.visit('/customers')"
                                 class="h-12 px-6 font-semibold"
                             >
                                 ❌ Cancel

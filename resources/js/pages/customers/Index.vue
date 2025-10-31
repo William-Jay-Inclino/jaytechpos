@@ -2,11 +2,19 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Customer, type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
-import { computed, withDefaults } from 'vue';
+import { computed, ref, withDefaults } from 'vue';
 
 // UI Components
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import {
     Table,
     TableBody,
@@ -28,6 +36,35 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/customers',
     },
 ];
+
+// Search and filter state
+const searchQuery = ref('');
+const statusFilter = ref('all');
+
+// Filtered customers based on search and filter
+const filteredCustomers = computed(() => {
+    if (!Array.isArray(props.customers)) return [];
+    
+    let filtered = props.customers;
+    
+    // Apply search filter
+    if (searchQuery.value.trim()) {
+        const query = searchQuery.value.toLowerCase().trim();
+        filtered = filtered.filter(customer => 
+            customer.name.toLowerCase().includes(query) ||
+            (customer.mobile_number && customer.mobile_number.toLowerCase().includes(query))
+        );
+    }
+    
+    // Apply status filter
+    if (statusFilter.value === 'has_balance') {
+        filtered = filtered.filter(customer => customer.has_utang);
+    } else if (statusFilter.value === 'clear') {
+        filtered = filtered.filter(customer => !customer.has_utang);
+    }
+    
+    return filtered;
+});
 
 // Computed properties
 const customersWithUtang = computed(() => 
@@ -63,12 +100,11 @@ const formatCurrency = (amount: number) => {
                         </p>
                     </div>
                     
-                    <Link
-                        href="/customers/create"
-                        class="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                        ➕ Add New Customer
-                    </Link>
+                    <Button as-child>
+                        <Link href="/customers/create">
+                            ➕ Add New Customer
+                        </Link>
+                    </Button>
                 </div>
 
                 <!-- Stats Cards -->
@@ -106,6 +142,39 @@ const formatCurrency = (amount: number) => {
                     </div>
                 </div>
 
+                <!-- Search and Filters -->
+                <div class="mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+                            <div class="flex-1 sm:min-w-[300px]">
+                                <Input
+                                    v-model="searchQuery"
+                                    type="text"
+                                    placeholder="Search by name or mobile number..."
+                                    class="w-full"
+                                />
+                            </div>
+                            
+                            <div class="sm:min-w-[180px]">
+                                <Select v-model="statusFilter">
+                                    <SelectTrigger class="w-full">
+                                        <SelectValue placeholder="Filter by status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Customers</SelectItem>
+                                        <SelectItem value="has_balance">Has Balance</SelectItem>
+                                        <SelectItem value="clear">Clear</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                        
+                        <div class="text-sm text-gray-600 dark:text-gray-400">
+                            Showing {{ filteredCustomers.length }} of {{ totalCustomers }} customers
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Customers Table -->
                 <div class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
                     <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
@@ -125,16 +194,32 @@ const formatCurrency = (amount: number) => {
                             Get started by adding your first customer.
                         </p>
                         <div class="mt-6">
-                            <Link
-                                href="/customers/create"
-                                class="inline-flex items-center rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700"
-                            >
-                                ➕ Add Customer
-                            </Link>
+                            <Button as-child>
+                                <Link href="/customers/create">
+                                    ➕ Add Customer
+                                </Link>
+                            </Button>
                         </div>
                     </div>
 
-                    <Table v-else-if="Array.isArray(customers) && customers.length > 0">
+                    <div v-else-if="filteredCustomers.length === 0 && searchQuery.trim()" class="px-6 py-12 text-center">
+                        <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
+                            <span class="text-2xl">🔍</span>
+                        </div>
+                        <h3 class="mt-4 text-sm font-medium text-gray-900 dark:text-white">
+                            No customers found
+                        </h3>
+                        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                            Try adjusting your search or filter criteria.
+                        </p>
+                        <div class="mt-6">
+                            <Button variant="outline" @click="searchQuery = ''; statusFilter = 'all'">
+                                Clear Filters
+                            </Button>
+                        </div>
+                    </div>
+
+                    <Table v-else-if="filteredCustomers.length > 0">
                         <TableHeader>
                             <TableRow>
                                 <TableHead class="w-[200px]">Name</TableHead>
@@ -147,7 +232,7 @@ const formatCurrency = (amount: number) => {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            <TableRow v-for="customer in customers" :key="customer.id">
+                            <TableRow v-for="customer in filteredCustomers" :key="customer.id">
                                 <TableCell class="font-medium">
                                     {{ customer.name }}
                                 </TableCell>
@@ -186,19 +271,17 @@ const formatCurrency = (amount: number) => {
                                 </TableCell>
                                 <TableCell class="text-right">
                                     <div class="flex justify-end gap-2">
-                                        <Link
-                                            :href="`/customers/${customer.id}/edit`"
-                                            class="inline-flex items-center rounded-md bg-gray-600 px-3 py-2 text-xs font-semibold text-white shadow-sm hover:bg-gray-700"
-                                        >
-                                            ✏️ Edit
-                                        </Link>
+                                        <Button size="sm" variant="outline" as-child>
+                                            <Link :href="`/customers/${customer.id}/edit`">
+                                                ✏️ Edit
+                                            </Link>
+                                        </Button>
                                         
-                                        <Link
-                                            :href="`/customers/${customer.id}/transactions`"
-                                            class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-xs font-semibold text-white shadow-sm hover:bg-blue-700"
-                                        >
-                                            📋 Transactions
-                                        </Link>
+                                        <Button size="sm" as-child>
+                                            <Link :href="`/customers/${customer.id}/transactions`">
+                                                📋 Transactions
+                                            </Link>
+                                        </Button>
                                     </div>
                                 </TableCell>
                             </TableRow>
