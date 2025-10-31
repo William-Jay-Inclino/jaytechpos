@@ -16,8 +16,8 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { showSuccessToast } from '@/lib/toast';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { Settings } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { Settings, Search } from 'lucide-vue-next';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import axios from 'axios';
 
 interface Category {
@@ -56,6 +56,52 @@ const createdProduct = ref(null);
 const isSubmitting = ref(false);
 const showCategoryModal = ref(false);
 const categories = ref<Category[]>([...props.categories]);
+
+// Search functionality
+const categorySearch = ref('');
+const unitSearch = ref('');
+const showCategoryDropdown = ref(false);
+const showUnitDropdown = ref(false);
+
+// Filtered options
+const filteredCategories = computed(() => {
+    if (!categorySearch.value) return categories.value;
+    return categories.value.filter(category =>
+        category.name.toLowerCase().includes(categorySearch.value.toLowerCase())
+    );
+});
+
+const filteredUnits = computed(() => {
+    if (!unitSearch.value) return props.units;
+    return props.units.filter(unit =>
+        unit.unit_name.toLowerCase().includes(unitSearch.value.toLowerCase()) ||
+        unit.abbreviation.toLowerCase().includes(unitSearch.value.toLowerCase())
+    );
+});
+
+// Get selected category/unit name for display
+const selectedCategoryName = computed(() => {
+    const category = categories.value.find(c => c.id.toString() === form.category_id);
+    return category?.name || '';
+});
+
+const selectedUnitName = computed(() => {
+    const unit = props.units.find(u => u.id.toString() === form.unit_id);
+    return unit ? `${unit.unit_name} (${unit.abbreviation})` : '';
+});
+
+// Functions to handle selection
+function selectCategory(categoryId: string) {
+    form.category_id = categoryId;
+    showCategoryDropdown.value = false;
+    categorySearch.value = '';
+}
+
+function selectUnit(unitId: string) {
+    form.unit_id = unitId;
+    showUnitDropdown.value = false;
+    unitSearch.value = '';
+}
 
 async function submit() {
     if (isSubmitting.value) return;
@@ -111,6 +157,33 @@ async function handleCategoryUpdated() {
         console.error('Error refreshing categories:', error);
     }
 }
+
+// Click outside handler
+function handleClickOutside(event: Event) {
+    const target = event.target as Element;
+    
+    // Check if click is outside category dropdown
+    const categoryDropdown = document.querySelector('.category-dropdown');
+    if (categoryDropdown && !categoryDropdown.contains(target)) {
+        showCategoryDropdown.value = false;
+        categorySearch.value = '';
+    }
+    
+    // Check if click is outside unit dropdown
+    const unitDropdown = document.querySelector('.unit-dropdown');
+    if (unitDropdown && !unitDropdown.contains(target)) {
+        showUnitDropdown.value = false;
+        unitSearch.value = '';
+    }
+}
+
+onMounted(() => {
+    document.addEventListener('click', handleClickOutside);
+});
+
+onUnmounted(() => {
+    document.removeEventListener('click', handleClickOutside);
+});
 </script>
 
 <template>
@@ -165,24 +238,49 @@ async function handleCategoryUpdated() {
                                     Manage Categories
                                 </Button>
                             </div>
-                            <Select v-model="form.category_id">
-                                <SelectTrigger
-                                    class="dark:border-gray-700 dark:bg-gray-800"
+                            <div class="relative category-dropdown">
+                                <div
+                                    @click="showCategoryDropdown = !showCategoryDropdown"
+                                    class="flex h-10 w-full cursor-pointer items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800"
                                 >
-                                    <SelectValue
-                                        placeholder="Select category"
-                                    />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem
-                                        v-for="category in categories"
-                                        :key="category.id"
-                                        :value="category.id.toString()"
-                                    >
-                                        {{ category.name }}
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
+                                    <span class="truncate">
+                                        {{ selectedCategoryName || 'Select category' }}
+                                    </span>
+                                    <svg class="h-4 w-4 opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="m6 9 6 6 6-6"/>
+                                    </svg>
+                                </div>
+                                
+                                <div
+                                    v-if="showCategoryDropdown"
+                                    class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md dark:border-gray-700 dark:bg-gray-800"
+                                >
+                                    <div class="flex items-center border-b px-3 pb-2 mb-2 dark:border-gray-700">
+                                        <Search class="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                                        <input
+                                            v-model="categorySearch"
+                                            placeholder="Search categories..."
+                                            class="flex h-8 w-full rounded-md bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                                        />
+                                    </div>
+                                    <div class="max-h-40 overflow-auto">
+                                        <div
+                                            v-for="category in filteredCategories"
+                                            :key="category.id"
+                                            @click="selectCategory(category.id.toString())"
+                                            class="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground cursor-pointer"
+                                        >
+                                            {{ category.name }}
+                                        </div>
+                                        <div
+                                            v-if="filteredCategories.length === 0"
+                                            class="py-6 text-center text-sm text-muted-foreground"
+                                        >
+                                            No categories found.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <InputError
                                 :message="form.errors.category_id"
                                 class="mt-1"
@@ -192,24 +290,49 @@ async function handleCategoryUpdated() {
                         <!-- Unit -->
                         <div class="grid gap-2">
                             <Label for="unit_id">Unit</Label>
-                            <Select v-model="form.unit_id">
-                                <SelectTrigger
-                                    class="dark:border-gray-700 dark:bg-gray-800"
+                            <div class="relative unit-dropdown">
+                                <div
+                                    @click="showUnitDropdown = !showUnitDropdown"
+                                    class="flex h-10 w-full cursor-pointer items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800"
                                 >
-                                    <SelectValue placeholder="Select unit" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem
-                                        v-for="unit in units"
-                                        :key="unit.id"
-                                        :value="unit.id.toString()"
-                                    >
-                                        {{ unit.unit_name }} ({{
-                                            unit.abbreviation
-                                        }})
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
+                                    <span class="truncate">
+                                        {{ selectedUnitName || 'Select unit' }}
+                                    </span>
+                                    <svg class="h-4 w-4 opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="m6 9 6 6 6-6"/>
+                                    </svg>
+                                </div>
+                                
+                                <div
+                                    v-if="showUnitDropdown"
+                                    class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md dark:border-gray-700 dark:bg-gray-800"
+                                >
+                                    <div class="flex items-center border-b px-3 pb-2 mb-2 dark:border-gray-700">
+                                        <Search class="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                                        <input
+                                            v-model="unitSearch"
+                                            placeholder="Search units..."
+                                            class="flex h-8 w-full rounded-md bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                                        />
+                                    </div>
+                                    <div class="max-h-40 overflow-auto">
+                                        <div
+                                            v-for="unit in filteredUnits"
+                                            :key="unit.id"
+                                            @click="selectUnit(unit.id.toString())"
+                                            class="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground cursor-pointer"
+                                        >
+                                            {{ unit.unit_name }} ({{ unit.abbreviation }})
+                                        </div>
+                                        <div
+                                            v-if="filteredUnits.length === 0"
+                                            class="py-6 text-center text-sm text-muted-foreground"
+                                        >
+                                            No units found.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <InputError
                                 :message="form.errors.unit_id"
                                 class="mt-1"

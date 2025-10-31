@@ -20,7 +20,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import InputError from '@/components/InputError.vue';
 import { showSuccessToast, showErrorToast } from '@/lib/toast';
-import { FolderOpen, Plus, Edit, Trash2 } from 'lucide-vue-next';
+import { FolderOpen, Plus, Edit, Trash2, Search } from 'lucide-vue-next';
 import { computed, ref, watch, nextTick } from 'vue';
 import axios from 'axios';
 
@@ -49,6 +49,7 @@ const loading = ref(false);
 const isEditing = ref(false);
 const editingCategory = ref<Category | null>(null);
 const showForm = ref(false);
+const searchQuery = ref('');
 
 // Form data
 const form = ref({
@@ -77,6 +78,18 @@ const submitButtonText = computed(() => {
     return isEditing.value ? 'Update Category' : 'Create Category';
 });
 
+const filteredCategories = computed(() => {
+    if (!searchQuery.value.trim()) {
+        return categories.value;
+    }
+    
+    const query = searchQuery.value.toLowerCase().trim();
+    return categories.value.filter(category => 
+        category.name.toLowerCase().includes(query) ||
+        (category.description && category.description.toLowerCase().includes(query))
+    );
+});
+
 // Methods
 async function loadCategories() {
     loading.value = true;
@@ -103,6 +116,10 @@ function resetForm() {
     isEditing.value = false;
     editingCategory.value = null;
     showForm.value = false;
+}
+
+function clearSearch() {
+    searchQuery.value = '';
 }
 
 function startCreate() {
@@ -188,8 +205,10 @@ function getBadgeVariant(status: string) {
 watch(() => props.open, (isOpen) => {
     if (isOpen) {
         loadCategories();
+        clearSearch();
     } else {
         resetForm();
+        clearSearch();
     }
 });
 </script>
@@ -218,15 +237,36 @@ watch(() => props.open, (isOpen) => {
                         </Button>
                     </div>
 
+                    <!-- Search Input -->
+                    <div class="relative">
+                        <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                            v-model="searchQuery"
+                            placeholder="Search categories..."
+                            class="pl-9 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                        />
+                    </div>
+
                     <!-- Loading State -->
                     <div v-if="loading" class="space-y-3">
                         <div v-for="i in 3" :key="i" class="h-16 animate-pulse rounded-lg bg-muted"></div>
                     </div>
 
                     <!-- Categories List -->
-                    <div v-else-if="categories.length > 0" class="space-y-2 overflow-y-auto pr-2" style="max-height: 500px;">
+                    <div v-else-if="categories.length > 0" class="space-y-2 overflow-y-auto pr-2" style="max-height: 450px;">
+                        <!-- No results message -->
+                        <div 
+                            v-if="filteredCategories.length === 0 && searchQuery.trim()"
+                            class="flex flex-col items-center justify-center rounded-lg border border-dashed py-8"
+                        >
+                            <Search class="h-8 w-8 text-muted-foreground" />
+                            <h4 class="mt-2 font-medium">No categories found</h4>
+                            <p class="text-sm text-muted-foreground">Try adjusting your search terms</p>
+                        </div>
+
+                        <!-- Categories -->
                         <div
-                            v-for="category in categories"
+                            v-for="category in filteredCategories"
                             :key="category.id"
                             class="flex items-center justify-between rounded-lg border p-4 hover:bg-muted/50"
                         >
@@ -255,7 +295,7 @@ watch(() => props.open, (isOpen) => {
                     </div>
 
                     <!-- Empty State -->
-                    <div v-else class="flex h-96 flex-col items-center justify-center rounded-lg border border-dashed">
+                    <div v-else-if="!loading && categories.length === 0" class="flex h-96 flex-col items-center justify-center rounded-lg border border-dashed">
                         <FolderOpen class="h-12 w-12 text-muted-foreground" />
                         <h3 class="mt-4 text-lg font-medium">No categories yet</h3>
                         <p class="mt-2 text-sm text-muted-foreground">Create your first product category to get started</p>
