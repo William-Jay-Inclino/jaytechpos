@@ -70,7 +70,7 @@ test('user can get customer transaction history', function () {
         'customer_id' => $customer->id,
     ]);
 
-    $response = $this->actingAs($user)->get("/utang-payments/customer/{$customer->id}/transactions");
+    $response = $this->actingAs($user)->get("/api/customers/{$customer->id}/transactions");
 
     $response->assertSuccessful();
     $response->assertJsonStructure([
@@ -92,7 +92,7 @@ test('user cannot access other users customer transactions', function () {
     $otherUser = User::factory()->create();
     $otherCustomer = Customer::factory()->create(['user_id' => $otherUser->id]);
 
-    $response = $this->actingAs($user)->get("/utang-payments/customer/{$otherCustomer->id}/transactions");
+    $response = $this->actingAs($user)->get("/api/customers/{$otherCustomer->id}/transactions");
 
     $response->assertForbidden();
 });

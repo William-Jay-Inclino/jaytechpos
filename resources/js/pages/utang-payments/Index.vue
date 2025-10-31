@@ -7,20 +7,14 @@ import {
     getCurrentManilaDateTime,
 } from '@/utils/timezone';
 import { Form, Head } from '@inertiajs/vue3';
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, onMounted, onUnmounted } from 'vue';
+import { Search } from 'lucide-vue-next';
 
 // UI Components
 import CustomerTransactionHistory from '@/components/CustomerTransactionHistory.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 
 const props = defineProps<{
@@ -40,6 +34,10 @@ const paymentAmount = ref<string>('');
 const paymentDate = ref<string>(getCurrentManilaDateTime()); // Current Manila date and time
 const notes = ref<string>('');
 
+// Customer search state
+const customerSearch = ref('');
+const showCustomerDropdown = ref(false);
+
 // Transaction history state
 const transactions = ref<CustomerTransaction[]>([]);
 const loadingTransactions = ref(false);
@@ -52,6 +50,19 @@ const selectedCustomer = computed(() => {
             (c) => c.id === parseInt(selectedCustomerId.value),
         ) || null
     );
+});
+
+const filteredCustomers = computed(() => {
+    if (!customerSearch.value) return props.customers;
+    return props.customers.filter(customer =>
+        customer.name.toLowerCase().includes(customerSearch.value.toLowerCase()) ||
+        (customer.mobile_number && customer.mobile_number.toLowerCase().includes(customerSearch.value.toLowerCase()))
+    );
+});
+
+const selectedCustomerName = computed(() => {
+    const customer = props.customers.find(c => c.id.toString() === selectedCustomerId.value);
+    return customer ? `${customer.name}${customer.mobile_number ? ` (${customer.mobile_number})` : ''}` : '';
 });
 
 const isFormValid = computed(() => {
@@ -106,11 +117,20 @@ const fetchCustomerTransactions = async (customerId: number) => {
     }
 };
 
+// Functions to handle selection
+function selectCustomer(customerId: string) {
+    selectedCustomerId.value = customerId;
+    showCustomerDropdown.value = false;
+    customerSearch.value = '';
+}
+
 const resetForm = () => {
     selectedCustomerId.value = '';
     paymentAmount.value = '';
     paymentDate.value = getCurrentManilaDateTime();
     notes.value = '';
+    customerSearch.value = '';
+    showCustomerDropdown.value = false;
     transactions.value = [];
 };
 
@@ -129,6 +149,22 @@ const handleFormError = () => {
 };
 
 const formatCurrency = formatPhilippinePeso;
+
+// Handle click outside to close dropdowns
+function handleClickOutside(event: MouseEvent) {
+    const customerDropdown = document.querySelector('.customer-dropdown');
+    if (customerDropdown && !customerDropdown.contains(event.target as Node)) {
+        showCustomerDropdown.value = false;
+    }
+}
+
+onMounted(() => {
+    document.addEventListener('click', handleClickOutside);
+});
+
+onUnmounted(() => {
+    document.removeEventListener('click', handleClickOutside);
+});
 
 // Watch for customer selection changes
 watch(selectedCustomerId, (newCustomerId) => {
@@ -193,35 +229,69 @@ watch(selectedCustomerId, (newCustomerId) => {
                                         Customer
                                         <span class="text-red-500">*</span>
                                     </Label>
-                                    <Select
-                                        v-model="selectedCustomerId"
-                                        name="customer_id"
-                                    >
-                                        <SelectTrigger class="h-12">
-                                            <SelectValue
-                                                placeholder="Select a customer"
-                                            />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem
-                                                v-for="customer in customers"
-                                                :key="customer.id"
-                                                :value="customer.id.toString()"
-                                            >
-                                                {{ customer.name }}
-                                                <span
-                                                    v-if="
-                                                        customer.mobile_number
-                                                    "
-                                                    class="ml-2 text-gray-500"
+                                    <div class="relative customer-dropdown">
+                                        <input
+                                            type="hidden"
+                                            name="customer_id"
+                                            :value="selectedCustomerId"
+                                        />
+                                        <div
+                                            @click="showCustomerDropdown = !showCustomerDropdown"
+                                            class="flex h-12 w-full cursor-pointer items-center justify-between rounded-md border-2 border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800"
+                                        >
+                                            <span class="truncate text-left">
+                                                {{ selectedCustomerName || 'Search and select a customer' }}
+                                            </span>
+                                            <svg class="h-4 w-4 opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="m6 9 6 6 6-6"/>
+                                            </svg>
+                                        </div>
+                                        
+                                        <div
+                                            v-if="showCustomerDropdown"
+                                            class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-lg dark:border-gray-700 dark:bg-gray-800"
+                                        >
+                                            <div class="flex items-center border-b px-3 pb-2 mb-2 dark:border-gray-700">
+                                                <Search class="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                                                <input
+                                                    v-model="customerSearch"
+                                                    placeholder="Search customers by name or mobile number..."
+                                                    class="flex h-8 w-full rounded-md bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 dark:text-white"
+                                                    @click.stop
+                                                />
+                                            </div>
+                                            <div class="max-h-40 overflow-auto">
+                                                <div
+                                                    v-for="customer in filteredCustomers"
+                                                    :key="customer.id"
+                                                    @click="selectCustomer(customer.id.toString())"
+                                                    class="relative flex cursor-default select-none items-center rounded-sm px-2 py-2.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground cursor-pointer"
                                                 >
-                                                    ({{
-                                                        customer.mobile_number
-                                                    }})
-                                                </span>
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                                    <div class="flex flex-col">
+                                                        <div class="font-medium">{{ customer.name }}</div>
+                                                        <div 
+                                                            v-if="customer.mobile_number"
+                                                            class="text-xs text-gray-500 dark:text-gray-400"
+                                                        >
+                                                            {{ customer.mobile_number }}
+                                                        </div>
+                                                        <div 
+                                                            v-if="customer.running_utang_balance"
+                                                            class="text-xs text-red-600 dark:text-red-400 font-medium"
+                                                        >
+                                                            Balance: {{ formatCurrency(customer.running_utang_balance) }}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div
+                                                    v-if="filteredCustomers.length === 0"
+                                                    class="py-6 text-center text-sm text-muted-foreground"
+                                                >
+                                                    No customers found.
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <div
                                         v-if="errors.customer_id"
                                         class="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400"

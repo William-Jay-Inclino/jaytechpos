@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3';
-import { Trash2 } from 'lucide-vue-next';
+import { Trash2, Search } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 
 // Layout & Components
@@ -20,13 +20,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
+
 import {
     Table,
     TableBody,
@@ -97,6 +91,10 @@ const showSuccessModal = ref(false);
 const saleData = ref<SaleResponse | null>(null);
 const isProcessing = ref(false);
 
+// Customer search state
+const customerSearch = ref('');
+const showCustomerDropdown = ref(false);
+
 
 // Business Logic Functions
 function addProductToCart(data: { product: Product; quantity: number }): void {
@@ -166,6 +164,20 @@ const selectedCustomer = computed((): Customer | null => {
             (customer) => customer.id.toString() === selectedCustomerId.value,
         ) || null
     );
+});
+
+const filteredCustomers = computed(() => {
+    if (!customerSearch.value) return props.customers;
+    return props.customers.filter(customer =>
+        customer.name.toLowerCase().includes(customerSearch.value.toLowerCase()) ||
+        (customer.mobile_number && customer.mobile_number.toLowerCase().includes(customerSearch.value.toLowerCase()))
+    );
+});
+
+const selectedCustomerName = computed(() => {
+    if (selectedCustomerId.value === '0') return 'Walk-in Customer';
+    const customer = props.customers.find(c => c.id.toString() === selectedCustomerId.value);
+    return customer ? `${customer.name}${customer.mobile_number ? ` (${customer.mobile_number})` : ''}` : '';
 });
 
 // Customer data for form display - just use current customer since form is reset after checkout
@@ -248,6 +260,13 @@ const checkoutHelperText = computed((): string | null => {
     return null;
 });
 
+// Functions to handle selection
+function selectCustomer(customerId: string) {
+    selectedCustomerId.value = customerId;
+    showCustomerDropdown.value = false;
+    customerSearch.value = '';
+}
+
 // Event Handlers
 function handleCheckout(): void {
     if (!isCheckoutValid.value || isProcessing.value) return;
@@ -303,6 +322,8 @@ function resetFormData(): void {
     amountTendered.value = 0;
     payTowardsBalance.value = false;
     deductFromBalance.value = 0;
+    customerSearch.value = '';
+    showCustomerDropdown.value = false;
 }
 
 function resetForm(): void {
@@ -330,13 +351,23 @@ function handleKeyboardShortcuts(event: KeyboardEvent): void {
     }
 }
 
+// Handle click outside to close dropdowns
+function handleClickOutside(event: MouseEvent) {
+    const customerDropdown = document.querySelector('.customer-dropdown');
+    if (customerDropdown && !customerDropdown.contains(event.target as Node)) {
+        showCustomerDropdown.value = false;
+    }
+}
+
 // Add keyboard event listener when component mounts
 onMounted(() => {
     document.addEventListener('keydown', handleKeyboardShortcuts);
+    document.addEventListener('click', handleClickOutside);
 });
 
 onUnmounted(() => {
     document.removeEventListener('keydown', handleKeyboardShortcuts);
+    document.removeEventListener('click', handleClickOutside);
 });
 
 // Watch for sale prop changes to show success modal
@@ -439,35 +470,78 @@ watch(amountTendered, () => {
                                             >(Optional)</span
                                         >
                                     </Label>
-                                    <Select v-model="selectedCustomerId">
-                                        <SelectTrigger class="w-full">
-                                            <SelectValue
-                                                placeholder="Select customer or walk-in"
-                                            />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="0"
-                                                >Walk-in Customer</SelectItem
-                                            >
-                                            <SelectItem
-                                                v-for="customer in customers"
-                                                :key="customer.id"
-                                                :value="customer.id.toString()"
-                                            >
-                                                {{ customer.name }}
-                                                <span
-                                                    v-if="
-                                                        customer.mobile_number
-                                                    "
-                                                    class="ml-2 text-gray-500"
+                                    <div class="relative customer-dropdown">
+                                        <div
+                                            @click="showCustomerDropdown = !showCustomerDropdown"
+                                            class="flex h-10 w-full cursor-pointer items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800"
+                                        >
+                                            <span class="truncate text-left">
+                                                {{ selectedCustomerName || 'Select customer or walk-in' }}
+                                            </span>
+                                            <svg class="h-4 w-4 opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="m6 9 6 6 6-6"/>
+                                            </svg>
+                                        </div>
+                                        
+                                        <div
+                                            v-if="showCustomerDropdown"
+                                            class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-lg dark:border-gray-700 dark:bg-gray-800"
+                                        >
+                                            <div class="flex items-center border-b px-3 pb-2 mb-2 dark:border-gray-700">
+                                                <Search class="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                                                <input
+                                                    v-model="customerSearch"
+                                                    placeholder="Search customers by name or mobile number..."
+                                                    class="flex h-8 w-full rounded-md bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 dark:text-white"
+                                                    @click.stop
+                                                />
+                                            </div>
+                                            <div class="max-h-40 overflow-auto">
+                                                <!-- Walk-in Customer Option -->
+                                                <div
+                                                    @click="selectCustomer('0')"
+                                                    class="relative flex cursor-default select-none items-center rounded-sm px-2 py-2.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground cursor-pointer"
                                                 >
-                                                    ({{
-                                                        customer.mobile_number
-                                                    }})
-                                                </span>
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                                    <div class="flex flex-col">
+                                                        <div class="font-medium">Walk-in Customer</div>
+                                                        <div class="text-xs text-gray-500 dark:text-gray-400">
+                                                            No customer information required
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Customer Options -->
+                                                <div
+                                                    v-for="customer in filteredCustomers"
+                                                    :key="customer.id"
+                                                    @click="selectCustomer(customer.id.toString())"
+                                                    class="relative flex cursor-default select-none items-center rounded-sm px-2 py-2.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground cursor-pointer"
+                                                >
+                                                    <div class="flex flex-col">
+                                                        <div class="font-medium">{{ customer.name }}</div>
+                                                        <div 
+                                                            v-if="customer.mobile_number"
+                                                            class="text-xs text-gray-500 dark:text-gray-400"
+                                                        >
+                                                            {{ customer.mobile_number }}
+                                                        </div>
+                                                        <div 
+                                                            v-if="customer.running_utang_balance && customer.running_utang_balance > 0"
+                                                            class="text-xs text-red-600 dark:text-red-400 font-medium"
+                                                        >
+                                                            Balance: ₱{{ customer.running_utang_balance.toFixed(2) }}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div
+                                                    v-if="filteredCustomers.length === 0"
+                                                    class="py-6 text-center text-sm text-muted-foreground"
+                                                >
+                                                    No customers found.
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <!-- Customer Balance Display -->
