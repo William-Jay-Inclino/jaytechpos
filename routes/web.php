@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\POS\CustomerController;
 use App\Http\Controllers\POS\ProductCategoryController;
 use App\Http\Controllers\POS\ProductController;
 use App\Http\Controllers\POS\SaleController;
@@ -32,12 +33,14 @@ Route::middleware(['throttle:global'])->group(function () {
     //     return Inertia::render('sales/Index');
     // })->middleware(['auth', 'verified'])->name('sales.index');
 
-    Route::get('sales', [SaleController::class, 'create'])->middleware(['auth', 'verified'])->name('sales');
+    Route::get('sales', [SaleController::class, 'index'])->middleware(['auth', 'verified'])->name('sales');
     Route::post('sales', [SaleController::class, 'store'])->middleware(['auth', 'verified'])->name('sales.store');
 
     Route::get('utang-payments', [UtangPaymentController::class, 'index'])->middleware(['auth', 'verified'])->name('utang-payments');
     Route::post('utang-payments', [UtangPaymentController::class, 'store'])->middleware(['auth', 'verified'])->name('utang-payments.store');
-    Route::get('utang-payments/customer/{customer}/transactions', [UtangPaymentController::class, 'getCustomerTransactions'])->middleware(['auth', 'verified'])->name('utang-payments.customer.transactions');
+
+    // Customer routes
+    Route::get('customers/{customer}/transactions', [CustomerController::class, 'transactions'])->middleware(['auth', 'verified'])->name('customers.transactions');
 
     Route::resource('product-categories', ProductCategoryController::class)
         ->middleware(['auth', 'verified'])

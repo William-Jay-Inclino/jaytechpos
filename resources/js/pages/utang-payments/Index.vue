@@ -84,7 +84,7 @@ const fetchCustomerTransactions = async (customerId: number) => {
             ?.getAttribute('content');
 
         const response = await fetch(
-            `/utang-payments/customer/${customerId}/transactions`,
+            `/customers/${customerId}/transactions`,
             {
                 method: 'GET',
                 headers: {
@@ -136,19 +136,6 @@ const handleFormError = () => {
 
 const formatCurrency = formatPhilippinePeso;
 const formatDate = formatManilaDateTime;
-
-const getTransactionTypeColor = (type: string) => {
-    switch (type) {
-        case 'payment':
-            return 'text-green-600 dark:text-green-400';
-        case 'tracking':
-            return 'text-blue-600 dark:text-blue-400';
-        case 'sale':
-            return 'text-orange-600 dark:text-orange-400';
-        default:
-            return 'text-gray-600 dark:text-gray-400';
-    }
-};
 
 const getTransactionTypeLabel = (type: string) => {
     switch (type) {

@@ -51,7 +51,6 @@ const props = defineProps<{
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    // { title: 'Sales', href: '/sales' },
     { title: 'New Sale', href: '/sales' },
 ];
 
@@ -98,7 +97,6 @@ const showSuccessModal = ref(false);
 const saleData = ref<SaleResponse | null>(null);
 const isProcessing = ref(false);
 
-// No need to store original values - use server response data
 
 // Business Logic Functions
 function addProductToCart(data: { product: Product; quantity: number }): void {
@@ -256,8 +254,6 @@ function handleCheckout(): void {
 
     isProcessing.value = true;
 
-    // No need to store original values - server will provide all payment details
-
     const checkoutData = {
         customer_id:
             selectedCustomerId.value !== '0'
@@ -284,11 +280,9 @@ function handleCheckout(): void {
 
     console.log('Processing checkout...', checkoutData);
 
-    // Use Inertia router instead of fetch
     router.post('/sales', checkoutData, {
         onSuccess: () => {
             console.log('✅ Sale completed successfully!');
-            // Reset form immediately after successful checkout
             resetFormData();
         },
         onError: (errors) => {
@@ -315,10 +309,6 @@ function resetForm(): void {
     resetFormData();
     showSuccessModal.value = false;
     saleData.value = null;
-}
-
-function printReceipt(): void {
-    window.print();
 }
 
 function closeSuccessModal(): void {
