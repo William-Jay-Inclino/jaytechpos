@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\POS\ProductCategoryController;
+use App\Http\Controllers\POS\ProductController;
 use App\Http\Controllers\POS\SaleController;
 use App\Http\Controllers\POS\UtangPaymentController;
 use Illuminate\Support\Facades\Route;
@@ -39,6 +40,10 @@ Route::middleware(['throttle:global'])->group(function () {
     Route::get('utang-payments/customer/{customer}/transactions', [UtangPaymentController::class, 'getCustomerTransactions'])->middleware(['auth', 'verified'])->name('utang-payments.customer.transactions');
 
     Route::resource('product-categories', ProductCategoryController::class)
+        ->middleware(['auth', 'verified'])
+        ->except(['show']);
+
+    Route::resource('products', ProductController::class)
         ->middleware(['auth', 'verified'])
         ->except(['show']);
 

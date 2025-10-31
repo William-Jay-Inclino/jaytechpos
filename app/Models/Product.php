@@ -31,13 +31,40 @@ class Product extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'unit_price' => 'float',
-        'cost_price' => 'float',
+        'unit_price' => 'decimal:2',
+        'cost_price' => 'decimal:2',
     ];
+
+    /**
+     * Scope: Filter only active products (status = 'active')
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
+
+    /**
+     * Scope: Filter products owned by a specific user
+     */
+    public function scopeOwnedBy($query, $userId = null)
+    {
+        $userId = $userId ?? auth()->id();
+
+        return $query->where('user_id', $userId);
+    }
+
+    /**
+     * Scope: Filter products that are available for sale (active + owned by user)
+     * Use this for POS/sales functionality to ensure only active, owned products are selectable
+     */
+    public function scopeAvailableForSale($query, $userId = null)
+    {
+        return $query->active()->ownedBy($userId);
+    }
 
     public function productCategory()
     {
-        return $this->belongsTo(ProductCategory::class);
+        return $this->belongsTo(ProductCategory::class, 'category_id');
     }
 
     public function unit()

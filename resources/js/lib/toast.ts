@@ -1,7 +1,6 @@
-import { useToast } from "vue-toastification"
+import { useToast } from 'vue-toastification';
 
-const toast = useToast()
-
+const toast = useToast();
 
 export function showSuccessToast(message: string) {
     toast.success(message);

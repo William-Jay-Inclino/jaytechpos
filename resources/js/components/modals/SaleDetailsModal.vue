@@ -1,8 +1,14 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { formatPhilippinePeso, formatManilaDateTime } from '@/utils/timezone';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { formatPhilippinePeso } from '@/utils/timezone';
+import { computed } from 'vue';
 
 interface SalesItem {
     id: number;
@@ -42,12 +48,12 @@ const emit = defineEmits<{
 
 const isOpen = computed({
     get: () => props.open,
-    set: (value) => emit('update:open', value)
+    set: (value) => emit('update:open', value),
 });
 
 const paymentStatus = computed(() => {
     if (!props.transaction) return { label: '', variant: 'secondary' as const };
-    
+
     if (props.transaction.payment_type === 'cash') {
         return { label: 'Paid in Full', variant: 'default' as const };
     } else {
@@ -66,86 +72,145 @@ const outstandingBalance = computed(() => {
 const formatDate = computed(() => {
     if (!props.transaction) return '';
     const date = new Date(props.transaction.date);
-    return date.toLocaleDateString('en-PH', { 
-        month: 'short', 
-        day: 'numeric', 
+    return date.toLocaleDateString('en-PH', {
+        month: 'short',
+        day: 'numeric',
         year: 'numeric',
         hour: 'numeric',
         minute: '2-digit',
-        hour12: true
+        hour12: true,
     });
 });
 </script>
 
 <template>
     <Dialog v-model:open="isOpen">
-        <DialogContent class="max-w-lg max-h-[85vh] overflow-y-auto">
-            <DialogHeader class="text-center pb-2">
-                <DialogTitle class="text-xl">Receipt #{{ transaction?.invoice_number || 'N/A' }}</DialogTitle>
+        <DialogContent class="max-h-[85vh] max-w-lg overflow-y-auto">
+            <DialogHeader class="pb-2 text-center">
+                <DialogTitle class="text-xl"
+                    >Receipt #{{
+                        transaction?.invoice_number || 'N/A'
+                    }}</DialogTitle
+                >
                 <DialogDescription class="text-sm text-muted-foreground">
                     {{ formatDate }}
                 </DialogDescription>
             </DialogHeader>
-            
+
             <div v-if="transaction" class="space-y-5">
                 <!-- Payment Status & Amount -->
-                <div class="text-center space-y-3 p-4 bg-muted/30 rounded-lg">
+                <div class="space-y-3 rounded-lg bg-muted/30 p-4 text-center">
                     <div>
-                        <div class="text-xs text-muted-foreground mb-1">Total Amount</div>
-                        <div class="text-2xl font-bold">{{ formatPhilippinePeso(transaction.total_amount || 0) }}</div>
+                        <div class="mb-1 text-xs text-muted-foreground">
+                            Total Amount
+                        </div>
+                        <div class="text-2xl font-bold">
+                            {{
+                                formatPhilippinePeso(
+                                    transaction.total_amount || 0,
+                                )
+                            }}
+                        </div>
                     </div>
-                    
-                    <Badge :variant="paymentStatus.variant" class="text-xs">{{ paymentStatus.label }}</Badge>
-                    
+
+                    <Badge :variant="paymentStatus.variant" class="text-xs">{{
+                        paymentStatus.label
+                    }}</Badge>
+
                     <!-- Paid Amount for Utang -->
-                    <div v-if="transaction.payment_type === 'utang'" class="text-sm">
+                    <div
+                        v-if="transaction.payment_type === 'utang'"
+                        class="text-sm"
+                    >
                         <span class="text-muted-foreground">Paid Amount: </span>
-                        <span class="font-medium">{{ formatPhilippinePeso(transaction.paid_amount || 0) }}</span>
+                        <span class="font-medium">{{
+                            formatPhilippinePeso(transaction.paid_amount || 0)
+                        }}</span>
                     </div>
-                    
+
                     <!-- Outstanding Balance if Utang -->
-                    <div v-if="outstandingBalance" class="text-sm text-destructive font-medium">
+                    <div
+                        v-if="outstandingBalance"
+                        class="text-sm font-medium text-destructive"
+                    >
                         Remaining: {{ outstandingBalance }}
                     </div>
                 </div>
-                
+
                 <!-- Items Purchased -->
-                <div v-if="transaction.sales_items && transaction.sales_items.length > 0" class="space-y-3">
-                    <h4 class="font-medium text-sm text-muted-foreground uppercase tracking-wide">Items Sold</h4>
+                <div
+                    v-if="
+                        transaction.sales_items &&
+                        transaction.sales_items.length > 0
+                    "
+                    class="space-y-3"
+                >
+                    <h4
+                        class="text-sm font-medium tracking-wide text-muted-foreground uppercase"
+                    >
+                        Items Sold
+                    </h4>
                     <div class="space-y-2">
-                        <div 
-                            v-for="item in transaction.sales_items" 
+                        <div
+                            v-for="item in transaction.sales_items"
                             :key="item.id"
-                            class="flex justify-between items-center py-2 border-b border-border/50 last:border-0"
+                            class="flex items-center justify-between border-b border-border/50 py-2 last:border-0"
                         >
                             <div class="flex-1">
-                                <div class="font-medium text-sm">{{ item.product_name }}</div>
+                                <div class="text-sm font-medium">
+                                    {{ item.product_name }}
+                                </div>
                                 <div class="text-xs text-muted-foreground">
-                                    {{ item.quantity }} × {{ formatPhilippinePeso(item.unit_price) }}
+                                    {{ item.quantity }} ×
+                                    {{ formatPhilippinePeso(item.unit_price) }}
                                 </div>
                             </div>
-                            <div class="font-medium text-sm">{{ formatPhilippinePeso(item.total_price) }}</div>
+                            <div class="text-sm font-medium">
+                                {{ formatPhilippinePeso(item.total_price) }}
+                            </div>
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Balance Summary (only for Credit) -->
-                <div v-if="transaction.payment_type === 'utang'" class="bg-muted/20 p-3 rounded-lg space-y-2">
-                    <h4 class="font-medium text-sm text-muted-foreground uppercase tracking-wide">Customer Balance</h4>
+                <div
+                    v-if="transaction.payment_type === 'utang'"
+                    class="space-y-2 rounded-lg bg-muted/20 p-3"
+                >
+                    <h4
+                        class="text-sm font-medium tracking-wide text-muted-foreground uppercase"
+                    >
+                        Customer Balance
+                    </h4>
                     <div class="flex justify-between text-sm">
                         <span>Previous:</span>
-                        <span>{{ transaction.formatted_previous_balance }}</span>
+                        <span>{{
+                            transaction.formatted_previous_balance
+                        }}</span>
                     </div>
-                    <div class="flex justify-between text-sm font-medium border-t pt-2">
+                    <div
+                        class="flex justify-between border-t pt-2 text-sm font-medium"
+                    >
                         <span>New balance:</span>
-                        <span class="text-destructive">{{ transaction.formatted_new_balance }}</span>
+                        <span class="text-destructive">{{
+                            transaction.formatted_new_balance
+                        }}</span>
                     </div>
                 </div>
-                
+
                 <!-- Notes (if any) -->
-                <div v-if="transaction.notes && transaction.notes.trim()" class="bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg">
-                    <h4 class="font-medium text-sm text-blue-800 dark:text-blue-200 mb-1">Notes:</h4>
-                    <p class="text-sm text-blue-700 dark:text-blue-300">{{ transaction.notes }}</p>
+                <div
+                    v-if="transaction.notes && transaction.notes.trim()"
+                    class="rounded-lg bg-blue-50 p-3 dark:bg-blue-950/20"
+                >
+                    <h4
+                        class="mb-1 text-sm font-medium text-blue-800 dark:text-blue-200"
+                    >
+                        Notes:
+                    </h4>
+                    <p class="text-sm text-blue-700 dark:text-blue-300">
+                        {{ transaction.notes }}
+                    </p>
                 </div>
             </div>
         </DialogContent>

@@ -25,6 +25,18 @@ class ProductCategory extends Model
         return $query->where('status', 'active');
     }
 
+    public function scopeOwnedBy($query, $userId = null)
+    {
+        $userId = $userId ?? auth()->id();
+
+        return $query->where('user_id', $userId);
+    }
+
+    public function scopeActiveOwned($query, $userId = null)
+    {
+        return $query->active()->ownedBy($userId);
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

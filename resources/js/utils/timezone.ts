@@ -9,7 +9,7 @@ export const MANILA_TIMEZONE = 'Asia/Manila';
  */
 export function getCurrentManilaDateTime(): string {
     const now = new Date();
-    
+
     // Get the Manila time using Intl.DateTimeFormat
     const manilaFormatter = new Intl.DateTimeFormat('en-CA', {
         timeZone: MANILA_TIMEZONE,
@@ -18,16 +18,16 @@ export function getCurrentManilaDateTime(): string {
         day: '2-digit',
         hour: '2-digit',
         minute: '2-digit',
-        hour12: false
+        hour12: false,
     });
-    
+
     const parts = manilaFormatter.formatToParts(now);
-    const year = parts.find(part => part.type === 'year')?.value;
-    const month = parts.find(part => part.type === 'month')?.value;
-    const day = parts.find(part => part.type === 'day')?.value;
-    const hour = parts.find(part => part.type === 'hour')?.value;
-    const minute = parts.find(part => part.type === 'minute')?.value;
-    
+    const year = parts.find((part) => part.type === 'year')?.value;
+    const month = parts.find((part) => part.type === 'month')?.value;
+    const day = parts.find((part) => part.type === 'day')?.value;
+    const hour = parts.find((part) => part.type === 'hour')?.value;
+    const minute = parts.find((part) => part.type === 'minute')?.value;
+
     return `${year}-${month}-${day}T${hour}:${minute}`;
 }
 
@@ -36,20 +36,20 @@ export function getCurrentManilaDateTime(): string {
  */
 export function getCurrentManilaDate(): string {
     const now = new Date();
-    
+
     // Get the Manila date using Intl.DateTimeFormat
     const manilaFormatter = new Intl.DateTimeFormat('en-CA', {
         timeZone: MANILA_TIMEZONE,
         year: 'numeric',
         month: '2-digit',
-        day: '2-digit'
+        day: '2-digit',
     });
-    
+
     const parts = manilaFormatter.formatToParts(now);
-    const year = parts.find(part => part.type === 'year')?.value;
-    const month = parts.find(part => part.type === 'month')?.value;
-    const day = parts.find(part => part.type === 'day')?.value;
-    
+    const year = parts.find((part) => part.type === 'year')?.value;
+    const month = parts.find((part) => part.type === 'month')?.value;
+    const day = parts.find((part) => part.type === 'day')?.value;
+
     return `${year}-${month}-${day}`;
 }
 
@@ -63,7 +63,7 @@ export function formatManilaDateTime(dateString: string): string {
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
-        timeZone: MANILA_TIMEZONE
+        timeZone: MANILA_TIMEZONE,
     });
 }
 
@@ -75,7 +75,7 @@ export function formatManilaDate(dateString: string): string {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
-        timeZone: MANILA_TIMEZONE
+        timeZone: MANILA_TIMEZONE,
     });
 }
 
@@ -83,10 +83,13 @@ export function formatManilaDate(dateString: string): string {
  * Format currency to Philippine peso format
  */
 export function formatPhilippinePeso(amount: number): string {
-    return '₱' + amount.toLocaleString('en-PH', { 
-        minimumFractionDigits: 2, 
-        maximumFractionDigits: 2 
-    });
+    return (
+        '₱' +
+        amount.toLocaleString('en-PH', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        })
+    );
 }
 
 /**

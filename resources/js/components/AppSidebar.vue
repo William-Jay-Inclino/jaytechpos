@@ -14,16 +14,16 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { 
-    LayoutGrid, 
-    ShoppingCart, 
-    Package, 
-    Users, 
+import {
     Activity,
     Banknote,
-    CircleDollarSign,
     BookOpen,
+    CircleDollarSign,
+    LayoutGrid,
+    Package,
+    ShoppingCart,
     UserCircle,
+    Users,
 } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
@@ -50,7 +50,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Product Management',
-        href: '',
+        href: '/products',
         icon: Package,
     },
     {

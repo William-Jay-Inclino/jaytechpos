@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
-import { type BreadcrumbItem } from '@/types';
-import { Head, useForm } from '@inertiajs/vue3';
+import { Button } from '@/components/ui/button';
 import {
     Table,
     TableBody,
@@ -9,15 +7,16 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from "@/components/ui/table"
-import { Button } from '@/components/ui/button';
-import { Link } from '@inertiajs/vue3'
-import { LucideEdit, LucideTrash } from 'lucide-vue-next';
+} from '@/components/ui/table';
+import AppLayout from '@/layouts/AppLayout.vue';
 import { showConfirmDelete, showSuccessToast } from '@/lib';
+import { type BreadcrumbItem } from '@/types';
+import { Head, Link, useForm } from '@inertiajs/vue3';
+import { LucideEdit, LucideTrash } from 'lucide-vue-next';
 
 defineProps<{
-    product_categories: Array<any>,
-}>()
+    product_categories: Array<any>;
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -26,8 +25,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-const form = useForm({})
-
+const form = useForm({});
 
 async function onClickDelete(categoryId: number) {
     const result = await showConfirmDelete({
@@ -45,36 +43,54 @@ async function onClickDelete(categoryId: number) {
         });
     }
 }
-
 </script>
 
 <template>
     <Head title="Product Categories" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div class="container mx-auto px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
             <!-- Header -->
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-                <h1 class="text-lg sm:text-xl lg:text-2xl font-semibold tracking-tight">
+            <div
+                class="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center"
+            >
+                <h1
+                    class="text-lg font-semibold tracking-tight sm:text-xl lg:text-2xl"
+                >
                     Product Categories
                 </h1>
-                <Link href="/product-categories/create" class="w-full sm:w-auto">
-                    <Button class="w-full sm:w-auto shadow-md">Add Product Category</Button>
+                <Link
+                    href="/product-categories/create"
+                    class="w-full sm:w-auto"
+                >
+                    <Button class="w-full shadow-md sm:w-auto"
+                        >Add Product Category</Button
+                    >
                 </Link>
             </div>
 
             <!-- Table -->
-            <div class="overflow-x-auto rounded-xl border bg-white dark:bg-gray-900 dark:border-gray-700 shadow-sm">
-                <Table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <div
+                class="overflow-x-auto rounded-xl border bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900"
+            >
+                <Table
+                    class="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
+                >
                     <TableHeader>
                         <TableRow class="bg-gray-50 dark:bg-gray-800">
-                            <TableHead class="px-4 sm:px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <TableHead
+                                class="px-4 py-3 text-left text-sm font-medium text-gray-700 sm:px-6 dark:text-gray-300"
+                            >
                                 Name
                             </TableHead>
-                            <TableHead class="px-4 sm:px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <TableHead
+                                class="px-4 py-3 text-left text-sm font-medium text-gray-700 sm:px-6 dark:text-gray-300"
+                            >
                                 Description
                             </TableHead>
-                            <TableHead class="px-4 sm:px-6 py-3 text-center text-sm font-medium text-gray-700 dark:text-gray-300 w-32">
+                            <TableHead
+                                class="w-32 px-4 py-3 text-center text-sm font-medium text-gray-700 sm:px-6 dark:text-gray-300"
+                            >
                                 Actions
                             </TableHead>
                         </TableRow>
@@ -83,22 +99,39 @@ async function onClickDelete(categoryId: number) {
                         <TableRow
                             v-for="category in product_categories"
                             :key="category.id"
-                            class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                            class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
                         >
-                            <TableCell class="px-4 sm:px-6 py-4 font-medium text-gray-800 dark:text-gray-100">
+                            <TableCell
+                                class="px-4 py-4 font-medium text-gray-800 sm:px-6 dark:text-gray-100"
+                            >
                                 {{ category.name }}
                             </TableCell>
-                            <TableCell class="px-4 sm:px-6 py-4 text-gray-600 dark:text-gray-300">
+                            <TableCell
+                                class="px-4 py-4 text-gray-600 sm:px-6 dark:text-gray-300"
+                            >
                                 {{ category.description }}
                             </TableCell>
-                            <TableCell class="px-4 sm:px-6 py-4 text-center">
-                                <div class="flex items-center justify-center gap-3">
-                                    <Link :href="`/product-categories/${category.id}/edit`">
-                                        <Button variant="ghost" size="icon" class="h-8 w-8 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-500">
+                            <TableCell class="px-4 py-4 text-center sm:px-6">
+                                <div
+                                    class="flex items-center justify-center gap-3"
+                                >
+                                    <Link
+                                        :href="`/product-categories/${category.id}/edit`"
+                                    >
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            class="h-8 w-8 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-500"
+                                        >
                                             <lucide-edit class="h-4 w-4" />
                                         </Button>
                                     </Link>
-                                    <Button @click="onClickDelete(category.id)" variant="ghost" size="icon" class="h-8 w-8 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-500">
+                                    <Button
+                                        @click="onClickDelete(category.id)"
+                                        variant="ghost"
+                                        size="icon"
+                                        class="h-8 w-8 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-500"
+                                    >
                                         <lucide-trash class="h-4 w-4" />
                                     </Button>
                                 </div>
@@ -110,4 +143,3 @@ async function onClickDelete(categoryId: number) {
         </div>
     </AppLayout>
 </template>
-

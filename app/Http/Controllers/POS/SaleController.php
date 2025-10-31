@@ -20,11 +20,12 @@ class SaleController extends Controller
 {
     public function create(): Response
     {
-        $products = Product::orderBy('product_name')
+        $products = Product::availableForSale()
+            ->orderBy('product_name')
             ->get();
 
         $customers = CustomerResource::collection(
-            Customer::where('user_id', auth()->id())
+            Customer::ownedBy()
                 ->orderBy('name')
                 ->get()
         )->resolve();
@@ -46,12 +47,12 @@ class SaleController extends Controller
             // Get current balance before creating the sale
             $previousBalance = 0;
             $newBalance = 0;
-            
+
             if ($request->validated('customer_id')) {
                 $customer = Customer::find($request->validated('customer_id'));
                 if ($customer) {
                     $previousBalance = $customer->running_utang_balance;
-                    
+
                     // Calculate new balance based on payment type
                     if ($request->validated('payment_type') === 'utang') {
                         // For utang sales, balance increases by unpaid amount
@@ -105,27 +106,27 @@ class SaleController extends Controller
             $sale->load(['user', 'customer', 'salesItems.product']);
 
             // Add payment calculation details to the sale object for the resource
-            $sale->amount_tendered = $request->validated('payment_type') === 'cash' 
+            $sale->amount_tendered = $request->validated('payment_type') === 'cash'
                 ? $request->validated('amount_tendered', $sale->paid_amount)
                 : null;
-            
+
             $sale->change_amount = $request->validated('payment_type') === 'cash'
                 ? max(0, $request->validated('amount_tendered', 0) - $sale->total_amount - $request->validated('deduct_from_balance', 0))
                 : null;
-            
+
             $sale->balance_payment = $request->validated('deduct_from_balance', 0);
-            
+
             $sale->original_customer_balance = $sale->previous_balance;
-            
+
             $sale->new_customer_balance = $sale->new_balance;
 
             // Prepare response data using the resource
             $saleData = (new SaleResource($sale))->resolve();
 
             return Inertia::render('sales/Index', [
-                'products' => Product::orderBy('product_name')->get(),
+                'products' => Product::availableForSale()->orderBy('product_name')->get(),
                 'customers' => CustomerResource::collection(
-                    Customer::where('user_id', auth()->id())
+                    Customer::ownedBy()
                         ->orderBy('name')
                         ->get()
                 )->resolve(),
@@ -137,9 +138,9 @@ class SaleController extends Controller
             Log::error('Sale creation failed: '.$e->getMessage());
 
             return Inertia::render('sales/Index', [
-                'products' => Product::orderBy('product_name')->get(),
+                'products' => Product::availableForSale()->orderBy('product_name')->get(),
                 'customers' => CustomerResource::collection(
-                    Customer::where('user_id', auth()->id())
+                    Customer::ownedBy()
                         ->orderBy('name')
                         ->get()
                 )->resolve(),
@@ -154,12 +155,13 @@ class SaleController extends Controller
     private function generateInvoiceNumber(): string
     {
         $prefix = 'INV-'.date('Y').'-';
-        
+
         // Get all sales with the current year prefix and extract numbers
         $existingNumbers = Sale::where('invoice_number', 'like', $prefix.'%')
             ->pluck('invoice_number')
             ->map(function ($invoiceNumber) use ($prefix) {
                 $numberPart = substr($invoiceNumber, strlen($prefix));
+
                 return (int) $numberPart;
             })
             ->max();
@@ -236,7 +238,7 @@ class SaleController extends Controller
         if ($currentTracking) {
             // Deduct from existing record
             $currentTracking->decrement('beginning_balance', $deductionAmount);
-            
+
             // If balance is now zero or negative, update customer's has_utang status
             if ($currentTracking->fresh()->beginning_balance <= 0) {
                 Customer::where('id', $customerId)->update(['has_utang' => false]);
@@ -251,7 +253,7 @@ class SaleController extends Controller
             if ($previousTracking) {
                 $customer = Customer::find($customerId);
                 $interestRate = $customer->getEffectiveInterestRate();
-                
+
                 // Calculate balance with interest from previous month and subtract deduction
                 $balanceWithInterest = $previousTracking->beginning_balance * (1 + ($interestRate / 100));
                 $newBalance = $balanceWithInterest - $deductionAmount;

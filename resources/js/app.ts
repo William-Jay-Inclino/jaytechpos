@@ -6,8 +6,8 @@ import type { DefineComponent } from 'vue';
 import { createApp, h } from 'vue';
 import { initializeTheme } from './composables/useAppearance';
 
-import Toast, { type PluginOptions, POSITION } from "vue-toastification"
-import "vue-toastification/dist/index.css"
+import Toast, { type PluginOptions, POSITION } from 'vue-toastification';
+import 'vue-toastification/dist/index.css';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -22,8 +22,8 @@ createInertiaApp({
         // createApp({ render: () => h(App, props) })
         //     .use(plugin)
         //     .mount(el);
-        const vueApp = createApp({ render: () => h(App, props) })
-        vueApp.use(plugin)
+        const vueApp = createApp({ render: () => h(App, props) });
+        vueApp.use(plugin);
 
         // Toast options (customize as needed)
         const options: PluginOptions = {
@@ -34,15 +34,14 @@ createInertiaApp({
             draggable: true,
             showCloseButtonOnHover: false,
             hideProgressBar: false,
-            closeButton: "button",
+            closeButton: 'button',
             icon: true,
             rtl: false,
-        }
+        };
 
-        vueApp.use(Toast, options)
+        vueApp.use(Toast, options);
 
-        vueApp.mount(el)
-
+        vueApp.mount(el);
     },
     progress: {
         color: '#4B5563',

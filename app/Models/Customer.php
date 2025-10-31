@@ -24,6 +24,35 @@ class Customer extends Model
         'interest_rate' => 'float',
     ];
 
+    /**
+     * Scope: Filter customers owned by a specific user
+     * Use this to ensure users only see their own customers
+     */
+    public function scopeOwnedBy($query, $userId = null)
+    {
+        $userId = $userId ?? auth()->id();
+
+        return $query->where('user_id', $userId);
+    }
+
+    /**
+     * Scope: Filter customers with utang (debt)
+     * Useful for collecting outstanding balances
+     */
+    public function scopeWithUtang($query)
+    {
+        return $query->where('has_utang', true);
+    }
+
+    /**
+     * Scope: Filter customers without utang (no debt)
+     * Useful for finding customers with clear balances
+     */
+    public function scopeWithoutUtang($query)
+    {
+        return $query->where('has_utang', false);
+    }
+
     public function sales()
     {
         return $this->hasMany(Sale::class);

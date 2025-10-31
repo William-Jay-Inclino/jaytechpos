@@ -1,4 +1,4 @@
-import { User } from ".";
+import { User } from '.';
 
 export interface Customer {
     id: number;
@@ -150,11 +150,7 @@ export interface Product {
     id: number;
     user_id: number;
     category_id: number;
-    supplier_id: number;
     unit_id: number;
-    vat_type: 'vat' | 'vat_exempt' | 'vat_zero_rated' | 'non_vat';
-    sku: string;
-    barcode: string | null;
     product_name: string;
     description: string;
     unit_price: number;
@@ -164,7 +160,6 @@ export interface Product {
     updated_at: string;
 
     // relationships
-    category?: ProductCategory;
-    supplier?: Supplier;
+    product_category?: ProductCategory;
     unit?: Unit;
 }

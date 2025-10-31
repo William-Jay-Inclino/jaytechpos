@@ -22,7 +22,7 @@ class UtangPaymentController extends Controller
     public function index(): Response
     {
         $customers = CustomerResource::collection(
-            Customer::where('user_id', auth()->id())
+            Customer::ownedBy()
                 ->orderBy('name')
                 ->get()
         )->resolve();
@@ -105,10 +105,10 @@ class UtangPaymentController extends Controller
                     ->whereYear('computation_date', $previousMonth->year)
                     ->whereMonth('computation_date', $previousMonth->month)
                     ->first();
-                
+
                 $previousBalance = $previousTracking ? $previousTracking->beginning_balance : 0;
                 $newBalance = $tracking->beginning_balance;
-                
+
                 return [
                     'id' => $tracking->id,
                     'type' => 'tracking',
