@@ -3,10 +3,15 @@
 namespace App\Http\Controllers\POS;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreCustomerRequest;
+use App\Http\Requests\UpdateCustomerRequest;
+use App\Http\Resources\CustomerResource;
 use App\Models\Customer;
 use App\Services\CustomerService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class CustomerController extends Controller
 {
@@ -15,59 +20,99 @@ class CustomerController extends Controller
     ) {}
 
     /**
-     * Display a listing of the resource.
+     * Display a listing of customers.
      */
-    public function index()
+    public function index(): Response
     {
-        //
+        $customers = CustomerResource::collection(
+            Customer::ownedBy()
+                ->orderBy('name')
+                ->get()
+        )->resolve();
+
+        return Inertia::render('customers/Index', [
+            'customers' => $customers,
+        ]);
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Show the form for creating a new customer.
      */
-    public function create()
+    public function create(): Response
     {
-        //
+        return Inertia::render('customers/Create');
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created customer.
      */
-    public function store(Request $request)
+    public function store(StoreCustomerRequest $request): RedirectResponse
     {
-        //
+        $customer = Customer::create([
+            'user_id' => auth()->id(),
+            'name' => $request->validated('name'),
+            'mobile_number' => $request->validated('mobile_number'),
+            'remarks' => $request->validated('remarks'),
+            'interest_rate' => $request->validated('interest_rate'),
+        ]);
+
+        return redirect()->route('customers.index')
+            ->with('message', 'Customer created successfully!');
     }
 
     /**
-     * Display the specified resource.
+     * Show the form for editing the specified customer.
      */
-    public function show(string $id)
+    public function edit(Customer $customer): Response
     {
-        //
+        // Ensure customer belongs to authenticated user
+        if ($customer->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized access to customer data.');
+        }
+
+        return Inertia::render('customers/Edit', [
+            'customer' => new CustomerResource($customer),
+        ]);
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Update the specified customer.
      */
-    public function edit(string $id)
+    public function update(UpdateCustomerRequest $request, Customer $customer): RedirectResponse
     {
-        //
+        $customer->update([
+            'name' => $request->validated('name'),
+            'mobile_number' => $request->validated('mobile_number'),
+            'remarks' => $request->validated('remarks'),
+            'interest_rate' => $request->validated('interest_rate'),
+        ]);
+
+        return redirect()->route('customers.index')
+            ->with('message', 'Customer updated successfully!');
     }
 
     /**
-     * Update the specified resource in storage.
+     * Remove the specified customer from storage.
      */
-    public function update(Request $request, string $id)
+    public function destroy(Customer $customer): RedirectResponse
     {
-        //
-    }
+        // Ensure customer belongs to authenticated user
+        if ($customer->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized access to customer data.');
+        }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        // Check if customer has any related records
+        if ($customer->sales()->exists() ||
+            $customer->utangTrackings()->exists() ||
+            $customer->utangPayments()->exists()) {
+            return redirect()->route('customers.index')
+                ->with('error', 'Cannot delete customer with existing sales, utang trackings, or payments.');
+        }
+
+        $customer->delete();
+
+        return redirect()->route('customers.index')
+            ->with('message', 'Customer deleted successfully!');
     }
 
     /**

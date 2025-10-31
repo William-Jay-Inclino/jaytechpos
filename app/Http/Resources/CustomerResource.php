@@ -20,6 +20,7 @@ class CustomerResource extends JsonResource
             'mobile_number' => $this->mobile_number,
             'has_utang' => $this->has_utang,
             'interest_rate' => $this->interest_rate,
+            'remarks' => $this->remarks,
             'effective_interest_rate' => $this->getEffectiveInterestRate(),
             'running_utang_balance' => $this->running_utang_balance,
             'created_at' => $this->created_at,

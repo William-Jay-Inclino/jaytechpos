@@ -16,6 +16,7 @@ class Customer extends Model
         'mobile_number',
         'has_utang',
         'interest_rate',
+        'remarks',
     ];
 
     protected $casts = [

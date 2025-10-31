@@ -29,23 +29,26 @@ Route::middleware(['throttle:global'])->group(function () {
         return Inertia::render('Dashboard');
     })->middleware(['auth', 'verified'])->name('dashboard');
 
-    // Route::get('sales', function () {
-    //     return Inertia::render('sales/Index');
-    // })->middleware(['auth', 'verified'])->name('sales.index');
-
+    // sales
     Route::get('sales', [SaleController::class, 'index'])->middleware(['auth', 'verified'])->name('sales');
     Route::post('sales', [SaleController::class, 'store'])->middleware(['auth', 'verified'])->name('sales.store');
 
+    // utang payments
     Route::get('utang-payments', [UtangPaymentController::class, 'index'])->middleware(['auth', 'verified'])->name('utang-payments');
     Route::post('utang-payments', [UtangPaymentController::class, 'store'])->middleware(['auth', 'verified'])->name('utang-payments.store');
 
-    // Customer routes
+    // customers
     Route::get('customers/{customer}/transactions', [CustomerController::class, 'transactions'])->middleware(['auth', 'verified'])->name('customers.transactions');
+    Route::resource('customers', CustomerController::class)
+        ->middleware(['auth', 'verified'])
+        ->except(['show']);
 
+    // product categories
     Route::resource('product-categories', ProductCategoryController::class)
         ->middleware(['auth', 'verified'])
         ->except(['show']);
 
+    // products
     Route::resource('products', ProductController::class)
         ->middleware(['auth', 'verified'])
         ->except(['show']);

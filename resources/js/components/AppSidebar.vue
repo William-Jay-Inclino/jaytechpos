@@ -55,7 +55,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Customer Management',
-        href: '',
+        href: '/customers',
         icon: Users,
     },
     {
