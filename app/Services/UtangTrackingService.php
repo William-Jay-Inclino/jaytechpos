@@ -124,4 +124,23 @@ class UtangTrackingService
             }
         }
     }
+
+    /**
+     * Get total amount receivable for a specific user.
+     * Only gets the most recent (active) utang tracking record for each customer.
+     */
+    public function getTotalAmountReceivable(int $userId): float
+    {
+        // Get the most recent utang tracking record for each customer
+        // Since each month creates a new record, we need only the latest one per customer
+        return UtangTracking::selectRaw('SUM(beginning_balance) as total')
+            ->whereIn('id', function ($query) use ($userId) {
+                $query->selectRaw('MAX(id)')
+                    ->from('utang_trackings')
+                    ->where('user_id', $userId)
+                    ->where('beginning_balance', '>', 0) // Only active balances
+                    ->groupBy('customer_id');
+            })
+            ->value('total') ?? 0;
+    }
 }

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Sale;
+use Carbon\Carbon;
 
 class SaleService
 {
@@ -26,5 +27,24 @@ class SaleService
         $nextNumber = $existingNumbers ? $existingNumbers + 1 : 1;
 
         return $prefix.str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Get total sales for a specific date range and user.
+     * Optionally filter by payment type.
+     */
+    public function getTotalSales(string|Carbon $startDate, string|Carbon $endDate, int $userId, ?string $paymentType = null): float
+    {
+        $startDate = is_string($startDate) ? Carbon::parse($startDate) : $startDate->copy();
+        $endDate = is_string($endDate) ? Carbon::parse($endDate) : $endDate->copy();
+
+        $query = Sale::where('user_id', $userId)
+            ->whereBetween('transaction_date', [$startDate->startOfDay(), $endDate->endOfDay()]);
+
+        if ($paymentType !== null) {
+            $query->where('payment_type', $paymentType);
+        }
+
+        return $query->sum('total_amount');
     }
 }

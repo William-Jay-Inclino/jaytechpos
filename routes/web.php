@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\POS\CustomerController;
 use App\Http\Controllers\POS\ExpenseController;
 use App\Http\Controllers\POS\ProductCategoryController;
@@ -26,9 +27,7 @@ Route::middleware(['throttle:global'])->group(function () {
         return Inertia::render('Welcome');
     })->name('home');
 
-    Route::get('dashboard', function () {
-        return Inertia::render('Dashboard');
-    })->middleware(['auth', 'verified'])->name('dashboard');
+    Route::get('dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
     // sales
     Route::get('sales', [SaleController::class, 'index'])->middleware(['auth', 'verified'])->name('sales');
@@ -56,6 +55,9 @@ Route::middleware(['throttle:global'])->group(function () {
 
     // API endpoints (JSON responses for AJAX calls)
     Route::prefix('api')->middleware(['auth', 'verified'])->group(function () {
+        // Dashboard API endpoints
+        Route::get('dashboard/cash-flow', [DashboardController::class, 'getCashFlowData'])->name('dashboard.api.cash-flow');
+
         // Customer API endpoints
         Route::get('customers/{customer}/transactions', [CustomerController::class, 'getTransactions'])->name('customers.api.transactions');
 
