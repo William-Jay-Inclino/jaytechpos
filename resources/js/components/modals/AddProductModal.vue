@@ -138,17 +138,17 @@ watch(
 
 <template>
     <Dialog v-model:open="isOpen">
-        <DialogContent class="max-h-[85vh] max-w-2xl overflow-hidden">
-            <DialogHeader class="pb-2 text-center">
+        <DialogContent class="max-h-[85vh] max-w-2xl flex flex-col">
+            <DialogHeader class="pb-2 text-center flex-shrink-0">
                 <DialogTitle
                     class="flex items-center justify-center gap-2 text-xl"
                 >
                     <ShoppingCart class="h-5 w-5" />
-                    Add Item to Cart
+                    Add Item
                 </DialogTitle>
             </DialogHeader>
 
-            <div class="flex-1 space-y-5 overflow-y-auto">
+            <div class="flex-1 space-y-5 overflow-y-auto min-h-0">
                 <!-- Search Section -->
                 <div class="space-y-3">
                     <div class="relative">
@@ -205,7 +205,7 @@ watch(
                             @click="selectProduct(product)"
                             class="cursor-pointer border-b border-border/50 p-4 transition-colors last:border-0 hover:bg-muted/50"
                             :class="{
-                                'border-blue-200 bg-blue-50 dark:border-blue-700 dark:bg-blue-950/20':
+                                'border-orange-200 bg-orange-50 dark:border-orange-700 dark:bg-orange-950/20':
                                     selectedProduct?.id === product.id,
                             }"
                         >
@@ -230,22 +230,23 @@ watch(
                 </div>
 
                 <!-- Selected Product Details -->
-                <div v-if="isProductSelected" class="space-y-4 border-t pt-4">
+                <div v-if="isProductSelected" class="space-y-4 border-t-2 border-orange-200 bg-gradient-to-r from-orange-50/50 to-green-50/50 p-4 rounded-lg dark:border-orange-600 dark:from-orange-950/30 dark:to-green-950/30">
                     <Label
-                        class="text-sm font-medium tracking-wide text-muted-foreground uppercase"
+                        class="text-sm font-bold tracking-wide text-orange-700 uppercase flex items-center gap-2 dark:text-orange-400"
                     >
+                        <div class="h-2 w-2 rounded-full bg-orange-600 dark:bg-orange-400"></div>
                         Selected Product
                     </Label>
 
-                    <div class="space-y-4 rounded-lg bg-muted/30 p-4">
+                    <div class="space-y-4 rounded-lg bg-white/80 border-2 border-orange-100 p-5 shadow-sm dark:bg-gray-900/80 dark:border-orange-800">
                         <!-- Product Info -->
-                        <div class="flex items-start justify-between">
+                        <div class="flex items-start justify-between border-b border-orange-100 pb-4 dark:border-orange-700">
                             <div class="flex-1">
-                                <h3 class="text-lg font-semibold">
+                                <h3 class="text-lg font-bold text-gray-900 dark:text-white">
                                     {{ selectedProduct!.product_name }}
                                 </h3>
-                                <div class="mt-1">
-                                    <span class="text-sm text-muted-foreground"
+                                <div class="mt-2">
+                                    <span class="text-base font-semibold text-orange-600 dark:text-orange-400"
                                         >₱{{
                                             Number(
                                                 selectedProduct!.unit_price,
@@ -257,35 +258,39 @@ watch(
                         </div>
 
                         <!-- Quantity Input -->
-                        <div class="grid grid-cols-2 items-end gap-4">
-                            <div class="space-y-2">
+                        <div class="grid grid-cols-2 items-end gap-6 pt-4">
+                            <div class="space-y-3">
                                 <Label
                                     for="quantity"
-                                    class="text-sm font-medium"
-                                    >Quantity</Label
+                                    class="text-sm font-bold text-gray-700 dark:text-gray-300"
+                                    >Qty</Label
                                 >
-                                <Input
-                                    id="quantity"
-                                    v-model.number="productQuantity"
-                                    type="number"
-                                    min="1"
-                                    step="1"
-                                    class="text-center text-lg font-semibold"
-                                    @keydown="handleEnterKey"
-                                />
+                                <div
+                                    class="flex h-12 items-center justify-center rounded-lg border-3 border-orange-300 bg-gradient-to-r from-orange-100 to-orange-200 shadow-md dark:border-orange-600 dark:from-orange-900/40 dark:to-orange-800/40"
+                                >
+                                    <Input
+                                        id="quantity"
+                                        v-model.number="productQuantity"
+                                        type="number"
+                                        min="1"
+                                        step="1"
+                                        class="text-center text-xl font-black bg-transparent border-0 focus:ring-0 focus:outline-0 text-orange-800 dark:text-orange-300 w-full h-full"
+                                        @keydown="handleEnterKey"
+                                    />
+                                </div>
                             </div>
 
                             <!-- Total Price -->
-                            <div class="space-y-2">
+                            <div class="space-y-3">
                                 <Label
-                                    class="text-sm font-medium text-muted-foreground"
-                                    >Total Price</Label
+                                    class="text-sm font-bold text-gray-700 dark:text-gray-300"
+                                    >Amount</Label
                                 >
                                 <div
-                                    class="flex h-10 items-center justify-center rounded-md border border-green-200 bg-green-50 dark:border-green-700 dark:bg-green-950/20"
+                                    class="flex h-12 items-center justify-center rounded-lg border-3 border-green-300 bg-gradient-to-r from-green-100 to-green-200 shadow-md dark:border-green-600 dark:from-green-900/40 dark:to-green-800/40"
                                 >
                                     <span
-                                        class="text-lg font-bold text-green-700 dark:text-green-400"
+                                        class="text-xl font-black text-green-800 dark:text-green-300"
                                     >
                                         ₱{{ totalPrice.toFixed(2) }}
                                     </span>
@@ -298,10 +303,10 @@ watch(
                 <!-- Empty State - Show when no search query -->
                 <div v-if="!hasSearchQuery" class="space-y-4 py-12 text-center">
                     <div
-                        class="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/20"
+                        class="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/20"
                     >
                         <Search
-                            class="h-10 w-10 text-blue-600 dark:text-blue-400"
+                            class="h-10 w-10 text-orange-600 dark:text-orange-400"
                         />
                     </div>
                     <div>
@@ -314,11 +319,11 @@ watch(
             </div>
 
             <!-- Footer Actions -->
-            <div class="space-y-3 border-t pt-4">
+            <div class="space-y-3 border-t pt-4 flex-shrink-0">
                 <Button
                     :disabled="!isProductSelected"
                     @click="addProductToCart"
-                    class="w-full bg-blue-600 text-white hover:bg-blue-700"
+                    class="w-full"
                     size="lg"
                 >
                     <ShoppingCart class="mr-2 h-4 w-4" />

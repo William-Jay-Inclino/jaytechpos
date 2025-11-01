@@ -23,7 +23,7 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/customers',
     },
     {
-        title: 'Create Customer',
+        title: 'Add Customer',
         href: '/customers/create',
     },
 ];
@@ -52,22 +52,11 @@ const handleFormError = () => {
 </script>
 
 <template>
-    <Head title="Create Customer" />
+    <Head title="Add Customer" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="w-full px-4 py-6 lg:px-8 lg:py-10">
             <div class="mx-auto max-w-2xl">
-                <!-- Page Header -->
-                <div class="mb-8">
-                    <h1
-                        class="text-2xl font-bold text-gray-900 lg:text-3xl dark:text-white"
-                    >
-                        ➕ Create New Customer
-                    </h1>
-                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                        Add a new customer to your system
-                    </p>
-                </div>
 
                 <!-- Create Form Card -->
                 <div
@@ -95,7 +84,6 @@ const handleFormError = () => {
                                 id="name"
                                 name="name"
                                 type="text"
-                                placeholder="Enter customer name"
                                 v-model="name"
                                 maxlength="255"
                                 required
@@ -122,7 +110,6 @@ const handleFormError = () => {
                                 id="mobile_number"
                                 name="mobile_number"
                                 type="tel"
-                                placeholder="Enter mobile number"
                                 v-model="mobileNumber"
                                 maxlength="20"
                                 class="h-12 border-2 focus:ring-2 focus:ring-blue-500"
@@ -156,7 +143,7 @@ const handleFormError = () => {
                                 class="h-12 border-2 text-right focus:ring-2 focus:ring-blue-500"
                             />
                             <p class="text-xs text-gray-500 dark:text-gray-400">
-                                This will be used for calculating utang interest. Current value: {{ interestRate || defaultInterestRate }}%
+                                This will be used for calculating utang interest
                             </p>
                             <div
                                 v-if="errors.interest_rate"
@@ -203,10 +190,10 @@ const handleFormError = () => {
                                     <div
                                         class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
                                     ></div>
-                                    Creating...
+                                    Saving Customer...
                                 </span>
                                 <span v-else class="flex items-center gap-2">
-                                    ➕ Create Customer
+                                    Save Customer
                                 </span>
                             </Button>
 
@@ -216,7 +203,7 @@ const handleFormError = () => {
                                 @click="router.visit('/customers')"
                                 class="h-12 px-6 font-semibold"
                             >
-                                ❌ Cancel
+                                Cancel
                             </Button>
                         </div>
                     </Form>

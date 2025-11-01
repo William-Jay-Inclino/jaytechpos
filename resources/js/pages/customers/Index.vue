@@ -3,26 +3,12 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { Customer, type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
 import { computed, ref, withDefaults } from 'vue';
+import { Search, Edit, FileText } from 'lucide-vue-next';
 
 // UI Components
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
 
 const props = withDefaults(defineProps<{
     customers: Array<Customer>;
@@ -85,204 +71,255 @@ const formatCurrency = (amount: number) => {
     <Head title="Customers" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="w-full px-4 py-6 lg:px-8 lg:py-10">
+        <div class="w-full px-3 py-4 lg:px-8 lg:py-10">
             <!-- Page Header -->
             <div class="mx-auto max-w-7xl">
-                <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h1
-                            class="text-2xl font-bold text-gray-900 lg:text-3xl dark:text-white"
-                        >
-                            👥 Customers
-                        </h1>
-                        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                            Manage your customer information and track their accounts
-                        </p>
-                    </div>
+                <div class="mb-4 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
                     
-                    <Button as-child>
-                        <Link href="/customers/create">
-                            ➕ Add New Customer
+                    <Button as-child class="w-full sm:w-auto">
+                        <Link href="/customers/create" class="flex items-center justify-center gap-2">
+                            <span>Add Customer</span>
                         </Link>
                     </Button>
                 </div>
 
-                <!-- Stats Cards -->
-                <div class="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <span class="text-2xl">👥</span>
-                            </div>
-                            <div class="ml-3">
-                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                    Total Customers
-                                </p>
-                                <p class="text-2xl font-bold text-gray-900 dark:text-white">
-                                    {{ totalCustomers }}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <span class="text-2xl">💳</span>
-                            </div>
-                            <div class="ml-3">
-                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                    With Outstanding Balance
-                                </p>
-                                <p class="text-2xl font-bold text-red-600 dark:text-red-400">
-                                    {{ customersWithUtang }}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Search and Filters -->
-                <div class="mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                        <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
-                            <div class="flex-1 sm:min-w-[300px]">
-                                <Input
-                                    v-model="searchQuery"
-                                    type="text"
-                                    placeholder="Search by name or mobile number..."
-                                    class="w-full"
-                                />
-                            </div>
-                            
-                            <div class="sm:min-w-[180px]">
-                                <Select v-model="statusFilter">
-                                    <SelectTrigger class="w-full">
-                                        <SelectValue placeholder="Filter by status" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All Customers</SelectItem>
-                                        <SelectItem value="has_balance">Has Balance</SelectItem>
-                                        <SelectItem value="clear">Clear</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                <div class="mb-4 rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                    <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+                        <!-- Search -->
+                        <div class="relative flex-1">
+                            <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                            <Input
+                                v-model="searchQuery"
+                                type="text"
+                                placeholder="Search here..."
+                                class="pl-10"
+                            />
+                        </div>
+
+                        <!-- Status Filter -->
+                        <div class="flex gap-1.5 sm:gap-2 overflow-x-auto">
+                            <button v-for="status in [
+                                { key: 'all', label: 'All', count: totalCustomers, color: 'blue' },
+                                { key: 'has_balance', label: 'Has Balance', count: customersWithUtang, color: 'red' },
+                                { key: 'clear', label: 'Clear', count: totalCustomers - customersWithUtang, color: 'green' }
+                            ]" :key="status.key" @click="statusFilter = status.key" :class="[
+                                'px-2.5 py-1.5 sm:px-3 rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap',
+                                statusFilter === status.key
+                                    ? `bg-${status.color}-600 text-white`
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                            ]">
+                                {{ status.label }} ({{ status.count }})
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Customers Table -->
-                <div class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                            Customer List
-                        </h3>
-                    </div>
-
-                    <div v-if="!Array.isArray(customers) || customers.length === 0" class="px-6 py-12 text-center">
-                        <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
-                            <span class="text-2xl">👥</span>
+                <!-- Customers Display -->
+                <div class="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800 overflow-hidden">
+                    <!-- Empty State - No Customers -->
+                    <div v-if="!Array.isArray(customers) || customers.length === 0" class="px-4 py-16 sm:px-6 sm:py-20 text-center">
+                        <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
+                            <span class="text-3xl">👥</span>
                         </div>
-                        <h3 class="mt-4 text-sm font-medium text-gray-900 dark:text-white">
+                        <h3 class="mt-6 text-lg font-semibold text-gray-900 dark:text-white">
                             No customers yet
                         </h3>
-                        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                            Get started by adding your first customer.
+                        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+                            Get started by adding your first customer to manage their accounts.
                         </p>
-                        <div class="mt-6">
-                            <Button as-child>
-                                <Link href="/customers/create">
-                                    ➕ Add Customer
+                        <div class="mt-8">
+                            <Button as-child size="lg">
+                                <Link href="/customers/create" class="flex items-center gap-2">
+                                    <span class="text-lg">+</span>
+                                    Add Your First Customer
                                 </Link>
                             </Button>
                         </div>
                     </div>
 
-                    <div v-else-if="filteredCustomers.length === 0 && searchQuery.trim()" class="px-6 py-12 text-center">
-                        <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
-                            <span class="text-2xl">🔍</span>
+                    <!-- Empty State - No Results -->
+                    <div v-else-if="filteredCustomers.length === 0 && (searchQuery.trim() || statusFilter !== 'all')" class="px-4 py-16 sm:px-6 sm:py-20 text-center">
+                        <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
+                            <Search class="h-8 w-8 text-gray-400" />
                         </div>
-                        <h3 class="mt-4 text-sm font-medium text-gray-900 dark:text-white">
+                        <h3 class="mt-6 text-lg font-semibold text-gray-900 dark:text-white">
                             No customers found
                         </h3>
-                        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                            Try adjusting your search or filter criteria.
+                        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+                            Try adjusting your search terms or filter criteria to find what you're looking for.
                         </p>
-                        <div class="mt-6">
-                            <Button variant="outline" @click="searchQuery = ''; statusFilter = 'all'">
-                                Clear Filters
+                        <div class="mt-8">
+                            <Button variant="outline" @click="searchQuery = ''; statusFilter = 'all'" size="lg">
+                                Clear All Filters
                             </Button>
                         </div>
                     </div>
 
-                    <Table v-else-if="filteredCustomers.length > 0">
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead class="w-[200px]">Name</TableHead>
-                                <TableHead>Mobile Number</TableHead>
-                                <TableHead>Interest Rate</TableHead>
-                                <TableHead>Current Balance</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Remarks</TableHead>
-                                <TableHead class="text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            <TableRow v-for="customer in filteredCustomers" :key="customer.id">
-                                <TableCell class="font-medium">
-                                    {{ customer.name }}
-                                </TableCell>
-                                <TableCell>
-                                    {{ customer.mobile_number || 'N/A' }}
-                                </TableCell>
-                                <TableCell>
-                                    {{ customer.effective_interest_rate?.toFixed(2) || '0.00' }}%
-                                </TableCell>
-                                <TableCell>
-                                    <span 
-                                        :class="[
-                                            'font-semibold',
-                                            customer.running_utang_balance > 0 
-                                                ? 'text-red-600 dark:text-red-400' 
-                                                : 'text-green-600 dark:text-green-400'
-                                        ]"
-                                    >
-                                        {{ formatCurrency(customer.running_utang_balance || 0) }}
-                                    </span>
-                                </TableCell>
-                                <TableCell>
-                                    <Badge 
-                                        :variant="customer.has_utang ? 'destructive' : 'secondary'"
-                                    >
-                                        {{ customer.has_utang ? 'Has Balance' : 'Clear' }}
-                                    </Badge>
-                                </TableCell>
-                                <TableCell>
-                                    <span 
-                                        class="text-sm text-gray-600 dark:text-gray-400"
-                                        :title="customer.remarks || undefined"
-                                    >
-                                        {{ customer.remarks ? (customer.remarks.length > 30 ? customer.remarks.substring(0, 30) + '...' : customer.remarks) : 'N/A' }}
-                                    </span>
-                                </TableCell>
-                                <TableCell class="text-right">
-                                    <div class="flex justify-end gap-2">
-                                        <Button size="sm" variant="outline" as-child>
-                                            <Link :href="`/customers/${customer.id}/edit`">
-                                                ✏️ Edit
-                                            </Link>
-                                        </Button>
-                                        
-                                        <Button size="sm" as-child>
-                                            <Link :href="`/customers/${customer.id}/transactions`">
-                                                📋 Transactions
-                                            </Link>
-                                        </Button>
+                    <!-- Customers List -->
+                    <div v-else>
+
+                        <!-- Mobile Cards -->
+                        <div class="block lg:hidden divide-y divide-gray-100 dark:divide-gray-700">
+                            <div
+                                v-for="customer in filteredCustomers"
+                                :key="customer.id"
+                                class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors space-y-3"
+                            >
+                                <!-- Header Row -->
+                                <div class="flex items-start justify-between">
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="text-base font-semibold text-gray-900 dark:text-white truncate">
+                                            {{ customer.name }}
+                                        </h3>
+                                        <div class="mt-1 flex flex-wrap items-center gap-2">
+                                            <Badge 
+                                                :variant="customer.has_utang ? 'destructive' : 'default'"
+                                                :class="customer.has_utang ? '' : 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900 dark:text-green-200 dark:border-green-800'"
+                                                class="text-xs"
+                                            >
+                                                {{ customer.has_utang ? 'Has Balance' : 'Clear' }}
+                                            </Badge>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">
+                                                {{ customer.mobile_number || 'No phone' }}
+                                            </span>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">
+                                                {{ customer.effective_interest_rate?.toFixed(2) || '0.00' }}%
+                                            </span>
+                                        </div>
                                     </div>
-                                </TableCell>
-                            </TableRow>
-                        </TableBody>
-                    </Table>
+                                    <div class="text-right ml-4">
+                                        <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                                            Balance
+                                        </div>
+                                        <div 
+                                            :class="[
+                                                'text-lg font-bold',
+                                                customer.running_utang_balance > 0 
+                                                    ? 'text-red-600 dark:text-red-400' 
+                                                    : 'text-green-600 dark:text-green-400'
+                                            ]"
+                                        >
+                                            {{ formatCurrency(customer.running_utang_balance || 0) }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Remarks (if any) -->
+                                <div v-if="customer.remarks" class="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 italic">
+                                        "{{ customer.remarks.length > 60 ? customer.remarks.substring(0, 60) + '...' : customer.remarks }}"
+                                    </p>
+                                </div>
+
+                                <!-- Actions Row -->
+                                <div class="flex items-center justify-end gap-2 pt-2">
+                                    <Button 
+                                        size="sm" 
+                                        variant="outline" 
+                                        as-child
+                                        class="h-8 px-3"
+                                    >
+                                        <Link :href="`/customers/${customer.id}/edit`">
+                                            <Edit class="h-3 w-3 mr-1.5" />
+                                        </Link>
+                                    </Button>
+                                    
+                                    <Button 
+                                        size="sm" 
+                                        variant="default"
+                                        as-child
+                                        class="h-8 px-3 bg-blue-600 hover:bg-blue-700 text-white"
+                                    >
+                                        <Link :href="`/customers/${customer.id}/transactions`">
+                                            <FileText class="h-3 w-3 mr-1.5 text-white" />
+                                        </Link>
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Desktop Table -->
+                        <div class="hidden lg:block">
+                            <table class="w-full">
+                                <thead class="bg-gray-50 dark:bg-gray-700/50">
+                                    <tr class="border-b border-gray-200 dark:border-gray-700">
+                                        <th class="py-3 pl-6 pr-4 w-80 text-left text-sm font-medium text-gray-900 dark:text-white">
+                                            Customer
+                                        </th>
+                                        <th class="py-3 px-4 w-40 text-right text-sm font-medium text-gray-900 dark:text-white">
+                                            Balance
+                                        </th>
+                                        <th class="py-3 pl-4 pr-6 w-64 text-right text-sm font-medium text-gray-900 dark:text-white">
+                                            Actions
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr 
+                                        v-for="customer in filteredCustomers" 
+                                        :key="customer.id"
+                                        class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                                    >
+                                        <td class="py-4 pl-6 pr-4 w-80">
+                                            <div class="flex items-center gap-3">
+                                                <h3 class="text-base font-semibold text-gray-900 dark:text-white truncate">
+                                                    {{ customer.name }}
+                                                </h3>
+                                                <span class="text-base text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                                                    {{ customer.mobile_number || 'No phone' }}
+                                                </span>
+                                            </div>
+                                            <div class="flex items-center gap-3 mt-1">
+                                                <Badge 
+                                                    :variant="customer.has_utang ? 'destructive' : 'default'"
+                                                    :class="customer.has_utang ? '' : 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900 dark:text-green-200 dark:border-green-800'"
+                                                    class="text-xs"
+                                                >
+                                                    {{ customer.has_utang ? 'Has Balance' : 'Clear' }}
+                                                </Badge>
+                                                <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                                                    {{ customer.effective_interest_rate?.toFixed(2) || '0.00' }}% interest
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td class="py-4 px-4 w-40 text-right">
+                                            <div 
+                                                :class="[
+                                                    'text-lg font-bold',
+                                                    customer.running_utang_balance > 0 
+                                                        ? 'text-red-600 dark:text-red-400' 
+                                                        : 'text-green-600 dark:text-green-400'
+                                                ]"
+                                            >
+                                                {{ formatCurrency(customer.running_utang_balance || 0) }}
+                                            </div>
+                                        </td>
+                                        <td class="py-4 pl-4 pr-6 w-64">
+                                            <div class="flex items-center justify-end gap-2">
+                                                <Button size="sm" variant="outline" as-child>
+                                                    <Link :href="`/customers/${customer.id}/edit`">
+                                                        <Edit class="h-4 w-4" />
+                                                    </Link>
+                                                </Button>
+                                                
+                                                <Button 
+                                                    size="sm" 
+                                                    variant="default"
+                                                    as-child
+                                                    class="bg-blue-600 hover:bg-blue-700 text-white"
+                                                >
+                                                    <Link :href="`/customers/${customer.id}/transactions`">
+                                                        <FileText class="h-4 w-4" />
+                                                    </Link>
+                                                </Button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

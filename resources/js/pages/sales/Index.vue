@@ -21,14 +21,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
+
 
 // Types
 import type { BreadcrumbItem } from '@/types';
@@ -615,146 +608,124 @@ watch(amountTendered, () => {
                                 <Button
                                     size="lg"
                                     @click="isAddModalOpen = true"
-                                    class="bg-blue-600 text-white hover:bg-blue-700"
                                 >
                                     Add Item
                                 </Button>
                             </div>
 
-                            <!-- Items Table -->
-                            <div
-                                class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700"
-                            >
-                                <Table class="min-w-full text-sm">
-                                    <TableHeader>
-                                        <TableRow
-                                            class="bg-gray-50 dark:bg-gray-700"
-                                        >
-                                            <TableHead
-                                                class="font-semibold whitespace-nowrap"
-                                                >Product</TableHead
-                                            >
-                                            <TableHead
-                                                class="text-right font-semibold whitespace-nowrap"
-                                                >Qty</TableHead
-                                            >
-                                            <TableHead
-                                                class="text-right font-semibold whitespace-nowrap"
-                                                >Price</TableHead
-                                            >
-                                            <TableHead
-                                                class="text-right font-semibold whitespace-nowrap"
-                                                >Total</TableHead
-                                            >
-                                            <TableHead class="w-10"></TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        <!-- Dynamic product rows -->
-                                        <TableRow
-                                            v-for="(item, index) in cartItems"
-                                            :key="item.id"
-                                            class="hover:bg-gray-50 dark:hover:bg-gray-700/50"
-                                        >
-                                            <TableCell
-                                                class="flex items-center gap-3 py-4"
-                                            >
-                                                <div class="min-w-0 flex-1">
-                                                    <span
-                                                        class="block truncate text-sm font-medium text-gray-900 dark:text-white"
-                                                        >{{
-                                                            item.product_name
-                                                        }}</span
-                                                    >
-                                                </div>
-                                            </TableCell>
-                                            <TableCell
-                                                class="text-right align-middle"
-                                            >
-                                                <input
-                                                    type="number"
-                                                    min="1"
-                                                    :value="item.quantity"
-                                                    @input="
-                                                        updateCartItemQuantity(
-                                                            index,
-                                                            parseInt(
-                                                                (
-                                                                    $event.target as HTMLInputElement
-                                                                ).value,
-                                                            ),
-                                                        )
-                                                    "
-                                                    class="w-16 rounded-md border border-gray-300 bg-white px-2 py-1 text-right text-sm text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                                />
-                                            </TableCell>
-                                            <TableCell
-                                                class="text-right align-middle text-gray-700 dark:text-gray-300"
-                                                >₱{{
-                                                    Number(
-                                                        item.unit_price,
-                                                    ).toFixed(2)
-                                                }}</TableCell
-                                            >
-                                            <TableCell
-                                                class="text-right align-middle font-semibold text-gray-900 dark:text-white"
-                                            >
-                                                ₱{{
-                                                    calculateItemTotal(
-                                                        item,
-                                                    ).toFixed(2)
-                                                }}
-                                            </TableCell>
-                                            <TableCell class="align-middle">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    @click="
-                                                        removeCartItem(index)
-                                                    "
-                                                    class="text-red-500 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-900/20"
-                                                >
-                                                    <Trash2 class="h-4 w-4" />
-                                                </Button>
-                                            </TableCell>
-                                        </TableRow>
+                            <!-- Items List -->
+                            <div class="rounded-lg border border-gray-200 dark:border-gray-700">
+                                <!-- Empty state -->
+                                <div v-if="!cartItems.length" class="px-6 py-16 text-center">
+                                    <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
+                                        <span class="text-3xl">📝</span>
+                                    </div>
+                                    <h3 class="mt-6 text-lg font-medium text-gray-900 dark:text-white">
+                                        No items in cart
+                                    </h3>
+                                    <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                                        Click "Add Item" to start building your sale
+                                    </p>
+                                </div>
 
-                                        <!-- Empty state -->
-                                        <TableRow v-if="!cartItems.length">
-                                            <TableCell
-                                                colspan="5"
-                                                class="py-12 text-center"
-                                            >
-                                                <div
-                                                    class="flex flex-col items-center gap-3 text-gray-500 dark:text-gray-400"
-                                                >
-                                                    <div
-                                                        class="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700"
-                                                    >
-                                                        <span class="text-2xl"
-                                                            >📝</span
-                                                        >
+                                <!-- Modern Product Cards -->
+                                <div v-else class="divide-y divide-gray-200 dark:divide-gray-700">
+                                    <div 
+                                        v-for="(item, index) in cartItems" 
+                                        :key="item.id"
+                                        class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                                    >
+                                        <!-- Mobile Layout (lg and below) -->
+                                        <div class="block xl:hidden space-y-3">
+                                            <!-- Header Row -->
+                                            <div class="flex items-start justify-between">
+                                                <div class="flex-1 min-w-0">
+                                                    <h3 class="text-base font-semibold text-gray-900 dark:text-white truncate">
+                                                        {{ item.product_name }}
+                                                    </h3>
+                                                    <div class="mt-1 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                                                        <span>₱{{ Number(item.unit_price).toFixed(2) }}/unit</span>
                                                     </div>
-                                                    <p
-                                                        class="text-sm font-medium"
-                                                    >
-                                                        No items in cart
-                                                    </p>
-                                                    <p class="text-xs">
-                                                        Click "Add Item" to
-                                                        start building your sale
-                                                    </p>
                                                 </div>
-                                            </TableCell>
-                                        </TableRow>
+                                                <div class="text-right ml-4">
+                                                    <div class="text-lg font-bold text-green-600 dark:text-green-400">
+                                                        ₱{{ calculateItemTotal(item).toFixed(2) }}
+                                                    </div>
+                                                </div>
+                                            </div>
 
-                                    </TableBody>
-                                </Table>
+                                            <!-- Controls Row -->
+                                            <div class="flex items-center justify-between pt-2">
+                                                <div class="flex items-center gap-2">
+                                                    <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                        Qty:
+                                                    </label>
+                                                    <input
+                                                        type="number"
+                                                        min="1"
+                                                        :value="item.quantity"
+                                                        @input="updateCartItemQuantity(index, parseInt(($event.target as HTMLInputElement).value))"
+                                                        class="w-16 rounded-md border border-gray-300 bg-white px-2 py-1 text-center text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                                    />
+                                                </div>
+                                                
+                                                <Button 
+                                                    size="sm" 
+                                                    variant="destructive"
+                                                    @click="removeCartItem(index)"
+                                                    class="h-8 px-3"
+                                                >
+                                                    <Trash2 class="h-3 w-3" />
+                                                </Button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Desktop Layout (xl and above) -->
+                                        <div class="hidden xl:flex xl:items-center xl:justify-between">
+                                            <div class="flex items-center space-x-4 flex-1">
+                                                <div class="flex-1 min-w-0">
+                                                    <h3 class="text-base font-semibold text-gray-900 dark:text-white truncate">
+                                                        {{ item.product_name }}
+                                                    </h3>
+                                                </div>
+                                                <div class="flex items-center space-x-6">
+                                                    <div class="flex items-center gap-2">
+                                                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                            Qty:
+                                                        </label>
+                                                        <input
+                                                            type="number"
+                                                            min="1"
+                                                            :value="item.quantity"
+                                                            @input="updateCartItemQuantity(index, parseInt(($event.target as HTMLInputElement).value))"
+                                                            class="w-16 rounded-md border border-gray-300 bg-white px-2 py-1 text-center text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                                        />
+                                                    </div>
+                                                    <span class="text-sm text-gray-500 dark:text-gray-400 min-w-[80px] text-right">
+                                                        ₱{{ Number(item.unit_price).toFixed(2) }}/unit
+                                                    </span>
+                                                    <div class="text-lg font-bold text-green-600 dark:text-green-400 min-w-[100px] text-right">
+                                                        ₱{{ calculateItemTotal(item).toFixed(2) }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center gap-2 ml-6">
+                                                <Button 
+                                                    size="sm" 
+                                                    variant="destructive"
+                                                    @click="removeCartItem(index)"
+                                                >
+                                                    <Trash2 class="h-4 w-4 mr-2" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Payment Summary Section -->
                             <div v-if="cartItems.length" class="mt-8 space-y-6">
-                                <div class="border-t pt-6 dark:border-gray-700">
+                                <div class="pt-6">
 
                             <!-- Cash Payment Layout -->
                             <div
@@ -820,7 +791,7 @@ watch(amountTendered, () => {
                                                 min="0"
                                                 step="0.01"
                                                 placeholder="0.00"
-                                                class="border-0 bg-transparent p-0 text-right text-3xl font-bold text-teal-700 placeholder:text-teal-400 focus:ring-0 dark:text-teal-400 dark:placeholder:text-teal-500"
+                                                class="border-0 bg-transparent p-0 text-right text-2xl font-bold text-teal-700 placeholder:text-teal-400 focus:ring-0 dark:text-teal-400 dark:placeholder:text-teal-500"
                                             />
                                         </div>
                                     </div>
@@ -998,26 +969,11 @@ watch(amountTendered, () => {
                                             }}</span
                                         >
                                     </div>
-                                    <p
-                                        class="mt-1 text-xs text-red-600 dark:text-red-400"
-                                    >
-                                        Previous Balance: ₱{{
-                                            (
-                                                selectedCustomer?.running_utang_balance ||
-                                                0
-                                            ).toFixed(2)
-                                        }}
-                                        + Unpaid Amount: ₱{{
-                                            (
-                                                cartTotalAmount - paidAmount
-                                            ).toFixed(2)
-                                        }}
-                                    </p>
                                 </div>
                             </div>
 
                             <!-- Checkout Button Section -->
-                            <div v-if="cartItems.length" class="mt-8 space-y-4 border-t pt-6 dark:border-gray-700">
+                            <div v-if="cartItems.length" class="mt-8 space-y-4">
                                 <Button
                                     size="lg"
                                     class="h-14 w-full bg-green-600 text-lg font-bold text-white shadow-lg hover:bg-green-700"
@@ -1071,8 +1027,8 @@ watch(amountTendered, () => {
 
         <!-- Success Modal with Receipt -->
         <Dialog v-model:open="showSuccessModal">
-            <DialogContent class="max-h-[85vh] max-w-lg overflow-hidden">
-                <DialogHeader class="pb-2 text-center">
+            <DialogContent class="max-h-[85vh] max-w-lg flex flex-col">
+                <DialogHeader class="pb-2 text-center flex-shrink-0">
                     <DialogTitle
                         class="flex items-center justify-center gap-2 text-xl text-green-600 dark:text-green-400"
                     >
@@ -1084,7 +1040,7 @@ watch(amountTendered, () => {
                     </DialogDescription>
                 </DialogHeader>
 
-                <div class="flex-1 space-y-5 overflow-y-auto">
+                <div class="flex-1 space-y-5 overflow-y-auto min-h-0">
                     <!-- Receipt Header -->
                     <div
                         class="space-y-2 rounded-lg bg-muted/30 p-4 text-center"
@@ -1357,7 +1313,7 @@ watch(amountTendered, () => {
                 </div>
 
                 <!-- Modal Actions -->
-                <div class="flex justify-center border-t pt-4">
+                <div class="flex justify-center border-t pt-4 flex-shrink-0">
                     <Button
                         @click="closeSuccessModal"
                         class="bg-green-600 px-8 text-white hover:bg-green-700"

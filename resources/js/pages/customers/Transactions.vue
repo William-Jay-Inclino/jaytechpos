@@ -80,17 +80,6 @@ onMounted(() => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="w-full px-4 py-6 lg:px-8 lg:py-10">
             <div class="mx-auto max-w-7xl">
-                <!-- Page Header -->
-                <div class="mb-8">
-                    <h1
-                        class="text-2xl font-bold text-gray-900 lg:text-3xl dark:text-white"
-                    >
-                        📋 {{ customer.name }}'s Transactions
-                    </h1>
-                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                        Complete transaction history for this customer
-                    </p>
-                </div>
 
                 <!-- Customer Summary Card -->
                 <div class="mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">

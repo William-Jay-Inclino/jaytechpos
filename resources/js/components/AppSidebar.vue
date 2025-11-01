@@ -66,11 +66,11 @@ const footerNavItems: NavItem[] = [
         href: 'https://www.facebook.com/jewell.inclino/',
         icon: UserCircle,
     },
-    {
-        title: 'Read the Documentation',
-        href: '',
-        icon: BookOpen,
-    },
+    // {
+    //     title: 'Read the Documentation',
+    //     href: '',
+    //     icon: BookOpen,
+    // },
 ];
 </script>
 

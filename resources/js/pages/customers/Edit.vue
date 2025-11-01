@@ -86,16 +86,6 @@ const handleDelete = async () => {
             <div class="mx-auto max-w-2xl">
                 <!-- Page Header -->
                 <div class="mb-8 flex items-center justify-between">
-                    <div>
-                        <h1
-                            class="text-2xl font-bold text-gray-900 lg:text-3xl dark:text-white"
-                        >
-                            ✏️ Edit Customer
-                        </h1>
-                        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                            Update {{ customer.name }}'s information
-                        </p>
-                    </div>
 
                     <Button
                         variant="destructive"
@@ -103,7 +93,7 @@ const handleDelete = async () => {
                         @click="handleDelete"
                         class="font-semibold"
                     >
-                        🗑️ Delete
+                        Delete
                     </Button>
                 </div>
 
@@ -132,7 +122,6 @@ const handleDelete = async () => {
                                 id="name"
                                 name="name"
                                 type="text"
-                                placeholder="Enter customer name"
                                 v-model="name"
                                 maxlength="255"
                                 required
@@ -159,7 +148,6 @@ const handleDelete = async () => {
                                 id="mobile_number"
                                 name="mobile_number"
                                 type="tel"
-                                placeholder="Enter mobile number"
                                 v-model="mobileNumber"
                                 maxlength="20"
                                 class="h-12 border-2 focus:ring-2 focus:ring-blue-500"
@@ -193,7 +181,7 @@ const handleDelete = async () => {
                                 class="h-12 border-2 text-right focus:ring-2 focus:ring-blue-500"
                             />
                             <p class="text-xs text-gray-500 dark:text-gray-400">
-                                This will be used for calculating utang interest. Current value: {{ interestRate || defaultInterestRate }}%
+                                This will be used for calculating utang interest
                             </p>
                             <div
                                 v-if="errors.interest_rate"
@@ -240,10 +228,10 @@ const handleDelete = async () => {
                                     <div
                                         class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
                                     ></div>
-                                    Updating...
+                                    Saving Customer...
                                 </span>
                                 <span v-else class="flex items-center gap-2">
-                                    ✏️ Update Customer
+                                    Save Customer
                                 </span>
                             </Button>
 
@@ -253,7 +241,7 @@ const handleDelete = async () => {
                                 @click="router.visit('/customers')"
                                 class="h-12 px-6 font-semibold"
                             >
-                                ❌ Cancel
+                                Cancel
                             </Button>
                         </div>
                     </Form>
@@ -264,7 +252,7 @@ const handleDelete = async () => {
                     class="mt-6 rounded-xl border border-gray-300 bg-gray-50 p-6 shadow-sm ring-1 ring-gray-100 dark:border-gray-700 dark:bg-gray-900/50 dark:ring-gray-800 dark:shadow-none"
                 >
                     <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
-                        📊 Customer Information
+                        Customer Information
                     </h3>
                     
                     <div class="grid gap-4 sm:grid-cols-2">

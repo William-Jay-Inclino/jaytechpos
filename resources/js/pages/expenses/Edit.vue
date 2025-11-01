@@ -136,12 +136,6 @@ onUnmounted(() => {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="container mx-auto px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-            <!-- Header -->
-            <div class="mb-6">
-                <h1 class="text-lg font-semibold tracking-tight sm:text-xl lg:text-2xl">
-                    Edit Expense
-                </h1>
-            </div>
 
             <!-- Form Card -->
             <div class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 sm:p-8 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none">
@@ -235,7 +229,7 @@ onUnmounted(() => {
                     <!-- Actions -->
                     <div class="flex items-center gap-4">
                         <Button type="submit" :disabled="isSubmitting">
-                            {{ isSubmitting ? 'Updating...' : 'Update Expense' }}
+                            {{ isSubmitting ? 'Saving Expense...' : 'Save Expense' }}
                         </Button>
                         <Link href="/expenses">
                             <Button variant="outline" type="button">

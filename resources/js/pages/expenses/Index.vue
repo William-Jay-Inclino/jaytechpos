@@ -231,9 +231,9 @@ async function deleteExpense(expenseId: number) {
             <div class="mx-auto max-w-7xl space-y-8">
                 <!-- Add New Expense Button -->
                 <div class="flex justify-start">
-                    <Button as-child size="lg">
+                    <Button as-child class="w-full sm:w-auto">
                         <Link href="/expenses/create">
-                            ➕ Add New Expense
+                            Add Expense
                         </Link>
                     </Button>
                 </div>
@@ -361,109 +361,135 @@ async function deleteExpense(expenseId: number) {
                         </div>
                     </div>
 
-                    <!-- Modern Expense Cards -->
-                    <div v-else class="divide-y divide-gray-200 dark:divide-gray-700">
+                    <!-- Mobile Cards -->
+                    <div class="block lg:hidden divide-y divide-gray-200 dark:divide-gray-700">
                         <div 
                             v-for="expense in filteredExpenses" 
                             :key="expense.id"
-                            class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                            class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors space-y-3"
                         >
-                            <!-- Mobile Layout (sm and below) -->
-                            <div class="block lg:hidden space-y-3">
-                                <!-- Header Row -->
-                                <div class="flex items-start justify-between">
-                                    <div class="flex-1 min-w-0">
-                                        <h3 class="text-base font-semibold text-gray-900 dark:text-white truncate">
-                                            {{ expense.name }}
-                                        </h3>
-                                        <div class="mt-1 flex flex-wrap items-center gap-2">
-                                            <Badge 
-                                                variant="outline" 
-                                                class="text-xs"
-                                                :style="expense.category?.color ? getCategoryBadgeStyle(expense.category.color) : {}"
-                                            >
-                                                {{ expense.category?.name || 'No Category' }}
-                                            </Badge>
-                                            <span class="text-xs text-gray-500 dark:text-gray-400">
-                                                {{ formatDate(expense.expense_date) }}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="text-right ml-4">
-                                        <div class="text-lg font-bold text-red-600 dark:text-red-400">
-                                            {{ formatCurrency(expense.amount) }}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Actions Row -->
-                                <div class="flex items-center justify-end gap-2 pt-2">
-                                    <Button 
-                                        size="sm" 
-                                        variant="outline" 
-                                        as-child
-                                        class="h-8 px-3"
-                                    >
-                                        <Link :href="`/expenses/${expense.id}/edit`">
-                                            <Edit class="h-3 w-3 mr-1.5" />
-                                            <span class="hidden sm:inline">Edit</span>
-                                        </Link>
-                                    </Button>
-                                    
-                                    <Button 
-                                        size="sm" 
-                                        variant="destructive"
-                                        @click="deleteExpense(expense.id)"
-                                        class="h-8 px-3"
-                                    >
-                                        <Trash2 class="h-3 w-3 mr-1.5" />
-                                        <span class="hidden sm:inline">Delete</span>
-                                    </Button>
-                                </div>
-                            </div>
-
-                            <!-- Desktop Layout (lg and above) -->
-                            <div class="hidden lg:flex lg:items-center lg:justify-between">
-                                <div class="flex items-center space-x-4 flex-1">
-                                    <div class="flex-1 min-w-0">
-                                        <h3 class="text-base font-semibold text-gray-900 dark:text-white truncate">
-                                            {{ expense.name }}
-                                        </h3>
-                                    </div>
-                                    <div class="flex items-center space-x-4">
+                            <!-- Header Row -->
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-base font-semibold text-gray-900 dark:text-white truncate">
+                                        {{ expense.name }}
+                                    </h3>
+                                    <div class="mt-1 flex flex-wrap items-center gap-2">
                                         <Badge 
                                             variant="outline" 
+                                            class="text-xs"
                                             :style="expense.category?.color ? getCategoryBadgeStyle(expense.category.color) : {}"
                                         >
                                             {{ expense.category?.name || 'No Category' }}
                                         </Badge>
-                                        <span class="text-sm text-gray-500 dark:text-gray-400 min-w-[100px]">
+                                        <span class="text-xs text-gray-500 dark:text-gray-400">
                                             {{ formatDate(expense.expense_date) }}
                                         </span>
-                                        <div class="text-lg font-bold text-red-600 dark:text-red-400 min-w-[120px] text-right">
-                                            {{ formatCurrency(expense.amount) }}
-                                        </div>
                                     </div>
                                 </div>
-                                <div class="flex items-center gap-2 ml-6">
-                                    <Button size="sm" variant="outline" as-child>
-                                        <Link :href="`/expenses/${expense.id}/edit`">
-                                            <Edit class="h-4 w-4 mr-2" />
-                                            Edit
-                                        </Link>
-                                    </Button>
-                                    
-                                    <Button 
-                                        size="sm" 
-                                        variant="destructive"
-                                        @click="deleteExpense(expense.id)"
-                                    >
-                                        <Trash2 class="h-4 w-4 mr-2" />
-                                        Delete
-                                    </Button>
+                                <div class="text-right ml-4">
+                                    <div class="text-lg font-bold text-red-600 dark:text-red-400">
+                                        {{ formatCurrency(expense.amount) }}
+                                    </div>
                                 </div>
                             </div>
+
+                            <!-- Actions Row -->
+                            <div class="flex items-center justify-end gap-2 pt-2">
+                                <Button 
+                                    size="sm" 
+                                    variant="outline" 
+                                    as-child
+                                    class="h-8 px-3"
+                                >
+                                    <Link :href="`/expenses/${expense.id}/edit`">
+                                        <Edit class="h-3 w-3 mr-1.5" />
+                                        <span class="hidden sm:inline">Edit</span>
+                                    </Link>
+                                </Button>
+                                
+                                <Button 
+                                    size="sm" 
+                                    variant="destructive"
+                                    @click="deleteExpense(expense.id)"
+                                    class="h-8 px-3"
+                                >
+                                    <Trash2 class="h-3 w-3 mr-1.5" />
+                                    <span class="hidden sm:inline">Delete</span>
+                                </Button>
+                            </div>
                         </div>
+                    </div>
+
+                    <!-- Desktop Table -->
+                    <div class="hidden lg:block">
+                        <table class="w-full">
+                            <thead class="bg-gray-50 dark:bg-gray-700/50">
+                                <tr class="border-b border-gray-200 dark:border-gray-700">
+                                    <th class="py-3 pl-6 pr-4 text-left text-sm font-medium text-gray-900 dark:text-white">
+                                        Expense
+                                    </th>
+                                    <th class="py-3 px-4 w-24 text-left text-sm font-medium text-gray-900 dark:text-white">
+                                        Date
+                                    </th>
+                                    <th class="py-3 px-4 w-36 text-right text-sm font-medium text-gray-900 dark:text-white">
+                                        Amount
+                                    </th>
+                                    <th class="py-3 pl-4 pr-6 w-32 text-right text-sm font-medium text-gray-900 dark:text-white">
+                                        Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr 
+                                    v-for="expense in filteredExpenses" 
+                                    :key="expense.id"
+                                    class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                                >
+                                    <td class="py-4 pl-6 pr-4">
+                                        <h3 class="text-base font-semibold text-gray-900 dark:text-white truncate">
+                                            {{ expense.name }}
+                                        </h3>
+                                        <div class="mt-1">
+                                            <Badge 
+                                                variant="outline" 
+                                                :style="expense.category?.color ? getCategoryBadgeStyle(expense.category.color) : {}"
+                                                class="text-xs"
+                                            >
+                                                {{ expense.category?.name || 'No Category' }}
+                                            </Badge>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-4 w-24">
+                                        <span class="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                                            {{ formatDate(expense.expense_date) }}
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-4 w-36 text-right">
+                                        <div class="text-lg font-bold text-red-600 dark:text-red-400">
+                                            {{ formatCurrency(expense.amount) }}
+                                        </div>
+                                    </td>
+                                    <td class="py-4 pl-4 pr-6 w-32">
+                                        <div class="flex items-center justify-end gap-2">
+                                            <Button size="sm" variant="outline" as-child>
+                                                <Link :href="`/expenses/${expense.id}/edit`">
+                                                    <Edit class="h-4 w-4" />
+                                                </Link>
+                                            </Button>
+                                            
+                                            <Button 
+                                                size="sm" 
+                                                variant="destructive"
+                                                @click="deleteExpense(expense.id)"
+                                            >
+                                                <Trash2 class="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

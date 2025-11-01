@@ -5,13 +5,7 @@ import ProductCategoryModal from '@/components/modals/ProductCategoryModal.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
+
 import AppLayout from '@/layouts/AppLayout.vue';
 import { showSuccessToast } from '@/lib/toast';
 import { type BreadcrumbItem } from '@/types';
@@ -39,7 +33,7 @@ const props = defineProps<{
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Products', href: '/products' },
-    { title: 'Create Product', href: '/products/create' },
+    { title: 'Add Product', href: '/products/create' },
 ];
 
 const form = useForm({
@@ -188,18 +182,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <Head title="Create Product" />
+    <Head title="Add Product" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="container mx-auto px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-            <!-- Header -->
-            <div class="mb-6">
-                <h1
-                    class="text-lg font-semibold tracking-tight sm:text-xl lg:text-2xl"
-                >
-                    Create Product
-                </h1>
-            </div>
 
             <!-- Form Card -->
             <div
@@ -389,23 +375,52 @@ onUnmounted(() => {
 
                     <!-- Status -->
                     <div class="grid gap-2">
-                        <Label for="status">Status</Label>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">
-                            Active = available for sale, Inactive = out of stock or not available
-                        </p>
-                        <Select v-model="form.status">
-                            <SelectTrigger
-                                class="dark:border-gray-700 dark:bg-gray-800"
-                            >
-                                <SelectValue placeholder="Select status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="active">Active</SelectItem>
-                                <SelectItem value="inactive"
-                                    >Inactive</SelectItem
+                        <Label>Status</Label>
+                        <div class="flex items-center gap-4">
+                            <div class="relative">
+                                <button
+                                    type="button"
+                                    @click="form.status = form.status === 'active' ? 'inactive' : 'active'"
+                                    :class="[
+                                        'relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
+                                        form.status === 'active' 
+                                            ? 'bg-green-500' 
+                                            : 'bg-gray-300 dark:bg-gray-600'
+                                    ]"
                                 >
-                            </SelectContent>
-                        </Select>
+                                    <span
+                                        :class="[
+                                            'inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200',
+                                            form.status === 'active' 
+                                                ? 'translate-x-6' 
+                                                : 'translate-x-1'
+                                        ]"
+                                    ></span>
+                                </button>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span 
+                                    :class="[
+                                        'text-sm font-medium',
+                                        form.status === 'active' 
+                                            ? 'text-green-600 dark:text-green-400' 
+                                            : 'text-gray-600 dark:text-gray-400'
+                                    ]"
+                                >
+                                    {{ form.status === 'active' ? 'Active' : 'Inactive' }}
+                                </span>
+                                <span 
+                                    :class="[
+                                        'text-xs px-2 py-1 rounded-full',
+                                        form.status === 'active' 
+                                            ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400' 
+                                            : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
+                                    ]"
+                                >
+                                    {{ form.status === 'active' ? 'Available for sale' : 'Not available' }}
+                                </span>
+                            </div>
+                        </div>
                         <InputError
                             :message="form.errors.status"
                             class="mt-1"
@@ -415,7 +430,7 @@ onUnmounted(() => {
                     <!-- Actions -->
                     <div class="flex items-center gap-4">
                         <Button type="submit" :disabled="isSubmitting">
-                            {{ isSubmitting ? 'Creating...' : 'Create Product' }}
+                            {{ isSubmitting ? 'Saving Product...' : 'Save Product' }}
                         </Button>
                         <Link href="/products">
                             <Button variant="outline" type="button">

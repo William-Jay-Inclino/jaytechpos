@@ -10,7 +10,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-import { Checkbox } from '@/components/ui/checkbox';
 import InputError from '@/components/InputError.vue';
 import { showSuccessToast, showErrorToast } from '@/lib/toast';
 import { FolderOpen, Plus, Edit, Trash2, Search } from 'lucide-vue-next';
@@ -241,35 +240,33 @@ watch(() => props.open, (isOpen) => {
 
 <template>
     <Dialog v-model:open="isOpen">
-        <DialogContent class="max-h-[85vh] max-w-4xl overflow-hidden">
-            <DialogHeader class="pb-4">
-                <DialogTitle class="flex items-center gap-2 text-xl">
-                    <FolderOpen class="h-5 w-5" />
-                    Manage Product Categories
+        <DialogContent class="max-h-[95vh] w-[95vw] max-w-2xl p-4 sm:p-6 m-2 sm:m-4 overflow-hidden">
+            <DialogHeader class="space-y-2 pb-4">
+                <DialogTitle class="flex items-center gap-2 text-lg sm:text-xl font-semibold">
+                    <FolderOpen class="h-4 w-4 sm:h-5 sm:w-5" />
+                    Manage Categories
                 </DialogTitle>
-                <DialogDescription class="text-sm text-muted-foreground">
-                    Create, edit, and manage your product categories
-                </DialogDescription>
             </DialogHeader>
 
-            <div class="flex h-[600px] gap-6">
-                <!-- Categories List -->
-                <div class="flex-1 space-y-4">
-                    <div class="flex items-center justify-between">
-                        <h3 class="font-medium">Categories</h3>
-                        <Button @click="startCreate" size="sm" class="gap-2">
+            <div class="space-y-6">
+                <!-- Categories List View -->
+                <div v-if="!showForm">
+                    <!-- Header with New Button -->
+                    <div class="flex items-center justify-center sm:justify-between mb-4">
+                        <Button @click="startCreate" class="gap-2 w-full sm:w-auto">
                             <Plus class="h-4 w-4" />
-                            New Category
+                            <span class="hidden xs:inline">New Category</span>
+                            <span class="xs:hidden">New</span>
                         </Button>
                     </div>
 
-                    <!-- Search Input -->
-                    <div class="relative">
+                    <!-- Search -->
+                    <div class="relative mb-4">
                         <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
                             v-model="searchQuery"
                             placeholder="Search categories..."
-                            class="pl-9 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                            class="pl-9"
                         />
                     </div>
 
@@ -278,46 +275,94 @@ watch(() => props.open, (isOpen) => {
                         <div v-for="i in 3" :key="i" class="h-16 animate-pulse rounded-lg bg-muted"></div>
                     </div>
 
-                    <!-- Categories List -->
-                    <div v-else-if="categories.length > 0" class="space-y-2 overflow-y-auto pr-2" style="max-height: 450px;">
-                        <!-- No results message -->
+                    <!-- Categories Grid -->
+                    <div v-else-if="categories.length > 0" class="space-y-3 max-h-[60vh] sm:max-h-96 overflow-y-auto">
+                        <!-- No results -->
                         <div 
                             v-if="filteredCategories.length === 0 && searchQuery.trim()"
-                            class="flex flex-col items-center justify-center rounded-lg border border-dashed py-8"
+                            class="flex flex-col items-center justify-center py-8 sm:py-12 text-center"
                         >
-                            <Search class="h-8 w-8 text-muted-foreground" />
-                            <h4 class="mt-2 font-medium">No categories found</h4>
-                            <p class="text-sm text-muted-foreground">Try adjusting your search terms</p>
+                            <Search class="h-8 w-8 sm:h-12 sm:w-12 text-muted-foreground mb-4" />
+                            <h4 class="font-medium mb-2 text-sm sm:text-base">No categories found</h4>
+                            <p class="text-xs sm:text-sm text-muted-foreground">Try adjusting your search terms</p>
                         </div>
 
-                        <!-- Categories -->
+                        <!-- Category Cards -->
                         <div
                             v-for="category in filteredCategories"
                             :key="category.id"
-                            class="flex items-center justify-between rounded-lg border p-4 hover:bg-muted/50"
+                            class="border rounded-lg hover:bg-muted/50 transition-colors"
                         >
-                            <div class="flex-1">
-                                <h4 class="font-medium">{{ category.name }}</h4>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <div class="flex items-center gap-2">
-                                    <span class="text-sm text-muted-foreground">Default:</span>
-                                    <div @click="toggleDefault(category)" class="cursor-pointer">
-                                        <Checkbox
-                                            v-model="category.is_default"
-                                            :disabled="false"
-                                            aria-label="Set as default category"
-                                        />
+                            <!-- Mobile Layout -->
+                            <div class="block sm:hidden p-3 space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="font-medium truncate text-sm">{{ category.name }}</h4>
+                                    <div class="flex items-center gap-1">
+                                        <Button @click="startEdit(category)" variant="ghost" size="sm">
+                                            <Edit class="h-3 w-3" />
+                                        </Button>
+                                        <Button @click="deleteCategory(category)" variant="ghost" size="sm" class="text-destructive hover:text-destructive">
+                                            <Trash2 class="h-3 w-3" />
+                                        </Button>
                                     </div>
                                 </div>
-                                <div class="flex items-center gap-1">
-                                    <Button @click="startEdit(category)" variant="ghost" size="sm" class="gap-1">
-                                        <Edit class="h-3 w-3" />
-                                        Edit
+                                <div class="flex items-center justify-between">
+                                    <label class="text-xs text-muted-foreground">Default Category:</label>
+                                    <button
+                                        @click="toggleDefault(category)"
+                                        :class="[
+                                            'relative inline-flex h-4 w-7 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1',
+                                            category.is_default 
+                                                ? 'bg-blue-600' 
+                                                : 'bg-gray-200 dark:bg-gray-700'
+                                        ]"
+                                        :aria-pressed="category.is_default"
+                                        aria-label="Toggle default category"
+                                    >
+                                        <span
+                                            :class="[
+                                                'inline-block h-2.5 w-2.5 transform rounded-full bg-white transition-transform duration-200',
+                                                category.is_default ? 'translate-x-3.5' : 'translate-x-0.5'
+                                            ]"
+                                        ></span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Desktop Layout -->
+                            <div class="hidden sm:flex items-center justify-between p-4">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="font-medium truncate">{{ category.name }}</h4>
+                                        <div class="flex items-center gap-2">
+                                            <label class="text-sm text-muted-foreground">Default:</label>
+                                            <button
+                                                @click="toggleDefault(category)"
+                                                :class="[
+                                                    'relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
+                                                    category.is_default 
+                                                        ? 'bg-blue-600' 
+                                                        : 'bg-gray-200 dark:bg-gray-700'
+                                                ]"
+                                                :aria-pressed="category.is_default"
+                                                aria-label="Toggle default category"
+                                            >
+                                                <span
+                                                    :class="[
+                                                        'inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-200',
+                                                        category.is_default ? 'translate-x-5' : 'translate-x-1'
+                                                    ]"
+                                                ></span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-1 ml-4">
+                                    <Button @click="startEdit(category)" variant="ghost" size="sm">
+                                        <Edit class="h-4 w-4" />
                                     </Button>
-                                    <Button @click="deleteCategory(category)" variant="ghost" size="sm" class="gap-1 text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/20">
-                                        <Trash2 class="h-3 w-3" />
-                                        Delete
+                                    <Button @click="deleteCategory(category)" variant="ghost" size="sm" class="text-destructive hover:text-destructive">
+                                        <Trash2 class="h-4 w-4" />
                                     </Button>
                                 </div>
                             </div>
@@ -325,74 +370,124 @@ watch(() => props.open, (isOpen) => {
                     </div>
 
                     <!-- Empty State -->
-                    <div v-else-if="!loading && categories.length === 0" class="flex h-96 flex-col items-center justify-center rounded-lg border border-dashed">
-                        <FolderOpen class="h-12 w-12 text-muted-foreground" />
-                        <h3 class="mt-4 text-lg font-medium">No categories yet</h3>
-                        <p class="mt-2 text-sm text-muted-foreground">Create your first product category to get started</p>
-                        <Button @click="startCreate" class="mt-4 gap-2">
+                    <div v-else-if="!loading && categories.length === 0" class="flex flex-col items-center justify-center py-8 sm:py-12 text-center">
+                        <FolderOpen class="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground mb-4" />
+                        <h3 class="font-medium text-base sm:text-lg mb-2">No categories yet</h3>
+                        <p class="text-xs sm:text-sm text-muted-foreground mb-6 px-4">Create your first product category to get started</p>
+                        <Button @click="startCreate" class="gap-2 w-full sm:w-auto">
                             <Plus class="h-4 w-4" />
                             Create Category
                         </Button>
                     </div>
                 </div>
 
-                <!-- Form Panel -->
-                <div v-if="showForm" class="w-96 border-l pl-6">
-                    <div class="space-y-6">
-                        <div>
-                            <h3 class="text-lg font-medium">{{ formTitle }}</h3>
-                            <p class="text-sm text-muted-foreground">
-                                {{ isEditing ? 'Update the category details below' : 'Fill in the details to create a new category' }}
-                            </p>
+                <!-- Form View -->
+                <div v-if="showForm">
+                    <div class="text-center mb-4 sm:mb-6">
+                        <h3 class="text-lg sm:text-xl font-semibold mb-2">{{ formTitle }}</h3>
+                        <p class="text-xs sm:text-sm text-muted-foreground px-2">
+                            {{ isEditing ? 'Update the category details below' : 'Fill in the details to create a new category' }}
+                        </p>
+                    </div>
+
+                    <form @submit.prevent="submitForm" class="space-y-4 sm:space-y-6">
+                        <!-- Name Field -->
+                        <div class="space-y-2">
+                            <Label for="category-name" class="text-sm sm:text-base">Category Name</Label>
+                            <Input
+                                id="category-name"
+                                v-model="form.name"
+                                type="text"
+                                required
+                                placeholder="Enter category name..."
+                                class="text-sm sm:text-base"
+                            />
+                            <InputError :message="errors.name" />
                         </div>
 
-                        <form @submit.prevent="submitForm" class="space-y-4">
-                            <!-- Name -->
-                            <div class="space-y-2">
-                                <Label for="category-name">Category Name</Label>
-                                <Input
-                                    id="category-name"
-                                    v-model="form.name"
-                                    type="text"
-                                    required
-                                    class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
-                                />
-                                <InputError :message="errors.name" class="mt-1" />
-                            </div>
-
-                            <!-- Default Category -->
-                            <div class="space-y-2">
-                                <div class="flex items-center justify-between rounded-lg border p-4">
-                                    <div class="space-y-0.5">
-                                        <Label class="text-base">Default Category</Label>
-                                        <p class="text-sm text-muted-foreground">
+                        <!-- Default Category Setting -->
+                        <div class="space-y-3">
+                            <Label class="text-sm sm:text-base">Default Settings</Label>
+                            <div class="border rounded-lg p-3 sm:p-4 bg-muted/30">
+                                <!-- Mobile Layout -->
+                                <div class="block sm:hidden space-y-3">
+                                    <div>
+                                        <h4 class="font-medium text-sm">Default Category</h4>
+                                        <p class="text-xs text-muted-foreground mt-1">
                                             Set as the default category for new products
                                         </p>
                                     </div>
-                                    <Checkbox
-                                        v-model:checked="form.is_default"
-                                        aria-label="Set as default category"
-                                    />
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs text-muted-foreground">Make Default:</span>
+                                        <button
+                                            type="button"
+                                            @click="form.is_default = !form.is_default"
+                                            :class="[
+                                                'relative inline-flex h-4 w-7 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1',
+                                                form.is_default 
+                                                    ? 'bg-blue-600' 
+                                                    : 'bg-gray-200 dark:bg-gray-700'
+                                            ]"
+                                            :aria-pressed="form.is_default"
+                                            aria-label="Toggle default category"
+                                        >
+                                            <span
+                                                :class="[
+                                                    'inline-block h-2.5 w-2.5 transform rounded-full bg-white transition-transform duration-200',
+                                                    form.is_default ? 'translate-x-3.5' : 'translate-x-0.5'
+                                                ]"
+                                            ></span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Desktop Layout -->
+                                <div class="hidden sm:flex items-start justify-between">
+                                    <div>
+                                        <h4 class="font-medium">Default Category</h4>
+                                        <p class="text-sm text-muted-foreground mt-1">
+                                            Set as the default category for new products
+                                        </p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        @click="form.is_default = !form.is_default"
+                                        :class="[
+                                            'relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
+                                            form.is_default 
+                                                ? 'bg-blue-600' 
+                                                : 'bg-gray-200 dark:bg-gray-700'
+                                        ]"
+                                        :aria-pressed="form.is_default"
+                                        aria-label="Toggle default category"
+                                    >
+                                        <span
+                                            :class="[
+                                                'inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-200',
+                                                form.is_default ? 'translate-x-5' : 'translate-x-1'
+                                            ]"
+                                        ></span>
+                                    </button>
                                 </div>
                             </div>
+                        </div>
 
-                            <!-- Actions -->
-                            <div class="flex gap-3">
-                                <Button type="submit" :disabled="formLoading" class="flex-1">
-                                    {{ submitButtonText }}
-                                </Button>
-                                <Button type="button" variant="outline" @click="resetForm">
-                                    Cancel
-                                </Button>
-                            </div>
-                        </form>
-                    </div>
+                        <!-- Action Buttons -->
+                        <div class="flex flex-col sm:flex-row gap-3 pt-4 sm:pt-6">
+                            <Button type="button" variant="outline" @click="resetForm" class="flex-1 text-sm sm:text-base">
+                                Cancel
+                            </Button>
+                            <Button type="submit" :disabled="formLoading" class="flex-1 text-sm sm:text-base">
+                                {{ submitButtonText }}
+                            </Button>
+                        </div>
+                    </form>
                 </div>
             </div>
 
             <!-- Footer -->
-            <div class="flex justify-end border-t pt-4">
-                <Button variant="outline" @click="isOpen = false">
+            <div class="flex justify-center sm:justify-end pt-4 sm:pt-6 border-t">
+                <Button variant="outline" @click="isOpen = false" class="w-full sm:w-auto text-sm sm:text-base">
                     Close
                 </Button>
             </div>
