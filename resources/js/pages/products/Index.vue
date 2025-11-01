@@ -39,10 +39,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 // Search and filter state
 const searchQuery = ref('');
-const categoryFilter = ref('all');
+const categoryFilter = ref<string[]>([]);
 const statusFilter = ref('all'); // 'all', 'active', 'inactive'
 
 const showCategoryDropdown = ref(false);
+const categorySearch = ref('');
 
 // Filtered products based on search and filters
 const filteredProducts = computed(() => {
@@ -61,9 +62,9 @@ const filteredProducts = computed(() => {
     }
     
     // Apply category filter
-    if (categoryFilter.value !== 'all') {
+    if (categoryFilter.value.length > 0) {
         filtered = filtered.filter(product => 
-            product.category_id === parseInt(categoryFilter.value)
+            categoryFilter.value.includes(product.category_id?.toString() || '')
         );
     }
     
@@ -88,16 +89,39 @@ const totalProducts = computed(() => Array.isArray(props.products) ? props.produ
 
 // Computed properties
 const selectedCategoryName = computed(() => {
-    if (categoryFilter.value === 'all') return 'All Categories';
-    const category = props.categories.find(c => c.id.toString() === categoryFilter.value);
-    return category ? category.name : '';
+    if (categoryFilter.value.length === 0) return 'All Categories';
+    if (categoryFilter.value.length === 1) {
+        const category = props.categories.find(c => c.id.toString() === categoryFilter.value[0]);
+        return category ? category.name : '';
+    }
+    return `${categoryFilter.value.length} categories selected`;
+});
+
+const filteredCategories = computed(() => {
+    if (!categorySearch.value.trim()) return props.categories;
+    return props.categories.filter(category =>
+        category.name.toLowerCase().includes(categorySearch.value.toLowerCase())
+    );
 });
 
 // Helper functions
 const formatCurrency = (amount: number) => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(amount);
 
-const selectCategory = (categoryId: string) => {
-    categoryFilter.value = categoryId;
+const toggleCategory = (categoryId: string) => {
+    if (categoryId === 'all') {
+        categoryFilter.value = [];
+    } else {
+        const index = categoryFilter.value.indexOf(categoryId);
+        if (index > -1) {
+            categoryFilter.value.splice(index, 1);
+        } else {
+            categoryFilter.value.push(categoryId);
+        }
+    }
+};
+
+const clearAllCategories = () => {
+    categoryFilter.value = [];
     showCategoryDropdown.value = false;
 };
 
@@ -190,7 +214,7 @@ onUnmounted(() => {
                         </div>
                         
                         <!-- Category Filter -->
-                        <div class="relative category-dropdown sm:w-48">
+                        <div class="relative category-dropdown sm:w-64">
                             <div
                                 @click="showCategoryDropdown = !showCategoryDropdown"
                                 class="flex h-10 w-full cursor-pointer items-center justify-between rounded-lg border border-gray-200 bg-background px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-500"
@@ -201,12 +225,40 @@ onUnmounted(() => {
                                 </svg>
                             </div>
                             
-                            <div v-if="showCategoryDropdown" class="absolute z-50 mt-1 w-full rounded-lg border bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800 p-1">
-                                <div @click="selectCategory('all')" class="rounded px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" :class="categoryFilter === 'all' && 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300'">
-                                    All Categories
+                            <div v-if="showCategoryDropdown" class="absolute z-50 mt-1 w-full rounded-lg border bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800 p-1 max-h-64 overflow-hidden">
+                                <!-- Search Input -->
+                                <div class="p-2 border-b border-gray-200 dark:border-gray-600">
+                                    <div class="relative">
+                                        <Search class="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-gray-400" />
+                                        <input
+                                            v-model="categorySearch"
+                                            type="text"
+                                            placeholder="Search categories..."
+                                            class="w-full pl-7 pr-2 py-1.5 text-xs border border-gray-200 rounded dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                            @click.stop
+                                        />
+                                    </div>
                                 </div>
-                                <div v-for="category in categories" :key="category.id" @click="selectCategory(category.id.toString())" class="rounded px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" :class="categoryFilter === category.id.toString() && 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300'">
-                                    {{ category.name }}
+                                
+                                <!-- Clear All Option -->
+                                <div @click="clearAllCategories()" class="rounded px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-600" :class="categoryFilter.length === 0 && 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300'">
+                                    <div class="flex items-center justify-between">
+                                        <span>All Categories</span>
+                                        <span v-if="categoryFilter.length === 0" class="text-blue-600 dark:text-blue-400">✓</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Scrollable Categories List -->
+                                <div class="max-h-40 overflow-y-auto">
+                                    <div v-for="category in filteredCategories" :key="category.id" @click="toggleCategory(category.id.toString())" class="rounded px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                                        <div class="flex items-center justify-between">
+                                            <span>{{ category.name }}</span>
+                                            <span v-if="categoryFilter.includes(category.id.toString())" class="text-blue-600 dark:text-blue-400">✓</span>
+                                        </div>
+                                    </div>
+                                    <div v-if="filteredCategories.length === 0" class="px-3 py-2 text-gray-500 text-sm">
+                                        No categories found
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -253,7 +305,7 @@ onUnmounted(() => {
                     </div>
 
                     <!-- Empty State - No Results -->
-                    <div v-else-if="filteredProducts.length === 0 && (searchQuery.trim() || categoryFilter !== 'all' || statusFilter !== 'all')" class="px-4 py-16 sm:px-6 sm:py-20 text-center">
+                    <div v-else-if="filteredProducts.length === 0 && (searchQuery.trim() || categoryFilter.length > 0 || statusFilter !== 'all')" class="px-4 py-16 sm:px-6 sm:py-20 text-center">
                         <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
                             <Search class="h-8 w-8 text-gray-400" />
                         </div>
@@ -264,7 +316,7 @@ onUnmounted(() => {
                             Try adjusting your search terms or filter criteria to find what you're looking for.
                         </p>
                         <div class="mt-8">
-                            <Button variant="outline" @click="searchQuery = ''; categoryFilter = 'all'; statusFilter = 'all'" size="lg">
+                            <Button variant="outline" @click="searchQuery = ''; categoryFilter = []; statusFilter = 'all'" size="lg">
                                 Clear All Filters
                             </Button>
                         </div>
