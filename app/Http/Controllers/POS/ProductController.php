@@ -45,9 +45,12 @@ class ProductController extends Controller
 
         $units = Unit::orderBy('unit_name')->get(['id', 'unit_name', 'abbreviation']);
 
+        $defaultCategory = ProductCategory::default()->first();
+
         return Inertia::render('products/Create', [
             'categories' => $categories,
             'units' => $units,
+            'defaultCategoryId' => $defaultCategory?->id,
         ]);
     }
 

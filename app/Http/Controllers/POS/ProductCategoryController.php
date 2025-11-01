@@ -38,9 +38,18 @@ class ProductCategoryController extends Controller
             'name' => 'required|string|max:255|unique:product_categories,name',
             'description' => 'nullable|string|max:500',
             'status' => 'required|in:active,inactive',
+            'is_default' => 'sometimes|boolean',
         ]);
 
         $validated['user_id'] = auth()->id();
+
+        // Ensure is_default is set to a boolean value
+        $validated['is_default'] = $validated['is_default'] ?? false;
+
+        // If setting as default, unset other defaults for this user
+        if ($validated['is_default']) {
+            ProductCategory::ownedBy()->update(['is_default' => false]);
+        }
 
         $category = ProductCategory::create($validated);
 
@@ -65,7 +74,16 @@ class ProductCategoryController extends Controller
             'name' => 'required|string|max:255|unique:product_categories,name,'.$productCategory->id,
             'description' => 'nullable|string|max:500',
             'status' => 'required|in:active,inactive',
+            'is_default' => 'sometimes|boolean',
         ]);
+
+        // Ensure is_default is set to a boolean value
+        $validated['is_default'] = $validated['is_default'] ?? false;
+
+        // If setting as default, unset other defaults for this user
+        if ($validated['is_default']) {
+            ProductCategory::ownedBy()->where('id', '!=', $productCategory->id)->update(['is_default' => false]);
+        }
 
         $productCategory->update($validated);
 

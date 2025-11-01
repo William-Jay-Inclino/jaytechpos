@@ -9,15 +9,8 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
+
+import { Checkbox } from '@/components/ui/checkbox';
 import InputError from '@/components/InputError.vue';
 import { showSuccessToast, showErrorToast } from '@/lib/toast';
 import { FolderOpen, Plus, Edit, Trash2, Search } from 'lucide-vue-next';
@@ -29,6 +22,7 @@ interface Category {
     name: string;
     description?: string;
     status: string;
+    is_default: boolean;
     user_id: number;
     created_at: string;
     updated_at: string;
@@ -54,8 +48,7 @@ const searchQuery = ref('');
 // Form data
 const form = ref({
     name: '',
-    description: '',
-    status: 'active' as 'active' | 'inactive',
+    is_default: false,
 });
 
 const errors = ref<Record<string, string>>({});
@@ -85,8 +78,7 @@ const filteredCategories = computed(() => {
     
     const query = searchQuery.value.toLowerCase().trim();
     return categories.value.filter(category => 
-        category.name.toLowerCase().includes(query) ||
-        (category.description && category.description.toLowerCase().includes(query))
+        category.name.toLowerCase().includes(query)
     );
 });
 
@@ -109,8 +101,7 @@ async function loadCategories() {
 function resetForm() {
     form.value = {
         name: '',
-        description: '',
-        status: 'active',
+        is_default: false,
     };
     errors.value = {};
     isEditing.value = false;
@@ -137,8 +128,7 @@ function startEdit(category: Category) {
     editingCategory.value = category;
     form.value = {
         name: category.name,
-        description: category.description || '',
-        status: category.status as 'active' | 'inactive',
+        is_default: category.is_default || false,
     };
     showForm.value = true;
     nextTick(() => {
@@ -160,7 +150,13 @@ async function submitForm() {
         
         const method = isEditing.value ? 'put' : 'post';
         
-        const response = await axios[method](url, form.value);
+        const formData = {
+            ...form.value,
+            description: '',
+            status: 'active'
+        };
+        
+        const response = await axios[method](url, formData);
         
         if (response.data.success) {
             showSuccessToast(response.data.message);
@@ -197,9 +193,39 @@ async function deleteCategory(category: Category) {
     }
 }
 
-function getBadgeVariant(status: string) {
-    return status === 'active' ? 'default' : 'secondary';
+async function toggleDefault(category: Category) {
+    try {
+        const newDefaultState = !category.is_default;
+        
+        // Optimistically update the UI - ensure only ONE category can be default
+        categories.value = categories.value.map(cat => ({
+            ...cat,
+            is_default: cat.id === category.id ? newDefaultState : false
+        }));
+        
+        const response = await axios.put(`/api/product-categories/${category.id}`, {
+            name: category.name,
+            description: category.description || '',
+            status: category.status || 'active',
+            is_default: newDefaultState,
+        });
+        
+        if (response.data.success) {
+            showSuccessToast(response.data.message);
+            emit('categoryUpdated');
+        }
+    } catch (error: any) {
+        // Reload categories to revert the optimistic update on error
+        await loadCategories();
+        if (error.response?.status === 422) {
+            showErrorToast(error.response.data.message || 'Failed to update default category');
+        } else {
+            showErrorToast('An error occurred while updating the category');
+        }
+    }
 }
+
+
 
 // Watchers
 watch(() => props.open, (isOpen) => {
@@ -271,25 +297,29 @@ watch(() => props.open, (isOpen) => {
                             class="flex items-center justify-between rounded-lg border p-4 hover:bg-muted/50"
                         >
                             <div class="flex-1">
-                                <div class="flex items-center gap-2">
-                                    <h4 class="font-medium">{{ category.name }}</h4>
-                                    <Badge :variant="getBadgeVariant(category.status)">
-                                        {{ category.status }}
-                                    </Badge>
-                                </div>
-                                <p v-if="category.description" class="mt-1 text-sm text-muted-foreground">
-                                    {{ category.description }}
-                                </p>
+                                <h4 class="font-medium">{{ category.name }}</h4>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <Button @click="startEdit(category)" variant="ghost" size="sm" class="gap-1">
-                                    <Edit class="h-3 w-3" />
-                                    Edit
-                                </Button>
-                                <Button @click="deleteCategory(category)" variant="ghost" size="sm" class="gap-1 text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/20">
-                                    <Trash2 class="h-3 w-3" />
-                                    Delete
-                                </Button>
+                            <div class="flex items-center gap-3">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm text-muted-foreground">Default:</span>
+                                    <div @click="toggleDefault(category)" class="cursor-pointer">
+                                        <Checkbox
+                                            v-model="category.is_default"
+                                            :disabled="false"
+                                            aria-label="Set as default category"
+                                        />
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <Button @click="startEdit(category)" variant="ghost" size="sm" class="gap-1">
+                                        <Edit class="h-3 w-3" />
+                                        Edit
+                                    </Button>
+                                    <Button @click="deleteCategory(category)" variant="ghost" size="sm" class="gap-1 text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/20">
+                                        <Trash2 class="h-3 w-3" />
+                                        Delete
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -330,31 +360,20 @@ watch(() => props.open, (isOpen) => {
                                 <InputError :message="errors.name" class="mt-1" />
                             </div>
 
-                            <!-- Description -->
+                            <!-- Default Category -->
                             <div class="space-y-2">
-                                <Label for="category-description">Description (Optional)</Label>
-                                <Textarea
-                                    id="category-description"
-                                    v-model="form.description"
-                                    rows="3"
-                                    class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
-                                />
-                                <InputError :message="errors.description" class="mt-1" />
-                            </div>
-
-                            <!-- Status -->
-                            <div class="space-y-2">
-                                <Label for="category-status">Status</Label>
-                                <Select v-model="form.status">
-                                    <SelectTrigger class="dark:border-gray-700 dark:bg-gray-800">
-                                        <SelectValue placeholder="Select status" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="active">Active</SelectItem>
-                                        <SelectItem value="inactive">Inactive</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <InputError :message="errors.status" class="mt-1" />
+                                <div class="flex items-center justify-between rounded-lg border p-4">
+                                    <div class="space-y-0.5">
+                                        <Label class="text-base">Default Category</Label>
+                                        <p class="text-sm text-muted-foreground">
+                                            Set as the default category for new products
+                                        </p>
+                                    </div>
+                                    <Checkbox
+                                        v-model:checked="form.is_default"
+                                        aria-label="Set as default category"
+                                    />
+                                </div>
                             </div>
 
                             <!-- Actions -->

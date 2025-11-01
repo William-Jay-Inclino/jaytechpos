@@ -31,18 +31,18 @@ class DatabaseSeeder extends Seeder
             ['unit_name' => 'Pair', 'abbreviation' => 'pr'],
             ['unit_name' => 'Set', 'abbreviation' => 'set'],
             ['unit_name' => 'Dozen', 'abbreviation' => 'dz'],
-            
+
             // Weight units
             ['unit_name' => 'Kilogram', 'abbreviation' => 'kg'],
             ['unit_name' => 'Gram', 'abbreviation' => 'g'],
             ['unit_name' => 'Pound', 'abbreviation' => 'lb'],
             ['unit_name' => 'Ounce', 'abbreviation' => 'oz'],
-            
+
             // Volume units
             ['unit_name' => 'Liter', 'abbreviation' => 'L'],
             ['unit_name' => 'Milliliter', 'abbreviation' => 'mL'],
             ['unit_name' => 'Gallon', 'abbreviation' => 'gal'],
-            
+
             // Packaging units
             ['unit_name' => 'Pack', 'abbreviation' => 'pk'],
             ['unit_name' => 'Box', 'abbreviation' => 'bx'],
@@ -54,7 +54,7 @@ class DatabaseSeeder extends Seeder
             ['unit_name' => 'Jar', 'abbreviation' => 'jr'],
             ['unit_name' => 'Tube', 'abbreviation' => 'tb'],
             ['unit_name' => 'Pouch', 'abbreviation' => 'pch'],
-            
+
             // Length/Area units
             ['unit_name' => 'Meter', 'abbreviation' => 'm'],
             ['unit_name' => 'Centimeter', 'abbreviation' => 'cm'],
@@ -63,7 +63,7 @@ class DatabaseSeeder extends Seeder
             ['unit_name' => 'Yard', 'abbreviation' => 'yd'],
             ['unit_name' => 'Roll', 'abbreviation' => 'rl'],
             ['unit_name' => 'Sheet', 'abbreviation' => 'sht'],
-            
+
             // Special units common in Philippines
             ['unit_name' => 'Sack', 'abbreviation' => 'sk'],
             ['unit_name' => 'Kilo', 'abbreviation' => 'k'],
@@ -81,8 +81,11 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // SEED CATEGORIES - using UserSetupService to avoid duplication
-        $userSetupService = new \App\Services\UserSetupService();
+        $userSetupService = new \App\Services\UserSetupService;
         $userSetupService->createDefaultCategories($user);
+
+        // SEED EXPENSE CATEGORY COLORS - assign different colors to categories
+        $this->call(UpdateExpenseCategoriesWithColorsSeeder::class);
 
         if (App::environment('local')) {
 
@@ -90,10 +93,10 @@ class DatabaseSeeder extends Seeder
             DB::table('products')->insert([
                 // Beverages (category_id = 1)
                 ['id' => 1, 'user_id' => $user->id, 'product_name' => 'Orange Juice', 'category_id' => 1, 'unit_id' => 17, 'cost_price' => 85.00, 'unit_price' => 95.00], // Bottle
-                ['id' => 3, 'user_id' => $user->id, 'product_name' => 'Cola Drink', 'category_id' => 1, 'unit_id' => 17,'cost_price' => 25.00, 'unit_price' => 30.00], // Bottle
+                ['id' => 3, 'user_id' => $user->id, 'product_name' => 'Cola Drink', 'category_id' => 1, 'unit_id' => 17, 'cost_price' => 25.00, 'unit_price' => 30.00], // Bottle
                 ['id' => 4, 'user_id' => $user->id, 'product_name' => 'Energy Drink', 'category_id' => 1, 'unit_id' => 18, 'cost_price' => 45.00, 'unit_price' => 55.00], // Can
-                
-                // Dairy Products (category_id = 3)  
+
+                // Dairy Products (category_id = 3)
                 ['id' => 2, 'user_id' => $user->id, 'product_name' => 'Milk', 'category_id' => 3, 'unit_id' => 9, 'cost_price' => 60.00, 'unit_price' => 70.00], // Liter
 
                 // Snacks & Confectionery (category_id = 2)

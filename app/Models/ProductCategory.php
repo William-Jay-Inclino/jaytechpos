@@ -14,11 +14,27 @@ class ProductCategory extends Model
         'name',
         'description',
         'status',
+        'is_default',
     ];
 
     protected $casts = [
         'status' => 'string',
+        'is_default' => 'boolean',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saving(function ($category) {
+            // If this category is being set as default, unset other defaults for this user
+            if ($category->is_default && $category->user_id) {
+                static::where('user_id', $category->user_id)
+                    ->where('id', '!=', $category->id ?? 0)
+                    ->update(['is_default' => false]);
+            }
+        });
+    }
 
     public function scopeActive($query)
     {
@@ -35,6 +51,11 @@ class ProductCategory extends Model
     public function scopeActiveOwned($query, $userId = null)
     {
         return $query->active()->ownedBy($userId);
+    }
+
+    public function scopeDefault($query, $userId = null)
+    {
+        return $query->ownedBy($userId)->where('is_default', true);
     }
 
     public function user()

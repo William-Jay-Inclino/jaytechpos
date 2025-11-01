@@ -21,6 +21,7 @@ class ProductCategoryFactory extends Factory
             'name' => fake()->unique()->randomElement(['Electronics', 'Food & Beverage', 'Clothing', 'Home & Garden', 'Books', 'Sports', 'Health & Beauty', 'Automotive', 'Toys & Games', 'Office Supplies']),
             'description' => fake()->sentence(),
             'status' => fake()->randomElement(['active', 'inactive']),
+            'is_default' => false,
         ];
     }
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\POS\CustomerController;
+use App\Http\Controllers\POS\ExpenseController;
 use App\Http\Controllers\POS\ProductCategoryController;
 use App\Http\Controllers\POS\ProductController;
 use App\Http\Controllers\POS\SaleController;
@@ -45,6 +46,11 @@ Route::middleware(['throttle:global'])->group(function () {
 
     // products
     Route::resource('products', ProductController::class)
+        ->middleware(['auth', 'verified'])
+        ->except(['show']);
+
+    // expenses
+    Route::resource('expenses', ExpenseController::class)
         ->middleware(['auth', 'verified'])
         ->except(['show']);
 

@@ -87,6 +87,8 @@ class FixPostgresSequences extends Command
             'sales_items',
             'utang_trackings',
             'utang_payments',
+            'expenses',
+            'expense_categories',
             'settings',
             'activity_logs',
         ];

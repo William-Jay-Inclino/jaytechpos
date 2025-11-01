@@ -45,7 +45,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Expense Tracker',
-        href: '',
+        href: '/expenses',
         icon: CircleDollarSign,
     },
     {

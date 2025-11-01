@@ -34,6 +34,7 @@ interface Unit {
 const props = defineProps<{
     categories: Category[];
     units: Unit[];
+    defaultCategoryId?: number;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -44,8 +45,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 const form = useForm({
     product_name: '',
     description: '',
-    category_id: '',
-    unit_id: '',
+    category_id: props.defaultCategoryId?.toString() || '', // Default to default category if available
+    unit_id: '1', // Default to "Piece (pc/pcs)"
     unit_price: '',
     cost_price: '',
     status: 'active',
@@ -342,6 +343,27 @@ onUnmounted(() => {
 
                     <!-- Price Row -->
                     <div class="grid gap-6 md:grid-cols-2">
+                        <!-- Cost Price -->
+                        <div class="grid gap-2">
+                            <Label for="cost_price">Cost Price (₱)</Label>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                Puhunan mo o presyong nabili mo sa supplier
+                            </p>
+                            <Input
+                                id="cost_price"
+                                v-model="form.cost_price"
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                required
+                                class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                            />
+                            <InputError
+                                :message="form.errors.cost_price"
+                                class="mt-1"
+                            />
+                        </div>
+                        
                         <!-- Unit Price -->
                         <div class="grid gap-2">
                             <Label for="unit_price">Unit Price (₱)</Label>
@@ -363,26 +385,6 @@ onUnmounted(() => {
                             />
                         </div>
 
-                        <!-- Cost Price -->
-                        <div class="grid gap-2">
-                            <Label for="cost_price">Cost Price (₱)</Label>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">
-                                Puhunan mo o presyong nabili mo sa supplier
-                            </p>
-                            <Input
-                                id="cost_price"
-                                v-model="form.cost_price"
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                required
-                                class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
-                            />
-                            <InputError
-                                :message="form.errors.cost_price"
-                                class="mt-1"
-                            />
-                        </div>
                     </div>
 
                     <!-- Status -->
