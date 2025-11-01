@@ -173,13 +173,6 @@ const formatCurrency = (amount: number) => {
                                             {{ customer.name }}
                                         </h3>
                                         <div class="mt-1 flex flex-wrap items-center gap-2">
-                                            <Badge 
-                                                :variant="customer.has_utang ? 'destructive' : 'default'"
-                                                :class="customer.has_utang ? '' : 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900 dark:text-green-200 dark:border-green-800'"
-                                                class="text-xs"
-                                            >
-                                                {{ customer.has_utang ? 'Has Balance' : 'Clear' }}
-                                            </Badge>
                                             <span class="text-xs text-gray-500 dark:text-gray-400">
                                                 {{ customer.mobile_number || 'No phone' }}
                                             </span>
@@ -271,13 +264,6 @@ const formatCurrency = (amount: number) => {
                                                 </span>
                                             </div>
                                             <div class="flex items-center gap-3 mt-1">
-                                                <Badge 
-                                                    :variant="customer.has_utang ? 'destructive' : 'default'"
-                                                    :class="customer.has_utang ? '' : 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900 dark:text-green-200 dark:border-green-800'"
-                                                    class="text-xs"
-                                                >
-                                                    {{ customer.has_utang ? 'Has Balance' : 'Clear' }}
-                                                </Badge>
                                                 <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
                                                     {{ customer.effective_interest_rate?.toFixed(2) || '0.00' }}% interest
                                                 </span>

@@ -365,7 +365,6 @@ watch(selectedCustomerId, (newCustomerId) => {
                                     <Textarea
                                         id="notes"
                                         name="notes"
-                                        placeholder="Optional notes about this payment..."
                                         rows="3"
                                         maxlength="1000"
                                         v-model="notes"

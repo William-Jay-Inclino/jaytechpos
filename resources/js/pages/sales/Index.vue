@@ -993,7 +993,7 @@ watch(amountTendered, () => {
                                         v-else
                                         class="flex items-center gap-2"
                                     >
-                                        ✅ Complete Checkout
+                                        Complete Checkout
                                     </span>
                                 </Button>
 
