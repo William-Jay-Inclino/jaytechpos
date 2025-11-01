@@ -146,20 +146,11 @@ watch(
                     <ShoppingCart class="h-5 w-5" />
                     Add Item to Cart
                 </DialogTitle>
-                <DialogDescription class="text-sm text-muted-foreground">
-                    Search and select products to add to your sale
-                </DialogDescription>
             </DialogHeader>
 
             <div class="flex-1 space-y-5 overflow-y-auto">
                 <!-- Search Section -->
                 <div class="space-y-3">
-                    <Label
-                        for="search"
-                        class="text-sm font-medium tracking-wide text-muted-foreground uppercase"
-                    >
-                        Search Products
-                    </Label>
                     <div class="relative">
                         <Search
                             class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-muted-foreground"
@@ -323,30 +314,19 @@ watch(
             </div>
 
             <!-- Footer Actions -->
-            <div class="flex items-center justify-between border-t pt-4">
-                <div class="text-sm text-muted-foreground">
-                    <span v-if="isProductSelected">
-                        Ready to add:
-                        <span class="font-medium">{{
-                            selectedProduct!.product_name
-                        }}</span>
-                    </span>
-                    <span v-else> Select a product to continue </span>
-                </div>
-
-                <div class="flex gap-3">
-                    <Button variant="outline" @click="isOpen = false">
-                        Cancel
-                    </Button>
-                    <Button
-                        :disabled="!isProductSelected"
-                        @click="addProductToCart"
-                        class="bg-blue-600 text-white hover:bg-blue-700"
-                    >
-                        <ShoppingCart class="mr-2 h-4 w-4" />
-                        Add to Cart
-                    </Button>
-                </div>
+            <div class="space-y-3 border-t pt-4">
+                <Button
+                    :disabled="!isProductSelected"
+                    @click="addProductToCart"
+                    class="w-full bg-blue-600 text-white hover:bg-blue-700"
+                    size="lg"
+                >
+                    <ShoppingCart class="mr-2 h-4 w-4" />
+                    Add to Cart
+                </Button>
+                <Button variant="outline" @click="isOpen = false" class="w-full">
+                    Cancel
+                </Button>
             </div>
         </DialogContent>
     </Dialog>

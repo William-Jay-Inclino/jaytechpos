@@ -58,11 +58,6 @@ const mainNavItems: NavItem[] = [
         href: '/customers',
         icon: Users,
     },
-    {
-        title: 'Activity Logs',
-        href: '',
-        icon: Activity,
-    },
 ];
 
 const footerNavItems: NavItem[] = [

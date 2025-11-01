@@ -168,10 +168,6 @@ const formatCurrency = (amount: number) => {
                                 </Select>
                             </div>
                         </div>
-                        
-                        <div class="text-sm text-gray-600 dark:text-gray-400">
-                            Showing {{ filteredCustomers.length }} of {{ totalCustomers }} customers
-                        </div>
                     </div>
                 </div>
 

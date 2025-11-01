@@ -2,8 +2,9 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Product, ProductCategory, type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
-import { computed, ref, withDefaults } from 'vue';
+import { computed, ref, withDefaults, onMounted, onUnmounted } from 'vue';
 import axios from 'axios';
+import { Search } from 'lucide-vue-next';
 
 // UI Components
 import { Badge } from '@/components/ui/badge';
@@ -46,7 +47,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 // Search and filter state
 const searchQuery = ref('');
 const categoryFilter = ref('all');
-const statusFilter = ref('all');
+const statusFilter = ref('all'); // 'all', 'active', 'inactive'
+
+// Category search state
+const categorySearch = ref('');
+const showCategoryDropdown = ref(false);
 
 // Filtered products based on search and filters
 const filteredProducts = computed(() => {
@@ -90,6 +95,20 @@ const inactiveProducts = computed(() =>
 
 const totalProducts = computed(() => Array.isArray(props.products) ? props.products.length : 0);
 
+// Filtered categories based on search
+const filteredCategories = computed(() => {
+    if (!categorySearch.value) return props.categories;
+    return props.categories.filter(category =>
+        category.name.toLowerCase().includes(categorySearch.value.toLowerCase())
+    );
+});
+
+const selectedCategoryName = computed(() => {
+    if (categoryFilter.value === 'all') return 'All Categories';
+    const category = props.categories.find(c => c.id.toString() === categoryFilter.value);
+    return category ? category.name : '';
+});
+
 // Format currency
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-PH', {
@@ -97,6 +116,26 @@ const formatCurrency = (amount: number) => {
         currency: 'PHP',
     }).format(amount);
 };
+
+// Helper functions for category selection
+function selectCategory(categoryId: string) {
+    categoryFilter.value = categoryId;
+    showCategoryDropdown.value = false;
+    categorySearch.value = '';
+}
+
+// Helper function for status filter
+function setStatusFilter(status: string) {
+    statusFilter.value = status;
+}
+
+// Handle click outside to close dropdowns
+function handleClickOutside(event: MouseEvent) {
+    const categoryDropdown = document.querySelector('.category-dropdown');
+    if (categoryDropdown && !categoryDropdown.contains(event.target as Node)) {
+        showCategoryDropdown.value = false;
+    }
+}
 
 // Action handlers
 async function deleteProduct(productId: number) {
@@ -131,6 +170,15 @@ async function deleteProduct(productId: number) {
         }
     }
 }
+
+// Lifecycle hooks
+onMounted(() => {
+    document.addEventListener('click', handleClickOutside);
+});
+
+onUnmounted(() => {
+    document.removeEventListener('click', handleClickOutside);
+});
 </script>
 
 <template>
@@ -141,80 +189,23 @@ async function deleteProduct(productId: number) {
             <!-- Page Header -->
             <div class="mx-auto max-w-7xl">
                 <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h1
-                            class="text-2xl font-bold text-gray-900 lg:text-3xl dark:text-white"
-                        >
-                            📦 Products
-                        </h1>
-                        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                            Manage your product inventory and pricing
-                        </p>
-                    </div>
-                    
                     <Button as-child>
                         <Link href="/products/create">
                             ➕ Add New Product
                         </Link>
                     </Button>
-                </div>
-
-                <!-- Stats Cards -->
-                <div class="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <span class="text-2xl">📦</span>
-                            </div>
-                            <div class="ml-3">
-                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                    Total Products
-                                </p>
-                                <p class="text-2xl font-bold text-gray-900 dark:text-white">
-                                    {{ totalProducts }}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
                     
-                    <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <span class="text-2xl">✅</span>
-                            </div>
-                            <div class="ml-3">
-                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                    Active Products
-                                </p>
-                                <p class="text-2xl font-bold text-green-600 dark:text-green-400">
-                                    {{ activeProducts }}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <span class="text-2xl">❌</span>
-                            </div>
-                            <div class="ml-3">
-                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                    Inactive Products
-                                </p>
-                                <p class="text-2xl font-bold text-red-600 dark:text-red-400">
-                                    {{ inactiveProducts }}
-                                </p>
-                            </div>
-                        </div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">
+                        {{ totalProducts }} products
                     </div>
                 </div>
 
                 <!-- Search and Filters -->
-                <div class="mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div class="mb-6 rounded-lg border border-gray-200 bg-white p-4 sm:p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                    <div class="flex flex-col gap-4">
+                        <!-- Search row -->
                         <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
-                            <div class="flex-1 sm:min-w-[300px]">
+                            <div class="flex-1">
                                 <Input
                                     v-model="searchQuery"
                                     type="text"
@@ -222,43 +213,116 @@ async function deleteProduct(productId: number) {
                                     class="w-full"
                                 />
                             </div>
-                            
-                            <div class="grid grid-cols-2 gap-4 sm:flex sm:gap-4">
-                                <div class="sm:min-w-[180px]">
-                                    <Select v-model="categoryFilter">
-                                        <SelectTrigger class="w-full">
-                                            <SelectValue placeholder="Filter by category" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">All Categories</SelectItem>
-                                            <SelectItem 
-                                                v-for="category in categories" 
-                                                :key="category.id" 
-                                                :value="category.id.toString()"
-                                            >
-                                                {{ category.name }}
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                
-                                <div class="sm:min-w-[150px]">
-                                    <Select v-model="statusFilter">
-                                        <SelectTrigger class="w-full">
-                                            <SelectValue placeholder="Filter by status" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">All Status</SelectItem>
-                                            <SelectItem value="active">Active</SelectItem>
-                                            <SelectItem value="inactive">Inactive</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
                         </div>
                         
-                        <div class="text-sm text-gray-600 dark:text-gray-400">
-                            Showing {{ filteredProducts.length }} of {{ totalProducts }} products
+                        <!-- Bottom row: Filters -->
+                        <div class="flex flex-col gap-4 sm:flex-row">
+                            <div class="flex-1 sm:max-w-[250px] relative category-dropdown">
+                                <div
+                                    @click="showCategoryDropdown = !showCategoryDropdown"
+                                    class="flex h-10 w-full cursor-pointer items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800"
+                                >
+                                    <span class="truncate text-left">
+                                        {{ selectedCategoryName || 'Filter by category' }}
+                                    </span>
+                                    <svg class="h-4 w-4 opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="m6 9 6 6 6-6"/>
+                                    </svg>
+                                </div>
+                                
+                                <div
+                                    v-if="showCategoryDropdown"
+                                    class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-lg dark:border-gray-700 dark:bg-gray-800"
+                                >
+                                    <div class="flex items-center border-b px-3 pb-2 mb-2 dark:border-gray-700">
+                                        <Search class="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                                        <input
+                                            v-model="categorySearch"
+                                            placeholder="Search categories..."
+                                            class="flex h-8 w-full rounded-md bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 dark:text-white"
+                                            @click.stop
+                                        />
+                                    </div>
+                                    <div class="max-h-40 overflow-auto">
+                                        <!-- All Categories Option -->
+                                        <div
+                                            @click="selectCategory('all')"
+                                            class="relative flex cursor-default select-none items-center rounded-sm px-2 py-2.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground cursor-pointer"
+                                            :class="categoryFilter === 'all' ? 'bg-accent text-accent-foreground' : ''"
+                                        >
+                                            <div class="font-medium">All Categories</div>
+                                        </div>
+                                        
+                                        <!-- Category Options -->
+                                        <div
+                                            v-for="category in filteredCategories"
+                                            :key="category.id"
+                                            @click="selectCategory(category.id.toString())"
+                                            class="relative flex cursor-default select-none items-center rounded-sm px-2 py-2.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground cursor-pointer"
+                                            :class="categoryFilter === category.id.toString() ? 'bg-accent text-accent-foreground' : ''"
+                                        >
+                                            <div class="font-medium">{{ category.name }}</div>
+                                        </div>
+                                        
+                                        <div
+                                            v-if="filteredCategories.length === 0 && categorySearch.trim()"
+                                            class="py-6 text-center text-sm text-muted-foreground"
+                                        >
+                                            No categories found.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex flex-wrap items-center gap-2">
+                                <!-- All Status Button -->
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    @click="setStatusFilter('all')"
+                                    :class="[
+                                        'transition-colors',
+                                        statusFilter === 'all'
+                                            ? 'bg-blue-100 text-blue-800 border-blue-300 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-200 dark:border-blue-700 dark:hover:bg-blue-800' 
+                                            : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+                                    ]"
+                                >
+                                    <span v-if="statusFilter === 'all'" class="mr-2">✓</span>
+                                    All
+                                </Button>
+                                
+                                <!-- Active Status Button -->
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    @click="setStatusFilter('active')"
+                                    :class="[
+                                        'transition-colors',
+                                        statusFilter === 'active'
+                                            ? 'bg-green-100 text-green-800 border-green-300 hover:bg-green-200 dark:bg-green-900 dark:text-green-200 dark:border-green-700 dark:hover:bg-green-800' 
+                                            : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+                                    ]"
+                                >
+                                    <span v-if="statusFilter === 'active'" class="mr-2">✓</span>
+                                    Active
+                                </Button>
+                                
+                                <!-- Inactive Status Button -->
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    @click="setStatusFilter('inactive')"
+                                    :class="[
+                                        'transition-colors',
+                                        statusFilter === 'inactive'
+                                            ? 'bg-red-100 text-red-800 border-red-300 hover:bg-red-200 dark:bg-red-900 dark:text-red-200 dark:border-red-700 dark:hover:bg-red-800' 
+                                            : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+                                    ]"
+                                >
+                                    <span v-if="statusFilter === 'inactive'" class="mr-2">✓</span>
+                                    Inactive
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -290,7 +354,7 @@ async function deleteProduct(productId: number) {
                         </div>
                     </div>
 
-                    <div v-else-if="filteredProducts.length === 0 && searchQuery.trim()" class="px-6 py-12 text-center">
+                    <div v-else-if="filteredProducts.length === 0 && (searchQuery.trim() || categoryFilter !== 'all' || statusFilter !== 'all')" class="px-6 py-12 text-center">
                         <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
                             <span class="text-2xl">🔍</span>
                         </div>

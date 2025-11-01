@@ -183,13 +183,6 @@ watch(selectedCustomerId, (newCustomerId) => {
         <div class="w-full px-4 py-6 lg:px-8 lg:py-10">
             <!-- Page Header -->
             <div class="mx-auto max-w-7xl">
-                <div class="mb-8 flex items-center gap-4">
-                    <h1
-                        class="text-2xl font-bold text-gray-900 lg:text-3xl dark:text-white"
-                    >
-                        💳 Utang Payment
-                    </h1>
-                </div>
 
                 <!-- Main Layout - 2 Columns on Desktop, 1 Column on Mobile -->
                 <div
@@ -201,16 +194,6 @@ watch(selectedCustomerId, (newCustomerId) => {
                         <div
                             class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none"
                         >
-                            <h2
-                                class="mb-4 text-lg font-semibold text-gray-900 dark:text-white"
-                            >
-                                💰 Record Payment
-                            </h2>
-                            <p
-                                class="mb-6 text-sm text-gray-600 dark:text-gray-400"
-                            >
-                                Record a new utang payment for a customer
-                            </p>
                             <Form
                                 action="/utang-payments"
                                 method="post"
@@ -297,6 +280,26 @@ watch(selectedCustomerId, (newCustomerId) => {
                                         class="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400"
                                     >
                                         {{ errors.customer_id }}
+                                    </div>
+
+                                    <!-- Customer Info Below Selection -->
+                                    <div v-if="selectedCustomer" class="space-y-2">
+                                        <!-- Interest Rate (Subtle) -->
+                                        <div class="text-xs text-gray-500 dark:text-gray-400">
+                                            Interest Rate: {{ selectedCustomer.effective_interest_rate?.toFixed(2) || '0.00' }}%
+                                        </div>
+                                        
+                                        <!-- Current Balance (Highlighted) -->
+                                        <div class="rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20">
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-sm font-medium text-red-800 dark:text-red-200">
+                                                    Current Balance:
+                                                </span>
+                                                <span class="text-xl font-bold text-red-900 dark:text-red-100">
+                                                    {{ formatCurrency(selectedCustomer.running_utang_balance || 0) }}
+                                                </span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -402,66 +405,6 @@ watch(selectedCustomerId, (newCustomerId) => {
                                     </span>
                                 </Button>
                             </Form>
-                        </div>
-
-                        <!-- Customer Information Card -->
-                        <div
-                            v-if="selectedCustomer"
-                            class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none"
-                        >
-                            <h2
-                                class="mb-4 text-lg font-semibold text-gray-900 dark:text-white"
-                            >
-                                👤 Customer Information
-                            </h2>
-
-                            <div class="space-y-4">
-                                <div class="flex items-center justify-between">
-                                    <span
-                                        class="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                        >Mobile Number:</span
-                                    >
-                                    <span
-                                        class="text-sm font-semibold text-gray-900 dark:text-white"
-                                        >{{
-                                            selectedCustomer.mobile_number ||
-                                            'N/A'
-                                        }}</span
-                                    >
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <span
-                                        class="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                        >Interest Rate:</span
-                                    >
-                                    <span
-                                        class="text-sm font-semibold text-gray-900 dark:text-white"
-                                        >{{
-                                            selectedCustomer.effective_interest_rate?.toFixed(
-                                                2,
-                                            ) || '0.00'
-                                        }}%</span
-                                    >
-                                </div>
-                                <div
-                                    class="flex items-center justify-between rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20"
-                                >
-                                    <span
-                                        class="text-sm font-medium text-red-800 dark:text-red-200"
-                                        >Current Balance:</span
-                                    >
-                                    <span
-                                        class="text-xl font-bold text-red-900 dark:text-red-100"
-                                    >
-                                        {{
-                                            formatCurrency(
-                                                selectedCustomer.running_utang_balance ||
-                                                    0,
-                                            )
-                                        }}
-                                    </span>
-                                </div>
-                            </div>
                         </div>
                     </div>
 

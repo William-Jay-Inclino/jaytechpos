@@ -230,7 +230,7 @@ const checkoutHelperText = computed((): string | null => {
 
     if (paymentMethod.value === 'cash') {
         if (amountTendered.value < cartTotalAmount.value) {
-            return `Amount tendered (₱${amountTendered.value.toFixed(2)}) must be at least ₱${cartTotalAmount.value.toFixed(2)}`;
+            return `Amount Received (₱${amountTendered.value.toFixed(2)}) must be at least ₱${cartTotalAmount.value.toFixed(2)}`;
         }
 
         if (payTowardsBalance.value) {
@@ -429,29 +429,17 @@ watch(amountTendered, () => {
         <div class="w-full px-4 py-6 lg:px-8 lg:py-10">
             <!-- Page Header -->
             <div class="mx-auto max-w-7xl">
-                <div class="mb-8 flex items-center gap-4">
-                    <h1
-                        class="text-2xl font-bold text-gray-900 lg:text-3xl dark:text-white"
-                    >
-                        🛒 New Sale
-                    </h1>
-                </div>
 
                 <!-- Main Layout - 2 Columns on Desktop, 1 Column on Mobile -->
                 <div class="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
                     <!-- Left Column - Customer & Payment Info (4 columns on desktop) -->
-                    <div class="space-y-6 lg:col-span-4">
-                        <!-- Customer Selection Card -->
+                    <div class="lg:col-span-4">
+                        <!-- Customer & Payment Method Card -->
                         <div
                             class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none"
                         >
-                            <h2
-                                class="mb-4 text-lg font-semibold text-gray-900 dark:text-white"
-                            >
-                                👤 Customer Information
-                            </h2>
-
-                            <div class="space-y-4">
+                            <div class="space-y-6">
+                                <!-- Customer Selection -->
                                 <div>
                                     <Label
                                         for="customer"
@@ -551,7 +539,7 @@ watch(amountTendered, () => {
                                         displayCustomer.running_utang_balance >
                                             0
                                     "
-                                    class="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/20"
+                                    class="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-900/20"
                                 >
                                     <div
                                         class="flex items-center justify-between"
@@ -561,7 +549,7 @@ watch(amountTendered, () => {
                                             >Outstanding Balance:</span
                                         >
                                         <span
-                                            class="text-xl font-bold text-amber-900 dark:text-amber-100"
+                                            class="text-lg font-bold text-amber-900 dark:text-amber-100"
                                             >₱{{
                                                 displayCustomer.running_utang_balance.toFixed(
                                                     2,
@@ -570,20 +558,8 @@ watch(amountTendered, () => {
                                         >
                                     </div>
                                 </div>
-                            </div>
-                        </div>
 
-                        <!-- Payment Method Card -->
-                        <div
-                            class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none"
-                        >
-                            <h2
-                                class="mb-4 text-lg font-semibold text-gray-900 dark:text-white"
-                            >
-                                💳 Payment Method
-                            </h2>
-
-                            <div class="space-y-4">
+                                <!-- Payment Method -->
                                 <div>
                                     <Label
                                         class="mb-3 block text-sm font-medium text-gray-700 dark:text-gray-300"
@@ -624,65 +600,24 @@ watch(amountTendered, () => {
                                             <span>Utang</span>
                                         </button>
                                     </div>
-
-                                    <!-- Payment Method Description -->
-                                    <div
-                                        class="mt-3 rounded-lg p-3"
-                                        :class="
-                                            paymentMethod === 'cash'
-                                                ? 'border border-blue-200 bg-blue-50 dark:border-blue-700 dark:bg-blue-900/20'
-                                                : 'border border-orange-200 bg-orange-50 dark:border-orange-700 dark:bg-orange-900/20'
-                                        "
-                                    >
-                                        <p
-                                            class="text-xs"
-                                            :class="
-                                                paymentMethod === 'cash'
-                                                    ? 'text-blue-700 dark:text-blue-300'
-                                                    : 'text-orange-700 dark:text-orange-300'
-                                            "
-                                        >
-                                            <span
-                                                v-if="paymentMethod === 'cash'"
-                                            >
-                                                Customer pays the full amount in
-                                                cash. Change will be calculated
-                                                automatically.
-                                            </span>
-                                            <span v-else>
-                                                Customer pays partially or
-                                                creates a credit account
-                                                (utang). Remaining balance will
-                                                be recorded.
-                                            </span>
-                                        </p>
-                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Right Column - Items & Checkout (8 columns on desktop) -->
-                    <div class="space-y-6 lg:col-span-8">
-                        <!-- Add Item Section -->
+                    <div class="lg:col-span-8">
+                        <!-- Items & Payment Section -->
                         <div
                             class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none"
                         >
-                            <div class="mb-4 flex items-center justify-between">
-                                <h2
-                                    class="text-lg font-semibold text-gray-900 dark:text-white"
-                                >
-                                    🛍️ Items
-                                </h2>
+                            <div class="mb-6 flex items-center justify-between">
                                 <Button
                                     size="lg"
                                     @click="isAddModalOpen = true"
                                     class="bg-blue-600 text-white hover:bg-blue-700"
                                 >
-                                    + Add Item
-                                    <span class="ml-2 text-xs opacity-90"
-                                        >(Ctrl+A)</span
-                                    >
+                                    Add Item
                                 </Button>
                             </div>
 
@@ -705,7 +640,7 @@ watch(amountTendered, () => {
                                             >
                                             <TableHead
                                                 class="text-right font-semibold whitespace-nowrap"
-                                                >Unit Price</TableHead
+                                                >Price</TableHead
                                             >
                                             <TableHead
                                                 class="text-right font-semibold whitespace-nowrap"
@@ -724,19 +659,6 @@ watch(amountTendered, () => {
                                             <TableCell
                                                 class="flex items-center gap-3 py-4"
                                             >
-                                                <Avatar
-                                                    class="h-12 w-12 rounded-lg bg-blue-100 dark:bg-blue-900"
-                                                >
-                                                    <AvatarFallback
-                                                        class="text-sm font-semibold text-blue-700 dark:text-blue-300"
-                                                    >
-                                                        {{
-                                                            item.product_name
-                                                                .charAt(0)
-                                                                .toUpperCase()
-                                                        }}
-                                                    </AvatarFallback>
-                                                </Avatar>
                                                 <div class="min-w-0 flex-1">
                                                     <span
                                                         class="block truncate text-sm font-medium text-gray-900 dark:text-white"
@@ -826,47 +748,13 @@ watch(amountTendered, () => {
                                             </TableCell>
                                         </TableRow>
 
-                                        <!-- Totals Row -->
-                                        <TableRow
-                                            v-if="cartItems.length"
-                                            class="border-t-2 border-blue-200 bg-blue-50 text-base font-bold dark:border-blue-700 dark:bg-blue-900/20"
-                                        >
-                                            <TableCell
-                                                class="font-semibold text-blue-900 dark:text-blue-100"
-                                                >TOTAL</TableCell
-                                            >
-                                            <TableCell
-                                                class="text-right text-blue-900 dark:text-blue-100"
-                                                >{{
-                                                    totalItemsInCart
-                                                }}</TableCell
-                                            >
-                                            <TableCell
-                                                class="text-right"
-                                            ></TableCell>
-                                            <TableCell
-                                                class="text-right text-xl text-blue-900 dark:text-blue-100"
-                                                >₱{{
-                                                    cartTotalAmount.toFixed(2)
-                                                }}</TableCell
-                                            >
-                                            <TableCell></TableCell>
-                                        </TableRow>
                                     </TableBody>
                                 </Table>
                             </div>
-                        </div>
 
-                        <!-- Payment Summary -->
-                        <div
-                            v-if="cartItems.length"
-                            class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none"
-                        >
-                            <h2
-                                class="mb-6 text-lg font-semibold text-gray-900 dark:text-white"
-                            >
-                                💰 Payment Summary
-                            </h2>
+                            <!-- Payment Summary Section -->
+                            <div v-if="cartItems.length" class="mt-8 space-y-6">
+                                <div class="border-t pt-6 dark:border-gray-700">
 
                             <!-- Cash Payment Layout -->
                             <div
@@ -890,8 +778,7 @@ watch(amountTendered, () => {
                                         for="payTowardsBalance"
                                         class="cursor-pointer text-sm font-medium text-gray-900 dark:text-gray-100"
                                     >
-                                        Use change to pay towards customer's
-                                        utang
+                                        Gamitin ang sukli para sa utang ng customer
                                     </Label>
                                 </div>
 
@@ -921,17 +808,21 @@ watch(amountTendered, () => {
                                         <Label
                                             for="amountTendered"
                                             class="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                            >Amount Tendered</Label
+                                            >Amount Received</Label
                                         >
-                                        <Input
-                                            id="amountTendered"
-                                            v-model.number="amountTendered"
-                                            type="number"
-                                            min="0"
-                                            step="0.01"
-                                            placeholder="0.00"
-                                            class="h-12 border-2 text-right text-lg font-semibold focus:ring-2 focus:ring-blue-500"
-                                        />
+                                        <div
+                                            class="rounded-lg border border-teal-200 bg-teal-50 p-4 dark:border-teal-800 dark:bg-teal-900/20"
+                                        >
+                                            <Input
+                                                id="amountTendered"
+                                                v-model.number="amountTendered"
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                placeholder="0.00"
+                                                class="border-0 bg-transparent p-0 text-right text-3xl font-bold text-teal-700 placeholder:text-teal-400 focus:ring-0 dark:text-teal-400 dark:placeholder:text-teal-500"
+                                            />
+                                        </div>
                                     </div>
 
                                     <!-- Change Display -->
@@ -941,18 +832,18 @@ watch(amountTendered, () => {
                                             >Change</Label
                                         >
                                         <div
-                                            class="flex h-12 items-center justify-end rounded-lg border-2 p-4"
+                                            class="rounded-lg border p-4"
                                             :class="
                                                 changeAmount > 0
-                                                    ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20'
+                                                    ? 'border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-900/20'
                                                     : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800'
                                             "
                                         >
                                             <span
-                                                class="text-lg font-bold"
+                                                class="text-2xl font-bold"
                                                 :class="
                                                     changeAmount > 0
-                                                        ? 'text-green-700 dark:text-green-400'
+                                                        ? 'text-emerald-700 dark:text-emerald-400'
                                                         : 'text-gray-500 dark:text-gray-400'
                                                 "
                                                 >₱{{
@@ -1124,14 +1015,9 @@ watch(amountTendered, () => {
                                     </p>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Checkout Button -->
-                        <div
-                            v-if="cartItems.length"
-                            class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none"
-                        >
-                            <div class="space-y-4">
+                            <!-- Checkout Button Section -->
+                            <div v-if="cartItems.length" class="mt-8 space-y-4 border-t pt-6 dark:border-gray-700">
                                 <Button
                                     size="lg"
                                     class="h-14 w-full bg-green-600 text-lg font-bold text-white shadow-lg hover:bg-green-700"
@@ -1152,9 +1038,6 @@ watch(amountTendered, () => {
                                         class="flex items-center gap-2"
                                     >
                                         ✅ Complete Checkout
-                                        <span class="text-sm opacity-80"
-                                            >(Ctrl+Enter)</span
-                                        >
                                     </span>
                                 </Button>
 
@@ -1164,11 +1047,15 @@ watch(amountTendered, () => {
                                     class="text-center"
                                 >
                                     <p
-                                        class="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400"
+                                        class="px-4 py-2 text-xs text-gray-500 dark:text-gray-400"
                                     >
                                         {{ checkoutHelperText }}
                                     </p>
                                 </div>
+                            </div>
+                        </div>
+
+                                                        </div>
                             </div>
                         </div>
 
@@ -1181,7 +1068,6 @@ watch(amountTendered, () => {
                     </div>
                 </div>
             </div>
-        </div>
 
         <!-- Success Modal with Receipt -->
         <Dialog v-model:open="showSuccessModal">
@@ -1322,7 +1208,7 @@ watch(amountTendered, () => {
                                         class="flex justify-between"
                                     >
                                         <span class="text-muted-foreground"
-                                            >Amount Tendered:</span
+                                            >Amount Received:</span
                                         >
                                         <span
                                             >₱{{
