@@ -102,7 +102,11 @@ const breadcrumbs: BreadcrumbItem[] = [
                     <div class="relative">
                         <div class="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-teal-500/5 rounded-3xl blur-xl"></div>
                         <div class="relative">
-                            <SalesChart :chart-data="salesChartData" class="transform hover:shadow-2xl transition-all duration-500" />
+                            <SalesChart 
+                                :chart-data="salesChartData" 
+                                :current-year="currentYear" 
+                                class="transform hover:shadow-2xl transition-all duration-500" 
+                            />
                         </div>
                     </div>
 
@@ -114,6 +118,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                             <div class="relative">
                                 <BestSellingProducts 
                                     :products="bestSellingProducts" 
+                                    :current-year="currentYear" 
                                     class="transform hover:shadow-2xl transition-all duration-500"
                                 />
                             </div>

@@ -15,7 +15,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users', 'id')->onDelete('cascade');
             $table->string('name');
+            $table->string('color', 7)->default('#3B82F6'); // Default to blue color
             $table->timestamps();
+
+            // Performance indexes
+            $table->index('user_id'); // For filtering categories by user
         });
     }
 

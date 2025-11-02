@@ -18,15 +18,10 @@ class UtangPaymentFactory extends Factory
      */
     public function definition(): array
     {
-        $previousBalance = $this->faker->randomFloat(2, 100, 2000);
-        $paymentAmount = $this->faker->randomFloat(2, 10, 1000);
-
         return [
             'user_id' => User::factory(),
             'customer_id' => Customer::factory(),
-            'payment_amount' => $paymentAmount,
-            'previous_balance' => $previousBalance,
-            'new_balance' => $previousBalance - $paymentAmount,
+            'payment_amount' => $this->faker->randomFloat(2, 10, 1000),
             'payment_date' => $this->faker->dateTimeBetween('-1 month', 'now'),
             'notes' => $this->faker->optional()->sentence(),
         ];

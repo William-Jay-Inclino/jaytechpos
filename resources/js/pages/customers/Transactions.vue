@@ -147,6 +147,7 @@ onMounted(() => {
                     :transactions="transactions"
                     :loading="loadingTransactions"
                     :customer-name="customer.name"
+                    :customer-id="customer.id"
                 />
             </div>
         </div>

@@ -410,6 +410,7 @@ watch(selectedCustomerId, (newCustomerId) => {
                             :transactions="transactions"
                             :loading="loadingTransactions"
                             :customer-name="selectedCustomer?.name"
+                            :customer-id="selectedCustomer?.id"
                         />
                     </div>
                 </div>

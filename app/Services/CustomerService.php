@@ -3,91 +3,75 @@
 namespace App\Services;
 
 use App\Models\Customer;
+use App\Models\Sale;
 use Illuminate\Support\Collection;
 
 class CustomerService
 {
     /**
-     * Get all transactions for a customer (payments, sales, utang tracking).
+     * Get all transactions for a customer from the unified customer_transactions table.
+     * Returns only base transaction data for performance. Use getTransactionDetails() for full details.
      */
     public function getCustomerTransactions(Customer $customer): Collection
     {
-        // Get utang payments
-        $utangPayments = $customer->utangPayments()
-            ->orderBy('payment_date', 'desc')
-            ->get()
-            ->map(function ($payment) {
-                return [
-                    'id' => $payment->id,
-                    'type' => 'payment',
-                    'date' => $payment->payment_date->format('Y-m-d H:i:s'), // Laravel handles timezone automatically
-                    'sort_date' => $payment->payment_date->toISOString(), // For sorting
-                    'amount' => $payment->payment_amount,
-                    'formatted_amount' => $payment->formatted_payment_amount,
-                    'description' => 'Notes: '.($payment->notes ? $payment->notes : 'No notes'),
-                    'notes' => $payment->notes,
-                    'previous_balance' => $payment->previous_balance,
-                    'new_balance' => $payment->new_balance,
-                    'formatted_previous_balance' => '₱'.number_format($payment->previous_balance, 2),
-                    'formatted_new_balance' => '₱'.number_format($payment->new_balance, 2),
-                ];
-            });
-
-        // Get utang trackings
-        $utangTrackings = $customer->utangTrackings()
-            ->orderBy('computation_date', 'desc')
-            ->get()
-            ->map(function ($tracking) use ($customer) {
-                // Get previous month's balance (before interest was applied)
-                $previousMonth = $tracking->computation_date->copy()->subMonth();
-                $previousTracking = $customer->utangTrackings()
-                    ->whereYear('computation_date', $previousMonth->year)
-                    ->whereMonth('computation_date', $previousMonth->month)
-                    ->first();
-
-                $previousBalance = $previousTracking ? $previousTracking->beginning_balance : 0;
-                $newBalance = $tracking->beginning_balance;
-
-                return [
-                    'id' => $tracking->id,
-                    'type' => 'tracking',
-                    'date' => $tracking->computation_date->format('Y-m-d H:i:s'), // Laravel handles timezone automatically
-                    'sort_date' => $tracking->computation_date->toISOString(), // For sorting
-                    'amount' => $tracking->beginning_balance,
-                    'formatted_amount' => '₱'.number_format($tracking->beginning_balance, 2),
-                    'description' => 'Balance Update (Interest Rate: '.number_format($tracking->interest_rate, 2).'%)',
-                    'interest_rate' => $tracking->interest_rate,
-                    'previous_balance' => $previousBalance,
-                    'new_balance' => $newBalance,
-                    'formatted_previous_balance' => '₱'.number_format($previousBalance, 2),
-                    'formatted_new_balance' => '₱'.number_format($newBalance, 2),
-                    'computation_date' => $tracking->computation_date->format('Y-m-d'),
-                ];
-            });
-
-        // Get sales
-        $sales = $customer->sales()
-            ->with(['salesItems.product']) // Eager load sales items and products
+        return $customer->customerTransactions()
             ->orderBy('transaction_date', 'desc')
             ->get()
-            ->map(function ($sale) {
+            ->map(function ($transaction) {
                 return [
-                    'id' => $sale->id,
-                    'type' => 'sale',
-                    'date' => $sale->transaction_date->format('Y-m-d H:i:s'), // Laravel handles timezone automatically
-                    'sort_date' => $sale->transaction_date->toISOString(), // For sorting
-                    'amount' => $sale->total_amount,
-                    'formatted_amount' => '₱'.number_format($sale->total_amount, 2),
-                    'description' => '',
+                    'id' => $transaction->id,
+                    'type' => $this->mapTransactionType($transaction->transaction_type),
+                    'transaction_type' => $transaction->transaction_type, // Keep original for detail fetching
+                    'reference_id' => $transaction->reference_id,
+                    'date' => $transaction->transaction_date->format('Y-m-d H:i:s'),
+                    'amount' => $transaction->transaction_amount,
+                    'formatted_amount' => '₱'.number_format($transaction->transaction_amount, 2),
+                    'description' => $transaction->transaction_desc,
+                    'previous_balance' => $transaction->previous_balance,
+                    'new_balance' => $transaction->new_balance,
+                    'formatted_previous_balance' => '₱'.number_format($transaction->previous_balance, 2),
+                    'formatted_new_balance' => '₱'.number_format($transaction->new_balance, 2),
+                ];
+            });
+    }
+
+    /**
+     * Get detailed transaction data for a specific transaction.
+     */
+    public function getTransactionDetails(Customer $customer, int $transactionId): ?array
+    {
+        $transaction = $customer->customerTransactions()->find($transactionId);
+
+        if (! $transaction) {
+            return null;
+        }
+
+        // Base transaction data
+        $data = [
+            'id' => $transaction->id,
+            'type' => $this->mapTransactionType($transaction->transaction_type),
+            'transaction_type' => $transaction->transaction_type,
+            'reference_id' => $transaction->reference_id,
+            'date' => $transaction->transaction_date->format('Y-m-d H:i:s'),
+            'amount' => $transaction->transaction_amount,
+            'formatted_amount' => '₱'.number_format($transaction->transaction_amount, 2),
+            'description' => $transaction->transaction_desc,
+            'previous_balance' => $transaction->previous_balance,
+            'new_balance' => $transaction->new_balance,
+            'formatted_previous_balance' => '₱'.number_format($transaction->previous_balance, 2),
+            'formatted_new_balance' => '₱'.number_format($transaction->new_balance, 2),
+        ];
+
+        // Add type-specific detailed data
+        if ($transaction->transaction_type === 'sale') {
+            $sale = Sale::with(['salesItems.product'])->find($transaction->reference_id);
+            if ($sale) {
+                $data = array_merge($data, [
                     'invoice_number' => $sale->invoice_number,
                     'payment_type' => $sale->payment_type,
                     'total_amount' => $sale->total_amount,
                     'paid_amount' => $sale->paid_amount,
                     'notes' => $sale->notes,
-                    'previous_balance' => $sale->previous_balance,
-                    'new_balance' => $sale->new_balance,
-                    'formatted_previous_balance' => '₱'.number_format($sale->previous_balance, 2),
-                    'formatted_new_balance' => '₱'.number_format($sale->new_balance, 2),
                     'sales_items' => $sale->salesItems->map(function ($item) {
                         return [
                             'id' => $item->id,
@@ -97,21 +81,31 @@ class CustomerService
                             'total_price' => $item->quantity * $item->unit_price,
                         ];
                     })->toArray(),
-                ];
-            });
+                ]);
+            }
+        } elseif ($transaction->transaction_type === 'utang_payment') {
+            // For utang payments, the transaction_desc already contains the notes
+            $data['notes'] = $transaction->transaction_desc;
+        } elseif ($transaction->transaction_type === 'monthly_interest') {
+            // For monthly interest, extract interest rate from description if needed
+            if (preg_match('/Interest Rate: ([\d.]+)%/', $transaction->transaction_desc, $matches)) {
+                $data['interest_rate'] = (float) $matches[1];
+            }
+        }
 
-        // Combine and sort all transactions by date (newest first)
-        return collect()
-            ->merge($utangPayments)
-            ->merge($utangTrackings)
-            ->merge($sales)
-            ->sortByDesc('sort_date')
-            ->map(function ($transaction) {
-                // Remove sort_date from final output
-                unset($transaction['sort_date']);
+        return $data;
+    }
 
-                return $transaction;
-            })
-            ->values();
+    /**
+     * Map database transaction type to frontend type.
+     */
+    private function mapTransactionType(string $transactionType): string
+    {
+        return match ($transactionType) {
+            'utang_payment' => 'payment',
+            'monthly_interest' => 'tracking',
+            'sale' => 'sale',
+            default => 'unknown'
+        };
     }
 }

@@ -17,16 +17,12 @@ class UtangPayment extends Model
         'user_id',
         'customer_id',
         'payment_amount',
-        'previous_balance',
-        'new_balance',
         'payment_date',
         'notes',
     ];
 
     protected $casts = [
         'payment_amount' => 'float',
-        'previous_balance' => 'float',
-        'new_balance' => 'float',
         'payment_date' => 'datetime',
     ];
 

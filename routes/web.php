@@ -57,9 +57,12 @@ Route::middleware(['throttle:global'])->group(function () {
     Route::prefix('api')->middleware(['auth', 'verified'])->group(function () {
         // Dashboard API endpoints
         Route::get('dashboard/cash-flow', [DashboardController::class, 'getCashFlowData'])->name('dashboard.api.cash-flow');
+        Route::get('dashboard/sales-chart', [DashboardController::class, 'getSalesChartDataForYear'])->name('dashboard.api.sales-chart');
+        Route::get('dashboard/best-selling-products', [DashboardController::class, 'getBestSellingProductsForYear'])->name('dashboard.api.best-selling-products');
 
         // Customer API endpoints
         Route::get('customers/{customer}/transactions', [CustomerController::class, 'getTransactions'])->name('customers.api.transactions');
+        Route::get('customers/{customer}/transactions/{transactionId}', [CustomerController::class, 'getTransactionDetails'])->name('customers.api.transaction-details');
 
         // Product Category API endpoints
         Route::get('product-categories', [ProductCategoryController::class, 'index'])->name('product-categories.api.index');

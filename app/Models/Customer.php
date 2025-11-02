@@ -74,6 +74,11 @@ class Customer extends Model
         return $this->hasMany(UtangPayment::class);
     }
 
+    public function customerTransactions()
+    {
+        return $this->hasMany(CustomerTransaction::class);
+    }
+
     // Computed Properties
 
     /**

@@ -17,8 +17,20 @@ return new class extends Migration
             $table->string('name')->unique();
             $table->string('description')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->boolean('is_default')->default(false);
             $table->timestamps();
+
+            // Performance indexes
+            $table->index(['user_id', 'status']); // For filtering active categories by user
         });
+
+        // Create a partial unique index for PostgreSQL
+        // This ensures only one default category per user
+        \DB::statement('
+            CREATE UNIQUE INDEX unique_default_per_user 
+            ON product_categories (user_id) 
+            WHERE is_default = true
+        ');
     }
 
     /**

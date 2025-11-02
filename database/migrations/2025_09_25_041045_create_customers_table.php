@@ -18,7 +18,13 @@ return new class extends Migration
             $table->string('mobile_number')->unique();
             $table->text('remarks')->nullable();
             $table->boolean('has_utang')->default(false);
+            $table->decimal('interest_rate', 5, 2)->nullable();
             $table->timestamps();
+
+            // Performance indexes
+            $table->index('user_id'); // For user-specific customer queries
+            $table->index(['user_id', 'has_utang']); // For filtering customers with/without utang
+            $table->index(['user_id', 'name']); // For user customer search by name
         });
     }
 

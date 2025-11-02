@@ -22,6 +22,10 @@ return new class extends Migration
             $table->decimal('cost_price', 15, 2);
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
+
+            // Performance indexes
+            $table->index(['user_id', 'status']); // For filtering active products by user (availableForSale scope)
+            $table->index(['user_id', 'category_id']); // For filtering products by category per user
         });
     }
 

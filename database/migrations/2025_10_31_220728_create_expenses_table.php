@@ -19,6 +19,10 @@ return new class extends Migration
             $table->decimal('amount', 15, 2);
             $table->date('expense_date');
             $table->timestamps();
+
+            // Performance indexes
+            $table->index(['user_id', 'expense_date']); // For date-range expense queries per user
+            $table->index(['user_id', 'category_id']); // For filtering expenses by category per user
         });
     }
 

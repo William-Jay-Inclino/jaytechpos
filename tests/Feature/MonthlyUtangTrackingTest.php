@@ -2,8 +2,8 @@
 
 use App\Jobs\ProcessMonthlyUtangTracking;
 use App\Models\Customer;
-use App\Models\UtangTracking;
 use App\Models\User;
+use App\Models\UtangTracking;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -18,8 +18,9 @@ it('processes monthly utang tracking for customers with utang', function () {
     $customerWithUtang = Customer::factory()->create([
         'user_id' => $this->user->id,
         'has_utang' => true,
+        'interest_rate' => 5.0,
     ]);
-    
+
     $customerWithoutUtang = Customer::factory()->create([
         'user_id' => $this->user->id,
         'has_utang' => false,
@@ -39,7 +40,7 @@ it('processes monthly utang tracking for customers with utang', function () {
     $this->travelTo($nextMonth);
 
     // Run the job
-    $job = new ProcessMonthlyUtangTracking();
+    $job = new ProcessMonthlyUtangTracking;
     $job->handle();
 
     // Assert new tracking record created with interest
@@ -70,7 +71,7 @@ it('skips customers with zero balance', function () {
     // No existing tracking records means zero balance
 
     // Run the job
-    $job = new ProcessMonthlyUtangTracking();
+    $job = new ProcessMonthlyUtangTracking;
     $job->handle();
 
     // Assert no tracking record created for zero balance
@@ -96,7 +97,7 @@ it('skips if record already exists for current month', function () {
     $initialCount = UtangTracking::where('customer_id', $customer->id)->count();
 
     // Run the job
-    $job = new ProcessMonthlyUtangTracking();
+    $job = new ProcessMonthlyUtangTracking;
     $job->handle();
 
     // Assert no new record created
@@ -124,7 +125,7 @@ it('calculates interest correctly', function () {
     $this->travelTo(now()->addMonth());
 
     // Run the job
-    $job = new ProcessMonthlyUtangTracking();
+    $job = new ProcessMonthlyUtangTracking;
     $job->handle();
 
     // Check new balance calculation (2000 + 10% = 2200)

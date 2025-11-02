@@ -35,12 +35,17 @@ it('updates utang balance when payment is recorded', function () {
 
     $response->assertRedirect('/utang-payments');
 
-    // Check that payment was created with balance information
+    // Check that payment was created
     $this->assertDatabaseHas('utang_payments', [
         'customer_id' => $customer->id,
         'payment_amount' => $paymentAmount,
-        'previous_balance' => $initialBalance,
-        'new_balance' => $initialBalance - $paymentAmount,
+    ]);
+
+    // Check that customer transaction was created
+    $this->assertDatabaseHas('customer_transactions', [
+        'customer_id' => $customer->id,
+        'transaction_type' => 'utang_payment',
+        'transaction_amount' => $paymentAmount,
     ]);
 
     // Check that utang balance was updated
@@ -107,12 +112,17 @@ it('does not update balance if no utang tracking record exists', function () {
 
     $response->assertRedirect('/utang-payments');
 
-    // Payment should be created with zero balances (no tracking record)
+    // Payment should be created
     $this->assertDatabaseHas('utang_payments', [
         'customer_id' => $customer->id,
         'payment_amount' => 50.00,
-        'previous_balance' => 0.00,
-        'new_balance' => -50.00,
+    ]);
+
+    // Check that customer transaction was created
+    $this->assertDatabaseHas('customer_transactions', [
+        'customer_id' => $customer->id,
+        'transaction_type' => 'utang_payment',
+        'transaction_amount' => 50.00,
     ]);
 
     // No tracking record should exist (no error should occur)

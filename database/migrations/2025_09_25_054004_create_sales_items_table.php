@@ -18,6 +18,9 @@ return new class extends Migration
             $table->decimal('quantity', 10, 2)->unsigned()->default(1);
             $table->decimal('unit_price', 10, 2)->default(0);
             $table->timestamps();
+
+            // Performance indexes
+            $table->index('product_id'); // For best-selling products queries and product usage checks
         });
     }
 

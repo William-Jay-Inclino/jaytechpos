@@ -8,15 +8,17 @@ import SaleDetailsModal from '@/components/modals/SaleDetailsModal.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
-defineProps<{
+const props = defineProps<{
     transactions: CustomerTransaction[];
     loading?: boolean;
     customerName?: string;
+    customerId?: number;
 }>();
 
 // Modal state
 const showSaleModal = ref(false);
 const selectedSaleTransaction = ref<CustomerTransaction | null>(null);
+const loadingTransactionDetails = ref(false);
 
 // Methods
 const formatCurrency = formatPhilippinePeso;
@@ -35,10 +37,41 @@ const getTransactionTypeLabel = (type: string) => {
     }
 };
 
-const openSaleDetails = (transaction: CustomerTransaction) => {
-    if (transaction.type === 'sale') {
-        selectedSaleTransaction.value = transaction;
+const openSaleDetails = async (transaction: CustomerTransaction) => {
+    if (transaction.type !== 'sale' || !props.customerId) return;
+    
+    loadingTransactionDetails.value = true;
+    try {
+        // Get CSRF token from the meta tag
+        const token = document
+            .querySelector('meta[name="csrf-token"]')
+            ?.getAttribute('content');
+
+        const response = await fetch(
+            `/api/customers/${props.customerId}/transactions/${transaction.id}`,
+            {
+                method: 'GET',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': token || '',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                credentials: 'same-origin',
+            },
+        );
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        selectedSaleTransaction.value = data.transaction;
         showSaleModal.value = true;
+    } catch (error) {
+        console.error('Error fetching transaction details:', error);
+    } finally {
+        loadingTransactionDetails.value = false;
     }
 };
 
@@ -176,52 +209,6 @@ const getFormattedPaidAmount = (transaction: CustomerTransaction) => {
                             {{ transaction.description }}
                         </p>
 
-                        <!-- Sale-specific fields -->
-                        <div
-                            v-if="transaction.type === 'sale'"
-                            class="mb-3 space-y-2"
-                        >
-                            <div
-                                class="flex flex-col gap-2 text-xs sm:flex-row sm:items-center sm:gap-4 sm:text-sm"
-                            >
-                                <span
-                                    class="text-gray-600 dark:text-gray-400"
-                                >
-                                    Total:
-                                    <span
-                                        class="font-semibold text-gray-900 dark:text-white"
-                                        >{{ formatCurrency(transaction.total_amount || 0) }}</span
-                                    >
-                                </span>
-                                <span
-                                    class="text-gray-600 dark:text-gray-400"
-                                >
-                                    Paid:
-                                    <span
-                                        class="font-semibold text-gray-900 dark:text-white"
-                                        >{{ getFormattedPaidAmount(transaction) }}</span
-                                    >
-                                </span>
-                                <Badge
-                                    :variant="
-                                        transaction.payment_type === 'cash'
-                                            ? 'default'
-                                            : 'destructive'
-                                    "
-                                    class="w-fit text-xs font-medium"
-                                >
-                                    {{ transaction.payment_type?.toUpperCase() }}
-                                </Badge>
-                            </div>
-                            <div
-                                v-if="transaction.notes"
-                                class="rounded bg-gray-100 p-2 text-xs text-gray-600 dark:bg-gray-600 dark:text-gray-400"
-                            >
-                                <span class="font-medium">Notes:</span>
-                                {{ transaction.notes }}
-                            </div>
-                        </div>
-
                         <!-- Balance changes -->
                         <div
                             v-if="
@@ -262,9 +249,14 @@ const getFormattedPaidAmount = (transaction: CustomerTransaction) => {
                             variant="ghost"
                             size="sm"
                             @click="openSaleDetails(transaction)"
+                            :disabled="loadingTransactionDetails"
                             class="w-fit text-xs text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
                         >
-                            View Details
+                            <span v-if="loadingTransactionDetails" class="flex items-center gap-1">
+                                <div class="h-3 w-3 animate-spin rounded-full border border-current border-t-transparent"></div>
+                                Loading...
+                            </span>
+                            <span v-else>View Details</span>
                         </Button>
 
                         <!-- Amount -->

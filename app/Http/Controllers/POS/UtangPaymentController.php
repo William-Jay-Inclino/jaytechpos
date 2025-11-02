@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreUtangPaymentRequest;
 use App\Http\Resources\CustomerResource;
 use App\Models\Customer;
+use App\Models\CustomerTransaction;
 use App\Models\UtangPayment;
 use App\Services\UtangTrackingService;
 use App\Traits\HandlesTimezone;
@@ -43,18 +44,16 @@ class UtangPaymentController extends Controller
         $this->authorize('createForCustomer', [UtangPayment::class, $request->customer_id]);
 
         $payment = DB::transaction(function () use ($request) {
-            // Get current balance before payment
+            // Get current balance before payment for customer transaction tracking
             $customer = Customer::findOrFail($request->customer_id);
             $currentBalance = $this->getCurrentBalance($customer);
             $newBalance = $currentBalance - $request->payment_amount;
 
-            // Create the payment with balance information
+            // Create the payment record
             $payment = UtangPayment::create([
                 'user_id' => auth()->id(),
                 'customer_id' => $request->customer_id,
                 'payment_amount' => $request->payment_amount,
-                'previous_balance' => $currentBalance,
-                'new_balance' => $newBalance,
                 'payment_date' => now(), // Use current timestamp for accurate ordering
                 'notes' => $request->notes,
             ]);
@@ -66,6 +65,19 @@ class UtangPaymentController extends Controller
             if ($newBalance <= 0) {
                 $customer->update(['has_utang' => false]);
             }
+
+            // Create customer transaction record
+            CustomerTransaction::create([
+                'user_id' => auth()->id(),
+                'customer_id' => $payment->customer_id,
+                'transaction_type' => 'utang_payment',
+                'reference_id' => $payment->id,
+                'previous_balance' => $currentBalance,
+                'new_balance' => $newBalance,
+                'transaction_desc' => $request->notes,
+                'transaction_date' => $payment->payment_date,
+                'transaction_amount' => $payment->payment_amount,
+            ]);
 
             return $payment;
         });

@@ -7,6 +7,7 @@ use App\Http\Requests\StoreSaleRequest;
 use App\Http\Resources\CustomerResource;
 use App\Http\Resources\SaleResource;
 use App\Models\Customer;
+use App\Models\CustomerTransaction;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SalesItem;
@@ -58,7 +59,8 @@ class SaleController extends Controller
             // Generate unique invoice number
             $invoiceNumber = $this->saleService->generateInvoiceNumber();
 
-            // Get current balance before creating the sale
+            // Get customer and current balance for customer transaction tracking
+            $customer = null;
             $previousBalance = 0;
             $newBalance = 0;
 
@@ -67,7 +69,7 @@ class SaleController extends Controller
                 if ($customer) {
                     $previousBalance = $customer->running_utang_balance;
 
-                    // Calculate new balance based on payment type
+                    // Calculate new balance based on payment type for customer transaction record
                     if ($request->validated('payment_type') === 'utang') {
                         // For utang sales, balance increases by unpaid amount
                         $unpaidAmount = $request->validated('total_amount') - $request->validated('paid_amount');
@@ -80,14 +82,12 @@ class SaleController extends Controller
                 }
             }
 
-            // Create the sale record with all required fields including balance tracking
+            // Create the sale record
             $sale = Sale::create([
                 'user_id' => auth()->id(),
                 'customer_id' => $request->validated('customer_id'),
                 'total_amount' => $request->validated('total_amount'),
                 'paid_amount' => $request->validated('paid_amount'),
-                'previous_balance' => $previousBalance,
-                'new_balance' => $newBalance,
                 'invoice_number' => $invoiceNumber,
                 'payment_type' => $request->validated('payment_type'),
                 'transaction_date' => now(),
@@ -114,6 +114,21 @@ class SaleController extends Controller
                 $this->utangTrackingService->deductFromRunningBalance($sale->customer_id, $request->validated('deduct_from_balance'));
             }
 
+            // Create customer transaction record (only if customer is selected)
+            if ($sale->customer_id) {
+                CustomerTransaction::create([
+                    'user_id' => auth()->id(),
+                    'customer_id' => $sale->customer_id,
+                    'transaction_type' => 'sale',
+                    'reference_id' => $sale->id,
+                    'previous_balance' => $previousBalance,
+                    'new_balance' => $newBalance,
+                    'transaction_desc' => $invoiceNumber,
+                    'transaction_date' => $sale->transaction_date,
+                    'transaction_amount' => $sale->total_amount,
+                ]);
+            }
+
             DB::commit();
 
             // Load relationships for the resource
@@ -130,9 +145,9 @@ class SaleController extends Controller
 
             $sale->balance_payment = $request->validated('deduct_from_balance', 0);
 
-            $sale->original_customer_balance = $sale->previous_balance;
+            $sale->original_customer_balance = $previousBalance;
 
-            $sale->new_customer_balance = $sale->new_balance;
+            $sale->new_customer_balance = $newBalance;
 
             // Prepare response data using the resource
             $saleData = (new SaleResource($sale))->resolve();

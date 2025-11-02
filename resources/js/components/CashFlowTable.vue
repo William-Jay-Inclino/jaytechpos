@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { router } from '@inertiajs/vue3'
+import axios from 'axios'
 import { BarChart3 } from 'lucide-vue-next'
 
 interface CashFlowData {
@@ -19,6 +19,7 @@ const props = defineProps<Props>()
 
 const selectedYear = ref(props.currentYear)
 const loading = ref(false)
+const cashFlowData = ref<CashFlowData[]>(props.data)
 
 const months = [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -31,15 +32,15 @@ const years = computed(() => {
 })
 
 const totalIncome = computed(() => 
-    props.data.reduce((sum, item) => sum + item.income, 0)
+    cashFlowData.value.reduce((sum, item) => sum + item.income, 0)
 )
 
 const totalExpense = computed(() => 
-    props.data.reduce((sum, item) => sum + item.expense, 0)
+    cashFlowData.value.reduce((sum, item) => sum + item.expense, 0)
 )
 
 const totalCashFlow = computed(() => 
-    props.data.reduce((sum, item) => sum + item.cash_flow, 0)
+    cashFlowData.value.reduce((sum, item) => sum + item.cash_flow, 0)
 )
 
 function formatCurrency(value: number): string {
@@ -49,15 +50,20 @@ function formatCurrency(value: number): string {
     }).format(value)
 }
 
-function updateYear() {
+async function updateYear() {
     loading.value = true
-    router.get('/api/dashboard/cash-flow', 
-        { year: selectedYear.value },
-        {
-            preserveState: true,
-            onFinish: () => loading.value = false
-        }
-    )
+    
+    try {
+        const response = await axios.get('/api/dashboard/cash-flow', {
+            params: { year: selectedYear.value }
+        })
+        
+        cashFlowData.value = response.data.data
+    } catch (error) {
+        console.error('Error fetching cash flow data:', error)
+    } finally {
+        loading.value = false
+    }
 }
 </script>
 
@@ -103,7 +109,7 @@ function updateYear() {
                 </thead>
                 <tbody v-if="!loading" class="divide-y divide-gray-200/50 dark:divide-gray-600/50">
                     <tr
-                        v-for="item in data"
+                        v-for="item in cashFlowData"
                         :key="item.month"
                         class="hover:bg-white/50 dark:hover:bg-gray-700/30 transition-colors duration-200"
                     >
