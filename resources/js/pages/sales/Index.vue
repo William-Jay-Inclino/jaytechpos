@@ -644,7 +644,7 @@ watch(amountTendered, () => {
                                                         {{ item.product_name }}
                                                     </h3>
                                                     <div class="mt-1 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                                                        <span>₱{{ Number(item.unit_price).toFixed(2) }}/unit</span>
+                                                        <span>₱{{ Number(item.unit_price).toFixed(2) }}/{{ item.unit?.unit_name || 'unit' }}</span>
                                                     </div>
                                                 </div>
                                                 <div class="text-right ml-4">
@@ -702,7 +702,7 @@ watch(amountTendered, () => {
                                                         />
                                                     </div>
                                                     <span class="text-sm text-gray-500 dark:text-gray-400 min-w-[80px] text-right">
-                                                        ₱{{ Number(item.unit_price).toFixed(2) }}/unit
+                                                        ₱{{ Number(item.unit_price).toFixed(2) }}/{{ item.unit?.unit_name || 'unit' }}
                                                     </span>
                                                     <div class="text-lg font-bold text-green-600 dark:text-green-400 min-w-[100px] text-right">
                                                         ₱{{ calculateItemTotal(item).toFixed(2) }}
@@ -715,7 +715,7 @@ watch(amountTendered, () => {
                                                     variant="destructive"
                                                     @click="removeCartItem(index)"
                                                 >
-                                                    <Trash2 class="h-4 w-4 mr-2" />
+                                                    <Trash2 class="h-4 w-4" />
                                                 </Button>
                                             </div>
                                         </div>

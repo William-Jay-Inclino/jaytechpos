@@ -67,6 +67,7 @@ class DashboardController extends Controller
         return [
             'total_sales_today' => $totalSalesToday,
             'total_cash_today' => $totalCashToday,
+            'utang_payments_today' => $utangPaymentsToday,
         ];
     }
 
@@ -88,25 +89,34 @@ class DashboardController extends Controller
         $yearStart = Carbon::now()->startOfYear();
 
         return [
-            'today' => $this->productService->getBestSellingProducts($today, $today, $userId, 10),
-            'week' => $this->productService->getBestSellingProducts($weekStart, $today, $userId, 10),
-            'month' => $this->productService->getBestSellingProducts($monthStart, $today, $userId, 10),
-            'year' => $this->productService->getBestSellingProducts($yearStart, $today, $userId, 10),
+            'today' => $this->productService->getBestSellingProducts($today, $today, $userId, 8),
+            'week' => $this->productService->getBestSellingProducts($weekStart, $today, $userId, 8),
+            'month' => $this->productService->getBestSellingProducts($monthStart, $today, $userId, 8),
+            'year' => $this->productService->getBestSellingProducts($yearStart, $today, $userId, 8),
         ];
     }
 
     private function getSalesChartData(int $userId): array
     {
-        $endDate = Carbon::today();
-        $startDate = Carbon::today()->subDays(29); // Last 30 days
+        $currentDate = Carbon::today();
+        $startDate = Carbon::now()->startOfYear(); // January 1st of current year
 
         $salesData = [];
         $labels = [];
 
-        for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
-            $dailySales = $this->saleService->getTotalSales($date, $date, $userId);
-            $salesData[] = $dailySales;
-            $labels[] = $date->format('M j');
+        // Group by month for year-to-date view
+        for ($month = $startDate->copy(); $month->lte($currentDate); $month->addMonth()) {
+            $monthStart = $month->copy()->startOfMonth();
+            $monthEnd = $month->copy()->endOfMonth();
+
+            // Don't go beyond current date
+            if ($monthEnd->gt($currentDate)) {
+                $monthEnd = $currentDate->copy();
+            }
+
+            $monthlySales = $this->saleService->getTotalSales($monthStart, $monthEnd, $userId);
+            $salesData[] = $monthlySales;
+            $labels[] = $month->format('M');
         }
 
         return [

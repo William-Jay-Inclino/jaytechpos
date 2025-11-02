@@ -32,6 +32,7 @@ class SaleController extends Controller
         $this->authorize('viewAny', Sale::class);
 
         $products = Product::availableForSale()
+            ->with(['unit'])
             ->orderBy('product_name')
             ->get();
 
@@ -137,7 +138,7 @@ class SaleController extends Controller
             $saleData = (new SaleResource($sale))->resolve();
 
             return Inertia::render('sales/Index', [
-                'products' => Product::availableForSale()->orderBy('product_name')->get(),
+                'products' => Product::availableForSale()->with(['unit'])->orderBy('product_name')->get(),
                 'customers' => CustomerResource::collection(
                     Customer::ownedBy()
                         ->orderBy('name')
@@ -151,7 +152,7 @@ class SaleController extends Controller
             Log::error('Sale creation failed: '.$e->getMessage());
 
             return Inertia::render('sales/Index', [
-                'products' => Product::availableForSale()->orderBy('product_name')->get(),
+                'products' => Product::availableForSale()->with(['unit'])->orderBy('product_name')->get(),
                 'customers' => CustomerResource::collection(
                     Customer::ownedBy()
                         ->orderBy('name')
