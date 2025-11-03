@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import axios from 'axios'
 import { TrendingUp, BarChart3, Sparkles } from 'lucide-vue-next'
 import { Line } from 'vue-chartjs'
@@ -37,13 +37,26 @@ interface SalesChartData {
 interface Props {
     chartData: SalesChartData
     currentYear: number
+    disableYearSelector?: boolean
+    loading?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+    disableYearSelector: false,
+    loading: false
+})
 
 const selectedYear = ref(props.currentYear)
-const loading = ref(false)
+const internalLoading = ref(false)
 const salesChartData = ref<SalesChartData>(props.chartData)
+
+// Watch for external data changes
+watch(() => props.chartData, (newData: SalesChartData) => {
+    salesChartData.value = newData
+}, { deep: true })
+
+// Computed loading state that considers both internal and external loading
+const isLoading = computed(() => props.loading || internalLoading.value)
 
 const years = computed(() => {
     const currentYear = new Date().getFullYear()
@@ -51,7 +64,7 @@ const years = computed(() => {
 })
 
 async function updateYear() {
-    loading.value = true
+    internalLoading.value = true
     
     try {
         const response = await axios.get('/api/dashboard/sales-chart', {
@@ -62,7 +75,7 @@ async function updateYear() {
     } catch (error) {
         console.error('Error fetching sales chart data:', error)
     } finally {
-        loading.value = false
+        internalLoading.value = false
     }
 }
 
@@ -84,22 +97,16 @@ const chartData = computed((): ChartData<'line'> => ({
             label: 'Sales',
             data: salesChartData.value.data,
             borderColor: 'rgb(59, 130, 246)',
-            backgroundColor: (context) => {
-                const ctx = context.chart.ctx
-                const gradient = ctx.createLinearGradient(0, 0, 0, 300)
-                gradient.addColorStop(0, 'rgba(59, 130, 246, 0.3)')
-                gradient.addColorStop(0.5, 'rgba(59, 130, 246, 0.1)')
-                gradient.addColorStop(1, 'rgba(59, 130, 246, 0.05)')
-                return gradient
-            },
+            backgroundColor: 'rgba(59, 130, 246, 0.08)',
             pointBackgroundColor: 'rgb(59, 130, 246)',
             pointBorderColor: 'white',
-            pointBorderWidth: 3,
-            pointRadius: 8,
-            pointHoverRadius: 12,
-            pointHoverBorderWidth: 4,
-            tension: 0.4,
+            pointBorderWidth: 2,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            pointHoverBorderWidth: 3,
+            tension: 0.2,
             fill: true,
+            borderWidth: 2,
         }
     ]
 }))
@@ -146,7 +153,7 @@ const chartOptions = computed((): ChartOptions<'line'> => ({
     scales: {
         x: {
             grid: {
-                color: 'rgba(156, 163, 175, 0.1)',
+                color: 'rgba(156, 163, 175, 0.05)',
             },
             border: {
                 display: false,
@@ -154,17 +161,16 @@ const chartOptions = computed((): ChartOptions<'line'> => ({
             ticks: {
                 color: 'rgb(107, 114, 128)',
                 font: {
-                    size: 12,
+                    size: 11,
                 },
-                maxRotation: 45,
-                minRotation: 0,
-                padding: 10,
+                maxRotation: 0,
+                padding: 8,
             }
         },
         y: {
             beginAtZero: true,
             grid: {
-                color: 'rgba(156, 163, 175, 0.1)',
+                color: 'rgba(156, 163, 175, 0.08)',
             },
             border: {
                 display: false,
@@ -172,9 +178,10 @@ const chartOptions = computed((): ChartOptions<'line'> => ({
             ticks: {
                 color: 'rgb(107, 114, 128)',
                 font: {
-                    size: 12,
+                    size: 11,
                 },
-                padding: 15,
+                padding: 12,
+                maxTicksLimit: 6,
                 callback: function(tickValue) {
                     return formatCurrency(Number(tickValue))
                 }
@@ -183,7 +190,7 @@ const chartOptions = computed((): ChartOptions<'line'> => ({
     },
     elements: {
         line: {
-            borderWidth: 4,
+            borderWidth: 2,
         },
         point: {
             hoverBackgroundColor: 'rgb(59, 130, 246)',
@@ -217,7 +224,7 @@ const chartOptions = computed((): ChartOptions<'line'> => ({
                             </h3>
                         </div>
                     </div>
-                    <div class="flex items-center space-x-3 flex-shrink-0">
+                    <div v-if="!disableYearSelector" class="flex items-center space-x-3 flex-shrink-0">
                         <label for="sales-year" class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
                             Year:
                         </label>
@@ -233,7 +240,7 @@ const chartOptions = computed((): ChartOptions<'line'> => ({
                 </div>
             </div>
             
-            <div class="relative" v-if="!loading && salesChartData.data.length > 0">
+            <div class="relative" v-if="!isLoading && salesChartData.data.length > 0">
                 <!-- Chart container with enhanced styling -->
                 <div class="relative h-72 sm:h-96 w-full p-4 rounded-xl bg-gradient-to-br from-white/80 via-white/60 to-white/40 dark:from-gray-800/80 dark:via-gray-800/60 dark:to-gray-800/40 backdrop-blur-sm border border-white/30 dark:border-gray-700/30 shadow-inner">
                     <Line 
@@ -278,7 +285,7 @@ const chartOptions = computed((): ChartOptions<'line'> => ({
             </div>
 
             <!-- Loading state -->
-            <div v-else-if="loading" class="flex h-72 sm:h-96 flex-col items-center justify-center">
+            <div v-else-if="isLoading" class="flex h-72 sm:h-96 flex-col items-center justify-center">
                 <div class="relative mb-8">
                     <div class="absolute inset-0 bg-gradient-to-br from-blue-200 to-blue-300 dark:from-blue-600 dark:to-blue-700 rounded-full blur-xl opacity-50 animate-pulse"></div>
                     <div class="relative rounded-full bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-700 dark:to-blue-800 p-8 border-4 border-white/50 dark:border-blue-600/50 shadow-2xl">

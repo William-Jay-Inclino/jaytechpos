@@ -75,20 +75,17 @@ const breadcrumbs: BreadcrumbItem[] = [
                             <StatsCard
                                 title="Congratulations! Kumikita ka ngayong araw ng"
                                 :value="dailyStats.total_sales_today"
-                                icon="bar-chart-3"
                                 class="transform hover:scale-105 transition-all duration-300"
                             />
                             <StatsCard
                                 title="Ayos! May nabayarang utang ngayong araw na"
                                 :value="dailyStats.utang_payments_today"
-                                icon="banknote"
                                 class="transform hover:scale-105 transition-all duration-300"
                             />
                             <StatsCard
                                 title="May makokolekta ka pang utang na"
                                 :value="utangStats.total_amount_receivable"
-                                icon="dollar-sign"
-                                class="sm:col-span-2 lg:col-span-1 transform hover:scale-105 transition-all duration-300"
+                                class="transform hover:scale-105 transition-all duration-300"
                             />
                         </div>
                     </div>

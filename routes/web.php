@@ -33,6 +33,9 @@ Route::middleware(['throttle:global'])->group(function () {
     Route::get('sales', [SaleController::class, 'index'])->middleware(['auth', 'verified'])->name('sales');
     Route::post('sales', [SaleController::class, 'store'])->middleware(['auth', 'verified'])->name('sales.store');
 
+    // sales reports
+    Route::get('sales-report', [App\Http\Controllers\SalesReportController::class, 'index'])->middleware(['auth', 'verified'])->name('sales-report');
+
     // utang payments (now handled by CustomerTransactionController)
     Route::get('utang-payments', [CustomerTransactionController::class, 'utangPayments'])->middleware(['auth', 'verified'])->name('utang-payments');
     Route::post('utang-payments', [CustomerTransactionController::class, 'storeUtangPayment'])->middleware(['auth', 'verified'])->name('utang-payments.store');
@@ -70,6 +73,11 @@ Route::middleware(['throttle:global'])->group(function () {
         Route::post('product-categories', [ProductCategoryController::class, 'store'])->name('product-categories.api.store');
         Route::put('product-categories/{productCategory}', [ProductCategoryController::class, 'update'])->name('product-categories.api.update');
         Route::delete('product-categories/{productCategory}', [ProductCategoryController::class, 'destroy'])->name('product-categories.api.destroy');
+
+        // Sales Report API endpoints
+        Route::get('sales-report/data', [App\Http\Controllers\SalesReportController::class, 'getSalesData'])->name('sales-report.api.data');
+        Route::get('sales-report/chart', [App\Http\Controllers\SalesReportController::class, 'getChartData'])->name('sales-report.api.chart');
+        Route::get('sales-report/payment-types', [App\Http\Controllers\SalesReportController::class, 'getPaymentTypeData'])->name('sales-report.api.payment-types');
     });
 
 });

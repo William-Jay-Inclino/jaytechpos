@@ -11,7 +11,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard } from '@/routes';
+import { dashboard, salesReport } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
 import {
@@ -22,6 +22,7 @@ import {
     LayoutGrid,
     Package,
     ShoppingCart,
+    TrendingUp,
     UserCircle,
     Users,
 } from 'lucide-vue-next';
@@ -57,6 +58,11 @@ const mainNavItems: NavItem[] = [
         title: 'Customer Management',
         href: '/customers',
         icon: Users,
+    },
+    {
+        title: 'Sales Report',
+        href: salesReport(),
+        icon: TrendingUp,
     },
 ];
 

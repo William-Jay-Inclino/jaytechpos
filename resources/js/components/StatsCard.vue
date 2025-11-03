@@ -47,8 +47,8 @@ function shouldShowCelebration(value: string | number): boolean {
                         </p>
                         <!-- Enhanced Celebration Icons -->
                         <div v-if="shouldShowCelebration(value)" class="flex items-center gap-1">
-                            <span class="text-2xl animate-bounce">🎉</span>
-                            <span class="text-xl animate-bounce delay-75">💰</span>
+                            <span class="text-2xl">🎉</span>
+                            <span class="text-xl">💰</span>
                         </div>
                     </div>
                 </div>

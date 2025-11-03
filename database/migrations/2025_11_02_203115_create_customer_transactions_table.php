@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('customer_id')->constrained()->cascadeOnDelete();
             $table->enum('transaction_type', ['sale', 'utang_payment', 'monthly_interest']);
-            $table->unsignedBigInteger('reference_id');
+            $table->unsignedBigInteger('reference_id')->nullable();
             $table->decimal('previous_balance', 15, 2)->default(0);
             $table->decimal('new_balance', 15, 2)->default(0);
             $table->text('transaction_desc')->nullable();
