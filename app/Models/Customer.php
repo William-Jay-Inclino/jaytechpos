@@ -64,16 +64,6 @@ class Customer extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function utangTrackings()
-    {
-        return $this->hasMany(UtangTracking::class);
-    }
-
-    public function utangPayments()
-    {
-        return $this->hasMany(UtangPayment::class);
-    }
-
     public function customerTransactions()
     {
         return $this->hasMany(CustomerTransaction::class);
@@ -82,18 +72,20 @@ class Customer extends Model
     // Computed Properties
 
     /**
-     * Get the running balance of utang (most recent balance)
+     * Get the running balance of utang (most recent balance from customer transactions)
      */
     protected function runningUtangBalance(): Attribute
     {
         return Attribute::make(
             get: function () {
-                // Get the most recent UtangTracking record regardless of month
-                $utangTracking = $this->utangTrackings()
+                // Get the most recently created transaction to get the current balance
+                // Using created_at ensures we get the balance from the last recorded transaction
+                $lastTransaction = $this->customerTransactions()
                     ->latest('created_at')
+                    ->latest('id') // In case of same timestamp
                     ->first();
 
-                return $utangTracking ? $utangTracking->beginning_balance : 0;
+                return $lastTransaction ? (float) $lastTransaction->new_balance : 0.0;
             }
         );
     }

@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
+use App\Models\CustomerTransaction;
 use App\Models\Expense;
 use App\Models\Sale;
-use App\Models\UtangPayment;
 use Illuminate\Support\Collection;
 
 class UserService
@@ -43,11 +43,12 @@ class UserService
             ->whereMonth('transaction_date', $month)
             ->sum('total_amount');
 
-        // Utang payments income
-        $utangPayments = UtangPayment::where('user_id', $userId)
-            ->whereYear('payment_date', $year)
-            ->whereMonth('payment_date', $month)
-            ->sum('payment_amount');
+        // Utang payments income from customer transactions
+        $utangPayments = CustomerTransaction::where('user_id', $userId)
+            ->where('transaction_type', 'utang_payment')
+            ->whereYear('transaction_date', $year)
+            ->whereMonth('transaction_date', $month)
+            ->sum('transaction_amount');
 
         return $cashSales + $utangPayments;
     }

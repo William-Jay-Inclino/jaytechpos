@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('utang_payments', function (Blueprint $table) {
-            $table->datetime('payment_date')->change();
+        Schema::table('customer_transactions', function (Blueprint $table) {
+            $table->unsignedBigInteger('reference_id')->nullable()->change();
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('utang_payments', function (Blueprint $table) {
-            $table->date('payment_date')->change();
+        Schema::table('customer_transactions', function (Blueprint $table) {
+            $table->unsignedBigInteger('reference_id')->nullable(false)->change();
         });
     }
 };

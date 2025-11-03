@@ -14,31 +14,9 @@ export interface Customer {
     updated_at: string;
 }
 
-export interface UtangPayment {
-    id: number;
-    user_id: number;
-    customer_id: number;
-    payment_amount: number;
-    payment_date: string;
-    notes: string | null;
-    created_at: string;
-    updated_at: string;
-}
-
-export interface UtangTracking {
-    id: number;
-    user_id: number;
-    customer_id: number;
-    beginning_balance: number;
-    computation_date: string;
-    interest_rate: number;
-    created_at: string;
-    updated_at: string;
-}
-
 export interface CustomerTransaction {
     id: number;
-    type: 'payment' | 'tracking' | 'sale';
+    type: 'sale' | 'utang_payment' | 'monthly_interest';
     date: string;
     amount: number;
     formatted_amount: string;

@@ -2,11 +2,11 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\POS\CustomerController;
+use App\Http\Controllers\POS\CustomerTransactionController;
 use App\Http\Controllers\POS\ExpenseController;
 use App\Http\Controllers\POS\ProductCategoryController;
 use App\Http\Controllers\POS\ProductController;
 use App\Http\Controllers\POS\SaleController;
-use App\Http\Controllers\POS\UtangPaymentController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -33,9 +33,9 @@ Route::middleware(['throttle:global'])->group(function () {
     Route::get('sales', [SaleController::class, 'index'])->middleware(['auth', 'verified'])->name('sales');
     Route::post('sales', [SaleController::class, 'store'])->middleware(['auth', 'verified'])->name('sales.store');
 
-    // utang payments
-    Route::get('utang-payments', [UtangPaymentController::class, 'index'])->middleware(['auth', 'verified'])->name('utang-payments');
-    Route::post('utang-payments', [UtangPaymentController::class, 'store'])->middleware(['auth', 'verified'])->name('utang-payments.store');
+    // utang payments (now handled by CustomerTransactionController)
+    Route::get('utang-payments', [CustomerTransactionController::class, 'utangPayments'])->middleware(['auth', 'verified'])->name('utang-payments');
+    Route::post('utang-payments', [CustomerTransactionController::class, 'storeUtangPayment'])->middleware(['auth', 'verified'])->name('utang-payments.store');
 
     // customers
     Route::get('customers/{customer}/transactions', [CustomerController::class, 'transactions'])->middleware(['auth', 'verified'])->name('customers.transactions');

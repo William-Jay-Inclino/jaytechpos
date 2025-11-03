@@ -2,8 +2,8 @@
 
 use App\Http\Resources\CustomerResource;
 use App\Models\Customer;
+use App\Models\CustomerTransaction;
 use App\Models\User;
-use App\Models\UtangTracking;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -12,7 +12,7 @@ it('includes running utang balance in customer resource', function () {
     // Create a user and customer
     $user = User::factory()->create();
     $this->actingAs($user);
-    
+
     $customer = Customer::factory()->create([
         'user_id' => $user->id,
         'name' => 'Test Customer',
@@ -20,13 +20,16 @@ it('includes running utang balance in customer resource', function () {
         'has_utang' => true,
     ]);
 
-    // Create a utang tracking record for current month
-    UtangTracking::factory()->create([
+    // Create a customer transaction record to establish a balance
+    CustomerTransaction::factory()->create([
         'user_id' => $user->id,
         'customer_id' => $customer->id,
-        'beginning_balance' => 1500.00,
-        'computation_date' => now()->startOfMonth(),
-        'interest_rate' => 3.0,
+        'transaction_type' => 'sale',
+        'transaction_date' => now()->startOfMonth(),
+        'previous_balance' => 0.00,
+        'new_balance' => 1500.00,
+        'transaction_amount' => 1500.00,
+        'transaction_desc' => 'Initial sale transaction',
     ]);
 
     // Transform customer using resource
@@ -37,5 +40,5 @@ it('includes running utang balance in customer resource', function () {
     expect($customerData)
         ->toHaveKey('running_utang_balance')
         ->and($customerData['running_utang_balance'])
-        ->toBe(1500.00);
+        ->toBe('1500.00');
 });

@@ -106,10 +106,9 @@ class CustomerController extends Controller
 
         // Check if customer has any related records
         if ($customer->sales()->exists() ||
-            $customer->utangTrackings()->exists() ||
-            $customer->utangPayments()->exists()) {
+            $customer->customerTransactions()->exists()) {
             return redirect()->route('customers.index')
-                ->with('error', 'Cannot delete customer with existing sales, utang trackings, or payments.');
+                ->with('error', 'Cannot delete customer with existing sales or transaction history.');
         }
 
         $customer->delete();

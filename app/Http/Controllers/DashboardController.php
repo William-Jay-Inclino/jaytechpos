@@ -6,8 +6,6 @@ use App\Models\Customer;
 use App\Services\ProductService;
 use App\Services\SaleService;
 use App\Services\UserService;
-use App\Services\UtangPaymentService;
-use App\Services\UtangTrackingService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -18,9 +16,7 @@ class DashboardController extends Controller
     public function __construct(
         private ProductService $productService,
         private SaleService $saleService,
-        private UserService $userService,
-        private UtangPaymentService $utangPaymentService,
-        private UtangTrackingService $utangTrackingService
+        private UserService $userService
     ) {}
 
     public function index(): Response
@@ -59,9 +55,15 @@ class DashboardController extends Controller
         // Total sales today
         $totalSalesToday = $this->saleService->getTotalSales($today, $today, $userId);
 
-        // Total cash received today (cash sales + utang payments)
+        // Total cash received today (cash sales + utang payments via customer transactions)
         $cashSalesToday = $this->saleService->getTotalSales($today, $today, $userId, 'cash');
-        $utangPaymentsToday = $this->utangPaymentService->getTotalUtangPayments($today, $today, $userId);
+
+        // Get utang payments from customer transactions
+        $utangPaymentsToday = \App\Models\CustomerTransaction::where('user_id', $userId)
+            ->where('transaction_type', 'utang_payment')
+            ->whereDate('transaction_date', $today)
+            ->sum('transaction_amount');
+
         $totalCashToday = $cashSalesToday + $utangPaymentsToday;
 
         return [
@@ -73,8 +75,11 @@ class DashboardController extends Controller
 
     private function getUtangStatistics(int $userId, Carbon $today): array
     {
-        // Total amount receivable from customer utangs
-        $totalAmountReceivable = $this->utangTrackingService->getTotalAmountReceivable($userId);
+        // Total amount receivable from customer utangs using customer running balances
+        $totalAmountReceivable = Customer::where('user_id', $userId)
+            ->where('has_utang', true)
+            ->get()
+            ->sum(fn ($customer) => $customer->running_utang_balance);
 
         return [
             'total_amount_receivable' => $totalAmountReceivable,

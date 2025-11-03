@@ -15,7 +15,8 @@ class CustomerService
     public function getCustomerTransactions(Customer $customer): Collection
     {
         return $customer->customerTransactions()
-            ->orderBy('transaction_date', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc') // Secondary sort by ID for same timestamp
             ->get()
             ->map(function ($transaction) {
                 return [
@@ -98,14 +99,10 @@ class CustomerService
 
     /**
      * Map database transaction type to frontend type.
+     * We now use the original database values as they are more descriptive.
      */
     private function mapTransactionType(string $transactionType): string
     {
-        return match ($transactionType) {
-            'utang_payment' => 'payment',
-            'monthly_interest' => 'tracking',
-            'sale' => 'sale',
-            default => 'unknown'
-        };
+        return $transactionType; // No mapping needed - use database values directly
     }
 }

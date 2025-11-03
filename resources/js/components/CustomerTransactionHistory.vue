@@ -18,7 +18,7 @@ const props = defineProps<{
 // Modal state
 const showSaleModal = ref(false);
 const selectedSaleTransaction = ref<CustomerTransaction | null>(null);
-const loadingTransactionDetails = ref(false);
+const loadingTransactionIds = ref<Set<number>>(new Set());
 
 // Methods
 const formatCurrency = formatPhilippinePeso;
@@ -26,9 +26,9 @@ const formatDate = formatManilaDateTime;
 
 const getTransactionTypeLabel = (type: string) => {
     switch (type) {
-        case 'payment':
+        case 'utang_payment':
             return 'Utang Payment';
-        case 'tracking':
+        case 'monthly_interest':
             return 'Monthly Interest';
         case 'sale':
             return 'Sale Transaction';
@@ -40,7 +40,7 @@ const getTransactionTypeLabel = (type: string) => {
 const openSaleDetails = async (transaction: CustomerTransaction) => {
     if (transaction.type !== 'sale' || !props.customerId) return;
     
-    loadingTransactionDetails.value = true;
+    loadingTransactionIds.value.add(transaction.id);
     try {
         // Get CSRF token from the meta tag
         const token = document
@@ -71,7 +71,7 @@ const openSaleDetails = async (transaction: CustomerTransaction) => {
     } catch (error) {
         console.error('Error fetching transaction details:', error);
     } finally {
-        loadingTransactionDetails.value = false;
+        loadingTransactionIds.value.delete(transaction.id);
     }
 };
 
@@ -80,6 +80,10 @@ const getFormattedPaidAmount = (transaction: CustomerTransaction) => {
         return 'Full Payment';
     }
     return formatCurrency(transaction.paid_amount || 0);
+};
+
+const isTransactionLoading = (transactionId: number) => {
+    return loadingTransactionIds.value.has(transactionId);
 };
 </script>
 
@@ -187,9 +191,9 @@ const getFormattedPaidAmount = (transaction: CustomerTransaction) => {
                             <span
                                 :class="[
                                     'w-fit rounded-full px-2 py-1 text-xs font-semibold sm:px-3',
-                                    transaction.type === 'payment'
+                                    transaction.type === 'utang_payment'
                                         ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400'
-                                        : transaction.type === 'tracking'
+                                        : transaction.type === 'monthly_interest'
                                           ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400'
                                           : 'bg-orange-100 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400',
                                 ]"
@@ -212,15 +216,15 @@ const getFormattedPaidAmount = (transaction: CustomerTransaction) => {
                         <!-- Balance changes -->
                         <div
                             v-if="
-                                (transaction.type === 'payment' ||
+                                (transaction.type === 'utang_payment' ||
                                     transaction.type === 'sale' ||
-                                    transaction.type === 'tracking') &&
+                                    transaction.type === 'monthly_interest') &&
                                 transaction.previous_balance !== undefined
                             "
                             class="rounded bg-gray-100 p-2 text-xs text-gray-600 dark:bg-gray-600 dark:text-gray-400"
                         >
                             <span
-                                v-if="transaction.type === 'tracking'"
+                                v-if="transaction.type === 'monthly_interest'"
                                 class="font-medium break-words"
                             >
                                 Previous Month:
@@ -249,10 +253,10 @@ const getFormattedPaidAmount = (transaction: CustomerTransaction) => {
                             variant="ghost"
                             size="sm"
                             @click="openSaleDetails(transaction)"
-                            :disabled="loadingTransactionDetails"
+                            :disabled="isTransactionLoading(transaction.id)"
                             class="w-fit text-xs text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
                         >
-                            <span v-if="loadingTransactionDetails" class="flex items-center gap-1">
+                            <span v-if="isTransactionLoading(transaction.id)" class="flex items-center gap-1">
                                 <div class="h-3 w-3 animate-spin rounded-full border border-current border-t-transparent"></div>
                                 Loading...
                             </span>

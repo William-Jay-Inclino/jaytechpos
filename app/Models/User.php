@@ -41,16 +41,6 @@ class User extends Authenticatable
         return $this->hasMany(Sale::class, 'user_id');
     }
 
-    public function utangTrackings()
-    {
-        return $this->hasMany(UtangTracking::class);
-    }
-
-    public function utangPayments()
-    {
-        return $this->hasMany(UtangPayment::class);
-    }
-
     public function customers()
     {
         return $this->hasMany(Customer::class);
@@ -75,5 +65,4 @@ class User extends Authenticatable
     {
         return $this->hasMany(ExpenseCategory::class);
     }
-
 }

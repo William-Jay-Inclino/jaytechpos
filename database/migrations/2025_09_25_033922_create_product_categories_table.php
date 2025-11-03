@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('product_categories', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users', 'id')->onDelete('cascade');
-            $table->string('name')->unique();
+            $table->string('name');
             $table->string('description')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->boolean('is_default')->default(false);
@@ -22,6 +22,7 @@ return new class extends Migration
 
             // Performance indexes
             $table->index(['user_id', 'status']); // For filtering active categories by user
+            $table->unique(['user_id', 'name']); // Category names unique per user
         });
 
         // Create a partial unique index for PostgreSQL

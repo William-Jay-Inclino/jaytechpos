@@ -506,7 +506,7 @@ watch(amountTendered, () => {
                                                         >
                                                             {{ customer.mobile_number }}
                                                         </div>
-                                                        <div 
+                                                        <div
                                                             v-if="customer.running_utang_balance && customer.running_utang_balance > 0"
                                                             class="text-xs text-red-600 dark:text-red-400 font-medium"
                                                         >

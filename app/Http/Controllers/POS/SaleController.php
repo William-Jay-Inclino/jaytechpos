@@ -12,7 +12,6 @@ use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SalesItem;
 use App\Services\SaleService;
-use App\Services\UtangTrackingService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -24,8 +23,7 @@ class SaleController extends Controller
     use AuthorizesRequests;
 
     public function __construct(
-        protected SaleService $saleService,
-        protected UtangTrackingService $utangTrackingService
+        protected SaleService $saleService
     ) {}
 
     public function index(): Response
@@ -104,15 +102,7 @@ class SaleController extends Controller
                 ]);
             }
 
-            // Handle utang tracking if payment type is utang
-            if ($request->validated('payment_type') === 'utang') {
-                $this->utangTrackingService->updateUtangTracking($sale);
-            }
-
-            // Handle balance deduction for cash payments
-            if ($request->validated('payment_type') === 'cash' && $request->validated('deduct_from_balance') > 0) {
-                $this->utangTrackingService->deductFromRunningBalance($sale->customer_id, $request->validated('deduct_from_balance'));
-            }
+            // Customer transaction tracking is handled by the system
 
             // Create customer transaction record (only if customer is selected)
             if ($sale->customer_id) {
