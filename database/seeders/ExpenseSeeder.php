@@ -129,52 +129,52 @@ class ExpenseSeeder extends Seeder
         return match ($email) {
             'maria.santos@demo.com' => [ // Fruits/Vegetables/Rice Store
                 'monthly' => [
-                    ['category' => 'Rent', 'description' => 'Store Rent', 'min' => 8000, 'max' => 12000],
-                    ['category' => 'Utilities', 'description' => 'Electricity Bill', 'min' => 1500, 'max' => 2500],
-                    ['category' => 'Utilities', 'description' => 'Water Bill', 'min' => 300, 'max' => 600],
-                    ['category' => 'Transportation', 'description' => 'Market Transport', 'min' => 2000, 'max' => 3500],
+                    ['category' => 'Rent', 'description' => 'Store Rent', 'min' => 6000, 'max' => 8000],
+                    ['category' => 'Utilities', 'description' => 'Electricity Bill', 'min' => 1200, 'max' => 1800],
+                    ['category' => 'Utilities', 'description' => 'Water Bill', 'min' => 200, 'max' => 400],
+                    ['category' => 'Transportation', 'description' => 'Market Transport', 'min' => 1500, 'max' => 2500],
                 ],
                 'random' => [
-                    ['category' => 'Supplies', 'description' => 'Plastic Bags', 'min' => 200, 'max' => 500],
-                    ['category' => 'Supplies', 'description' => 'Weighing Scale Repair', 'min' => 500, 'max' => 1200],
-                    ['category' => 'Government Fees & Permits', 'description' => 'Business Permit Renewal', 'min' => 2000, 'max' => 3000],
-                    ['category' => 'Equipment & Maintenance', 'description' => 'Display Rack Repair', 'min' => 800, 'max' => 1500],
+                    ['category' => 'Supplies', 'description' => 'Plastic Bags', 'min' => 150, 'max' => 350],
+                    ['category' => 'Supplies', 'description' => 'Weighing Scale Repair', 'min' => 300, 'max' => 800],
+                    ['category' => 'Government Fees & Permits', 'description' => 'Business Permit Renewal', 'min' => 1500, 'max' => 2000],
+                    ['category' => 'Equipment & Maintenance', 'description' => 'Display Rack Repair', 'min' => 500, 'max' => 1000],
                 ],
             ],
             'roberto.cruz@demo.com' => [ // Mini Grocery Store
                 'monthly' => [
-                    ['category' => 'Rent', 'description' => 'Store Rent', 'min' => 15000, 'max' => 20000],
-                    ['category' => 'Utilities', 'description' => 'Electricity Bill', 'min' => 3000, 'max' => 5000],
-                    ['category' => 'Utilities', 'description' => 'Water Bill', 'min' => 500, 'max' => 800],
-                    ['category' => 'Staff Wages', 'description' => 'Employee Salary', 'min' => 12000, 'max' => 15000],
+                    ['category' => 'Rent', 'description' => 'Store Rent', 'min' => 12000, 'max' => 15000],
+                    ['category' => 'Utilities', 'description' => 'Electricity Bill', 'min' => 2500, 'max' => 3500],
+                    ['category' => 'Utilities', 'description' => 'Water Bill', 'min' => 400, 'max' => 600],
+                    ['category' => 'Staff Wages', 'description' => 'Employee Salary', 'min' => 10000, 'max' => 12000],
                 ],
                 'random' => [
-                    ['category' => 'Equipment & Maintenance', 'description' => 'Freezer Maintenance', 'min' => 2000, 'max' => 4000],
-                    ['category' => 'Supplies', 'description' => 'Shopping Bags', 'min' => 500, 'max' => 1000],
-                    ['category' => 'Government Fees & Permits', 'description' => 'FDA Permit', 'min' => 3000, 'max' => 5000],
-                    ['category' => 'Insurance', 'description' => 'Store Insurance', 'min' => 2000, 'max' => 3000],
+                    ['category' => 'Equipment & Maintenance', 'description' => 'Freezer Maintenance', 'min' => 1500, 'max' => 2500],
+                    ['category' => 'Supplies', 'description' => 'Shopping Bags', 'min' => 300, 'max' => 700],
+                    ['category' => 'Government Fees & Permits', 'description' => 'FDA Permit', 'min' => 2000, 'max' => 3000],
+                    ['category' => 'Insurance', 'description' => 'Store Insurance', 'min' => 1500, 'max' => 2000],
                 ],
             ],
             'luz.reyes@demo.com' => [ // Sari-Sari Store
                 'monthly' => [
-                    ['category' => 'Utilities', 'description' => 'Electricity Bill', 'min' => 800, 'max' => 1500],
-                    ['category' => 'Supplies', 'description' => 'Load Cards', 'min' => 1000, 'max' => 2000],
+                    ['category' => 'Utilities', 'description' => 'Electricity Bill', 'min' => 600, 'max' => 1000],
+                    ['category' => 'Supplies', 'description' => 'Load Cards', 'min' => 800, 'max' => 1200],
                 ],
                 'random' => [
-                    ['category' => 'Supplies', 'description' => 'Small Plastic Bags', 'min' => 100, 'max' => 300],
-                    ['category' => 'Transportation', 'description' => 'Supplier Pickup', 'min' => 200, 'max' => 500],
-                    ['category' => 'Government Fees & Permits', 'description' => 'Barangay Permit', 'min' => 500, 'max' => 1000],
-                    ['category' => 'Miscellaneous', 'description' => 'Store Repairs', 'min' => 300, 'max' => 800],
+                    ['category' => 'Supplies', 'description' => 'Small Plastic Bags', 'min' => 80, 'max' => 200],
+                    ['category' => 'Transportation', 'description' => 'Supplier Pickup', 'min' => 150, 'max' => 350],
+                    ['category' => 'Government Fees & Permits', 'description' => 'Barangay Permit', 'min' => 300, 'max' => 600],
+                    ['category' => 'Miscellaneous', 'description' => 'Store Repairs', 'min' => 200, 'max' => 500],
                 ],
             ],
             default => [ // Default for Jay
                 'monthly' => [
-                    ['category' => 'Rent', 'description' => 'Store Rent', 'min' => 10000, 'max' => 15000],
-                    ['category' => 'Utilities', 'description' => 'Electricity Bill', 'min' => 2000, 'max' => 3000],
+                    ['category' => 'Rent', 'description' => 'Store Rent', 'min' => 8000, 'max' => 12000],
+                    ['category' => 'Utilities', 'description' => 'Electricity Bill', 'min' => 1500, 'max' => 2200],
                 ],
                 'random' => [
-                    ['category' => 'Supplies', 'description' => 'General Supplies', 'min' => 500, 'max' => 1000],
-                    ['category' => 'Miscellaneous', 'description' => 'Miscellaneous Expenses', 'min' => 300, 'max' => 800],
+                    ['category' => 'Supplies', 'description' => 'General Supplies', 'min' => 300, 'max' => 700],
+                    ['category' => 'Miscellaneous', 'description' => 'Miscellaneous Expenses', 'min' => 200, 'max' => 500],
                 ],
             ]
         };

@@ -92,14 +92,15 @@ class SaleSeeder extends Seeder
         // Generate random time during business hours (7 AM to 8 PM)
         $transactionTime = $date->copy()->addHours(rand(7, 20))->addMinutes(rand(0, 59));
 
-        // Select 1-4 random products for this sale
-        $saleProducts = $products->random(rand(1, 4));
+        // Select products based on business type for more realistic sales
+        $saleProducts = $this->selectProductsForBusinessType($user, $products);
 
         $totalAmount = 0;
         $salesItems = [];
 
-        foreach ($saleProducts as $product) {
-            $quantity = rand(1, 5); // 1-5 items
+        foreach ($saleProducts as $productData) {
+            $product = $productData['product'];
+            $quantity = $productData['quantity'];
             $unitPrice = $product->unit_price;
             $itemTotal = $quantity * $unitPrice;
             $totalAmount += $itemTotal;
@@ -134,13 +135,75 @@ class SaleSeeder extends Seeder
         // Customer transactions will be created by CustomerTransactionRebuilderSeeder
     }
 
+    private function selectProductsForBusinessType(User $user, $products)
+    {
+        $selectedProducts = [];
+
+        if ($user->email === 'roberto.cruz@demo.com') {
+            // Mini Grocery - Higher value transactions, multiple items
+            $productCount = rand(2, 6);
+            $randomProducts = $products->random($productCount);
+            foreach ($randomProducts as $product) {
+                $selectedProducts[] = [
+                    'product' => $product,
+                    'quantity' => rand(1, 4)
+                ];
+            }
+        } elseif ($user->email === 'maria.santos@demo.com') {
+            // Fruits/Vegetables/Rice - Medium to high value, bulk purchases common
+            $productCount = rand(1, 4);
+            $randomProducts = $products->random($productCount);
+            foreach ($randomProducts as $product) {
+                // Rice sacks are sold less frequently but in bulk
+                if (str_contains($product->product_name, 'sack')) {
+                    $quantity = rand(0, 1) == 0 ? 0 : 1; // 50% chance to include sack
+                    if ($quantity > 0) {
+                        $selectedProducts[] = [
+                            'product' => $product,
+                            'quantity' => $quantity
+                        ];
+                    }
+                } else {
+                    $selectedProducts[] = [
+                        'product' => $product,
+                        'quantity' => rand(1, 8) // Higher quantities for fruits/vegetables
+                    ];
+                }
+            }
+        } elseif ($user->email === 'luz.reyes@demo.com') {
+            // Sari-Sari - Lower value, single items, high frequency
+            $productCount = rand(1, 3);
+            $randomProducts = $products->random($productCount);
+            foreach ($randomProducts as $product) {
+                $selectedProducts[] = [
+                    'product' => $product,
+                    'quantity' => rand(1, 3) // Smaller quantities
+                ];
+            }
+        } else {
+            // Default behavior
+            $productCount = rand(1, 4);
+            $randomProducts = $products->random($productCount);
+            foreach ($randomProducts as $product) {
+                $selectedProducts[] = [
+                    'product' => $product,
+                    'quantity' => rand(1, 5)
+                ];
+            }
+        }
+
+        return array_filter($selectedProducts, function($item) {
+            return isset($item['product']) && $item['quantity'] > 0;
+        });
+    }
+
     private function getSalesTargetByBusinessType(User $user): int
     {
         return match ($user->email) {
-            'roberto.cruz@demo.com' => rand(200, 250), // Mini Grocery - Highest volume
-            'maria.santos@demo.com' => rand(150, 200), // Fruits/Vegetables/Rice - Medium volume
-            'luz.reyes@demo.com' => rand(100, 150),    // Sari-Sari - Lowest volume
-            default => rand(100, 150), // Default for Jay and others
+            'roberto.cruz@demo.com' => rand(800, 1000), // Mini Grocery - Highest volume (4x increase)
+            'maria.santos@demo.com' => rand(600, 800),  // Fruits/Vegetables/Rice - Medium volume (4x increase)
+            'luz.reyes@demo.com' => rand(400, 600),     // Sari-Sari - Lowest volume (4x increase)
+            default => rand(400, 600), // Default for Jay and others (4x increase)
         };
     }
 
