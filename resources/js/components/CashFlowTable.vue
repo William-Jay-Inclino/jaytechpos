@@ -97,14 +97,14 @@ async function updateYear() {
             </div>
         </div>
         
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto px-1 sm:px-0">
             <table class="w-full min-w-[320px] sm:min-w-[480px]">
                 <thead class="bg-gray-50/50 dark:bg-gray-700/30 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-600/50">
                     <tr class="text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                        <th class="p-4 text-left">Month</th>
-                        <th class="p-4 text-right">Income</th>
-                        <th class="p-4 text-right">Expense</th>
-                        <th class="p-4 text-right">Cash Flow</th>
+                        <th class="p-2 sm:p-4 text-left">Month</th>
+                        <th class="p-2 sm:p-4 text-right">Income</th>
+                        <th class="p-2 sm:p-4 text-right">Expense</th>
+                        <th class="p-2 sm:p-4 text-right">Cash Flow</th>
                     </tr>
                 </thead>
                 <tbody v-if="!loading" class="divide-y divide-gray-200/50 dark:divide-gray-600/50">
@@ -113,23 +113,28 @@ async function updateYear() {
                         :key="item.month"
                         class="hover:bg-white/50 dark:hover:bg-gray-700/30 transition-colors duration-200"
                     >
-                        <td class="p-4 font-medium text-gray-900 dark:text-white">
+                        <td class="p-2 sm:p-4 font-medium text-gray-900 dark:text-white text-sm">
                             {{ months[item.month - 1].substring(0, 3) }}
                         </td>
-                        <td class="p-4 text-right text-sm font-medium text-gray-900 dark:text-white">
-                            {{ formatCurrency(item.income) }}
+                        <td class="p-2 sm:p-4 text-right text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
+                            <span class="block truncate max-w-[80px] sm:max-w-none" :title="formatCurrency(item.income)">
+                                {{ formatCurrency(item.income) }}
+                            </span>
                         </td>
-                        <td class="p-4 text-right text-sm font-medium text-gray-900 dark:text-white">
-                            {{ formatCurrency(item.expense) }}
+                        <td class="p-2 sm:p-4 text-right text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
+                            <span class="block truncate max-w-[80px] sm:max-w-none" :title="formatCurrency(item.expense)">
+                                {{ formatCurrency(item.expense) }}
+                            </span>
                         </td>
-                        <td class="p-4 text-right text-sm">
+                        <td class="p-2 sm:p-4 text-right text-sm">
                             <span
                                 :class="[
-                                    'font-bold px-3 py-1 rounded-full text-xs',
+                                    'font-bold px-2 sm:px-3 py-1 rounded-full text-xs block truncate max-w-[90px] sm:max-w-none',
                                     item.cash_flow >= 0
                                         ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
                                         : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
                                 ]"
+                                :title="formatCurrency(item.cash_flow)"
                             >
                                 {{ formatCurrency(item.cash_flow) }}
                             </span>
@@ -154,17 +159,26 @@ async function updateYear() {
                 </tbody>
                 <tfoot class="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700/50 dark:to-gray-800/50 border-t border-gray-200/50 dark:border-gray-600/50">
                     <tr class="font-bold text-sm">
-                        <td class="p-4 text-gray-900 dark:text-white">Total</td>
-                        <td class="p-4 text-right text-gray-900 dark:text-white">{{ formatCurrency(totalIncome) }}</td>
-                        <td class="p-4 text-right text-gray-900 dark:text-white">{{ formatCurrency(totalExpense) }}</td>
-                        <td class="p-4 text-right">
+                        <td class="p-2 sm:p-4 text-gray-900 dark:text-white">Total</td>
+                        <td class="p-2 sm:p-4 text-right text-gray-900 dark:text-white text-xs sm:text-sm">
+                            <span class="block truncate max-w-[80px] sm:max-w-none" :title="formatCurrency(totalIncome)">
+                                {{ formatCurrency(totalIncome) }}
+                            </span>
+                        </td>
+                        <td class="p-2 sm:p-4 text-right text-gray-900 dark:text-white text-xs sm:text-sm">
+                            <span class="block truncate max-w-[80px] sm:max-w-none" :title="formatCurrency(totalExpense)">
+                                {{ formatCurrency(totalExpense) }}
+                            </span>
+                        </td>
+                        <td class="p-2 sm:p-4 text-right">
                             <span
                                 :class="[
-                                    'font-bold px-4 py-2 rounded-full text-sm',
+                                    'font-bold px-2 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm block truncate max-w-[90px] sm:max-w-none',
                                     totalCashFlow >= 0
                                         ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
                                         : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
                                 ]"
+                                :title="formatCurrency(totalCashFlow)"
                             >
                                 {{ formatCurrency(totalCashFlow) }}
                             </span>

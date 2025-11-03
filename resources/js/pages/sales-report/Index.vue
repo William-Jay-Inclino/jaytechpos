@@ -123,7 +123,6 @@ const showSaleDetails = ref(false)
 const selectedSale = ref<SaleTransaction | null>(null)
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: '/dashboard' },
     { title: 'Sales Report', href: salesReport().url },
 ]
 
@@ -523,9 +522,6 @@ const getVisiblePages = (): (number | string)[] => {
                                                 </SelectContent>
                                             </Select>
                                         </div>
-                                        <Badge variant="secondary">
-                                            {{ salesData.pagination.total }} transactions
-                                        </Badge>
                                     </div>
                                 </div>
                             </CardHeader>

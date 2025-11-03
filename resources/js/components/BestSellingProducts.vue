@@ -103,28 +103,28 @@ const getRankingColor = (index: number) => {
 </script>
 
 <template>
-    <div class="overflow-hidden rounded-2xl border border-white/20 bg-white/70 backdrop-blur-xl shadow-xl dark:border-gray-700/50 dark:bg-gray-800/70 p-6">
-        <div class="mb-6">
+    <div class="overflow-hidden rounded-2xl border border-white/20 bg-white/70 backdrop-blur-xl shadow-xl dark:border-gray-700/50 dark:bg-gray-800/70 p-4 sm:p-6">
+        <div class="mb-4 sm:mb-6">
             <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                <div class="flex-1">
+                <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-3 mb-3">
-                        <div class="p-3 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20">
-                            <TrendingUp class="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                        <div class="p-2 sm:p-3 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex-shrink-0">
+                            <TrendingUp class="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400" />
                         </div>
-                        <h3 class="text-lg font-semibold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+                        <h3 class="text-base sm:text-lg font-semibold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent truncate">
                             Best Selling Products
                         </h3>
                     </div>
                 </div>
-                <div class="flex items-center space-x-3 flex-shrink-0">
-                    <label for="products-year" class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                <div class="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
+                    <label for="products-year" class="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
                         Year:
                     </label>
                     <select
                         id="products-year"
                         v-model="selectedYear"
                         @change="updateYear"
-                        class="rounded-xl border border-gray-200/50 bg-white/50 backdrop-blur-sm px-4 py-2 text-sm font-medium text-gray-900 dark:border-gray-600/50 dark:bg-gray-700/50 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent transition-all duration-300"
+                        class="rounded-xl border border-gray-200/50 bg-white/50 backdrop-blur-sm px-2 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm font-medium text-gray-900 dark:border-gray-600/50 dark:bg-gray-700/50 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent transition-all duration-300"
                     >
                         <option v-for="year in years" :key="year" :value="year">{{ year }}</option>
                     </select>
@@ -133,7 +133,7 @@ const getRankingColor = (index: number) => {
         </div>
         
         <!-- Enhanced Tabs -->
-        <div v-if="!loading" class="mb-6 p-1 rounded-xl bg-gray-100/50 dark:bg-gray-700/50 backdrop-blur-sm">
+        <div v-if="!loading" class="mb-4 sm:mb-6 p-1 rounded-xl bg-gray-100/50 dark:bg-gray-700/50 backdrop-blur-sm">
             <div class="flex flex-col gap-1 sm:flex-row">
                 <button
                     v-for="tab in tabs"
@@ -141,7 +141,7 @@ const getRankingColor = (index: number) => {
                     @click="activeTab = tab.key"
                     :disabled="tab.key === 'today' && selectedYear !== new Date().getFullYear()"
                     :class="[
-                        'flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-300 sm:flex-1',
+                        'flex items-center justify-center gap-1 sm:gap-2 rounded-lg px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-medium transition-all duration-300 sm:flex-1',
                         tab.key === 'today' && selectedYear !== new Date().getFullYear() 
                             ? 'opacity-50 cursor-not-allowed text-gray-400 dark:text-gray-500' 
                             : activeTab === tab.key
@@ -149,56 +149,57 @@ const getRankingColor = (index: number) => {
                                 : 'text-gray-600 hover:text-gray-900 hover:bg-white/50 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700/50'
                     ]"
                 >
-                    <component :is="tab.icon" class="h-4 w-4" />
-                    <span>{{ tab.label }}</span>
+                    <component :is="tab.icon" class="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span class="hidden xs:inline sm:inline">{{ tab.label }}</span>
+                    <span class="xs:hidden sm:hidden">{{ tab.label.split(' ')[0] }}</span>
                 </button>
             </div>
         </div>
 
         <!-- Loading Skeleton for Tabs -->
-        <div v-else class="mb-6 p-1 rounded-xl bg-gray-100/50 dark:bg-gray-700/50 backdrop-blur-sm">
+        <div v-else class="mb-4 sm:mb-6 p-1 rounded-xl bg-gray-100/50 dark:bg-gray-700/50 backdrop-blur-sm">
             <div class="flex flex-col gap-1 sm:flex-row">
                 <div
                     v-for="i in 4"
                     :key="i"
-                    class="flex items-center justify-center gap-2 rounded-lg px-4 py-3 sm:flex-1"
+                    class="flex items-center justify-center gap-1 sm:gap-2 rounded-lg px-2 sm:px-4 py-2 sm:py-3 sm:flex-1"
                 >
-                    <div class="h-4 w-4 animate-pulse rounded bg-gray-300 dark:bg-gray-600"></div>
-                    <div class="h-4 w-16 animate-pulse rounded bg-gray-300 dark:bg-gray-600"></div>
+                    <div class="h-3 w-3 sm:h-4 sm:w-4 animate-pulse rounded bg-gray-300 dark:bg-gray-600"></div>
+                    <div class="h-3 w-12 sm:h-4 sm:w-16 animate-pulse rounded bg-gray-300 dark:bg-gray-600"></div>
                 </div>
             </div>
         </div>
 
         <!-- Loading State -->
-        <div v-if="loading" class="space-y-3">
+        <div v-if="loading" class="space-y-2 sm:space-y-3">
             <div
                 v-for="i in 8"
                 :key="i"
-                class="relative overflow-hidden rounded-xl border border-gray-200/50 bg-white/50 dark:border-gray-600/50 dark:bg-gray-700/50 p-4"
+                class="relative overflow-hidden rounded-xl border border-gray-200/50 bg-white/50 dark:border-gray-600/50 dark:bg-gray-700/50 p-3 sm:p-4"
             >
                 <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-4 min-w-0 flex-1">
-                        <div class="h-12 w-12 rounded-full animate-pulse bg-gray-300 dark:bg-gray-600 flex-shrink-0"></div>
+                    <div class="flex items-center space-x-3 sm:space-x-4 min-w-0 flex-1">
+                        <div class="h-10 w-10 sm:h-12 sm:w-12 rounded-full animate-pulse bg-gray-300 dark:bg-gray-600 flex-shrink-0"></div>
                         <div class="flex flex-col min-w-0 flex-1 space-y-2">
-                            <div class="h-4 w-32 animate-pulse rounded bg-gray-300 dark:bg-gray-600"></div>
-                            <div class="h-3 w-16 animate-pulse rounded bg-gray-300 dark:bg-gray-600"></div>
+                            <div class="h-3 sm:h-4 w-24 sm:w-32 animate-pulse rounded bg-gray-300 dark:bg-gray-600"></div>
+                            <div class="h-2 sm:h-3 w-12 sm:w-16 animate-pulse rounded bg-gray-300 dark:bg-gray-600"></div>
                         </div>
                     </div>
-                    <div class="text-right flex-shrink-0 ml-4 space-y-2">
-                        <div class="h-4 w-12 animate-pulse rounded bg-gray-300 dark:bg-gray-600 ml-auto"></div>
-                        <div class="h-3 w-16 animate-pulse rounded bg-gray-300 dark:bg-gray-600 ml-auto"></div>
+                    <div class="text-right flex-shrink-0 ml-3 sm:ml-4 space-y-2">
+                        <div class="h-3 sm:h-4 w-8 sm:w-12 animate-pulse rounded bg-gray-300 dark:bg-gray-600 ml-auto"></div>
+                        <div class="h-2 sm:h-3 w-12 sm:w-16 animate-pulse rounded bg-gray-300 dark:bg-gray-600 ml-auto"></div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Enhanced Products List -->
-        <div v-else class="space-y-3">
+        <div v-else class="space-y-2 sm:space-y-3">
             <div
                 v-for="(product, index) in bestSellingProducts[activeTab]"
                 :key="product.id"
                 :class="[
-                    'group relative overflow-hidden rounded-xl border p-4 transition-all duration-300 hover:shadow-lg hover:scale-102',
+                    'group relative overflow-hidden rounded-xl border p-3 sm:p-4 transition-all duration-300 hover:shadow-lg hover:scale-102',
                     index < 3 
                         ? 'border-purple-200/50 bg-gradient-to-r from-purple-50/50 to-pink-50/50 dark:border-purple-700/50 dark:from-purple-900/20 dark:to-pink-900/20' 
                         : 'border-gray-200/50 bg-white/50 hover:border-gray-300/50 dark:border-gray-600/50 dark:bg-gray-700/50'
@@ -208,28 +209,28 @@ const getRankingColor = (index: number) => {
                 <div v-if="index < 3" class="absolute inset-0 bg-gradient-to-r from-purple-400/5 to-pink-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 
                 <div class="relative flex items-center justify-between">
-                    <div class="flex items-center space-x-4 min-w-0 flex-1">
+                    <div class="flex items-center space-x-3 sm:space-x-4 min-w-0 flex-1">
                         <div
                             :class="[
-                                'flex h-12 w-12 items-center justify-center rounded-full border-2 transition-all duration-300 flex-shrink-0 group-hover:scale-110',
+                                'flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full border-2 transition-all duration-300 flex-shrink-0 group-hover:scale-110',
                                 getRankingColor(index)
                             ]"
                         >
-                            <component :is="getRankingIcon(index)" class="h-5 w-5" />
+                            <component :is="getRankingIcon(index)" class="h-4 w-4 sm:h-5 sm:w-5" />
                         </div>
                         <div class="flex flex-col min-w-0 flex-1">
-                            <p class="font-semibold text-gray-900 dark:text-white truncate text-base">
+                            <p class="font-semibold text-gray-900 dark:text-white truncate text-sm sm:text-base">
                                 {{ product.product_name }}
                             </p>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">
+                            <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                                 Rank #{{ index + 1 }}
                             </p>
                         </div>
                     </div>
-                    <div class="text-right flex-shrink-0 ml-4">
-                        <div class="flex items-center gap-2 justify-end mb-1">
-                            <Package class="h-4 w-4 text-gray-400" />
-                            <p class="text-lg font-bold text-gray-900 dark:text-white">
+                    <div class="text-right flex-shrink-0 ml-3 sm:ml-4">
+                        <div class="flex items-center gap-1 sm:gap-2 justify-end mb-1">
+                            <Package class="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" />
+                            <p class="text-sm sm:text-lg font-bold text-gray-900 dark:text-white">
                                 {{ product.total_sold }}
                             </p>
                         </div>

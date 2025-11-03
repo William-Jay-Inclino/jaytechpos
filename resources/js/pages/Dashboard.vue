@@ -108,27 +108,27 @@ const breadcrumbs: BreadcrumbItem[] = [
                     </div>
 
                     <!-- Analytics Grid -->
-                    <div class="grid gap-8 lg:grid-cols-2">
+                    <div class="grid gap-6 sm:gap-8 lg:grid-cols-2">
                         <!-- Best Selling Products -->
-                        <div class="relative group">
+                        <div class="relative group min-w-0">
                             <div class="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                             <div class="relative">
                                 <BestSellingProducts 
                                     :products="bestSellingProducts" 
                                     :current-year="currentYear" 
-                                    class="transform hover:shadow-2xl transition-all duration-500"
+                                    class="transform hover:shadow-2xl transition-all duration-500 w-full"
                                 />
                             </div>
                         </div>
                         
                         <!-- Cash Flow Table -->
-                        <div class="relative group">
+                        <div class="relative group min-w-0">
                             <div class="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                             <div class="relative">
                                 <CashFlowTable 
                                     :data="cashFlowData" 
                                     :current-year="currentYear" 
-                                    class="transform hover:shadow-2xl transition-all duration-500"
+                                    class="transform hover:shadow-2xl transition-all duration-500 w-full"
                                 />
                             </div>
                         </div>
