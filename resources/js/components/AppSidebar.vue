@@ -45,17 +45,17 @@ const mainNavItems: NavItem[] = [
         icon: Banknote,
     },
     {
-        title: 'Expense Tracker',
+        title: 'Expenses',
         href: '/expenses',
         icon: CircleDollarSign,
     },
     {
-        title: 'Product Management',
+        title: 'Products',
         href: '/products',
         icon: Package,
     },
     {
-        title: 'Customer Management',
+        title: 'Customers',
         href: '/customers',
         icon: Users,
     },
