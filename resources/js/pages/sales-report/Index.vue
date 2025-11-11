@@ -346,7 +346,7 @@ const getVisiblePages = (): (number | string)[] => {
                 <div class="relative px-4 py-8 sm:px-6 lg:px-8">
                     <div class="max-w-7xl mx-auto">
                         <!-- Header -->
-                        <div class="text-center mb-8">
+                        <!-- <div class="text-center mb-8">
                             <div class="flex items-center justify-center gap-3 mb-4">
                                 <div class="relative">
                                     <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl blur opacity-30 animate-pulse"></div>
@@ -358,7 +358,7 @@ const getVisiblePages = (): (number | string)[] => {
                                     Sales Report
                                 </h1>
                             </div>
-                        </div>
+                        </div> -->
 
                         <!-- Date Filters -->
                         <Card class="mb-8 border-white/20 bg-white/70 backdrop-blur-xl shadow-xl dark:border-gray-700/50 dark:bg-gray-800/70">
@@ -464,23 +464,11 @@ const getVisiblePages = (): (number | string)[] => {
                         </Card>
 
                         <!-- Summary Stats -->
-                        <div class="grid gap-6 sm:grid-cols-1 lg:grid-cols-3 mb-8">
+                        <div class="grid gap-6 grid-cols-1 mb-8">
                             <StatsCard
                                 title="Total Sales"
                                 :value="salesData.summary.total_sales"
                                 icon="dollar-sign"
-                                class="transform hover:scale-105 transition-all duration-300"
-                            />
-                            <StatsCard
-                                title="Cash Sales"
-                                :value="salesData.summary.cash_sales"
-                                icon="banknote"
-                                class="transform hover:scale-105 transition-all duration-300"
-                            />
-                            <StatsCard
-                                title="Utang Sales"
-                                :value="salesData.summary.utang_sales"
-                                icon="credit-card"
                                 class="transform hover:scale-105 transition-all duration-300"
                             />
                         </div>

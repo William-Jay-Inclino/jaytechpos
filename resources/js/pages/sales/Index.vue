@@ -1,23 +1,16 @@
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3';
-import { Trash2, Search } from 'lucide-vue-next';
+import { Trash2, Search, UserPlus } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 
 // Layout & Components
 import AddProductModal from '@/components/modals/AddProductModal.vue';
+import SaleReceiptModal from '@/components/modals/SaleReceiptModal.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 
 // UI Components
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -26,10 +19,6 @@ import { Label } from '@/components/ui/label';
 // Types
 import type { BreadcrumbItem } from '@/types';
 import { CartItem, Customer, Product } from '@/types/pos';
-import {
-    formatManilaDateTime,
-    getCurrentManilaDateTime,
-} from '@/utils/timezone';
 
 const props = defineProps<{
     products: Product[];
@@ -127,13 +116,6 @@ function calculateItemTotal(item: CartItem): number {
 const cartTotalAmount = computed((): number => {
     return cartItems.value.reduce(
         (sum: number, item: CartItem) => sum + calculateItemTotal(item),
-        0,
-    );
-});
-
-const totalItemsInCart = computed((): number => {
-    return cartItems.value.reduce(
-        (sum: number, item: CartItem) => sum + item.quantity,
         0,
     );
 });
@@ -434,23 +416,35 @@ watch(amountTendered, () => {
                             <div class="space-y-6">
                                 <!-- Customer Selection -->
                                 <div>
-                                    <Label
-                                        for="customer"
-                                        class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
-                                    >
-                                        Customer
-                                        <span
-                                            v-if="
-                                                paymentMethod === 'utang' ||
-                                                payTowardsBalance
-                                            "
-                                            class="text-red-500"
-                                            >*</span
+                                    <div class="flex items-center justify-between mb-2">
+                                        <Label
+                                            for="customer"
+                                            class="text-sm font-medium text-gray-700 dark:text-gray-300"
                                         >
-                                        <span v-else class="text-gray-500"
-                                            >(Optional)</span
+                                            Customer
+                                            <span
+                                                v-if="
+                                                    paymentMethod === 'utang' ||
+                                                    payTowardsBalance
+                                                "
+                                                class="text-red-500"
+                                                >*</span
+                                            >
+                                            <span v-else class="text-gray-500"
+                                                >(Optional)</span
+                                            >
+                                        </Label>
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            @click="router.visit('/customers/create')"
+                                            title="Add Customer"
+                                            class="h-8 w-8 p-0 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:text-gray-500 dark:hover:text-blue-400 dark:hover:bg-blue-950/50"
                                         >
-                                    </Label>
+                                            <UserPlus class="h-4 w-4" />
+                                        </Button>
+                                    </div>
                                     <div class="relative customer-dropdown">
                                         <div
                                             @click="showCustomerDropdown = !showCustomerDropdown"
@@ -725,293 +719,288 @@ watch(amountTendered, () => {
 
                             <!-- Payment Summary Section -->
                             <div v-if="cartItems.length" class="mt-8 space-y-6">
-                                <div class="pt-6">
-
-                            <!-- Cash Payment Layout -->
-                            <div
-                                v-if="paymentMethod === 'cash'"
-                                class="space-y-6"
-                            >
-                                <!-- Pay towards balance checkbox (only show if customer has running balance) -->
+                                <!-- Cash Payment Layout -->
                                 <div
-                                    v-if="
-                                        selectedCustomer &&
-                                        selectedCustomer.running_utang_balance >
-                                            0
-                                    "
-                                    class="flex items-center space-x-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-700"
+                                    v-if="paymentMethod === 'cash'"
+                                    class="space-y-6"
                                 >
-                                    <Checkbox
-                                        id="payTowardsBalance"
-                                        v-model="payTowardsBalance"
-                                    />
-                                    <Label
-                                        for="payTowardsBalance"
-                                        class="cursor-pointer text-sm font-medium text-gray-900 dark:text-gray-100"
+                                    <!-- Pay towards balance checkbox (only show if customer has running balance) -->
+                                    <div
+                                        v-if="
+                                            selectedCustomer &&
+                                            selectedCustomer.running_utang_balance >
+                                                0
+                                        "
+                                        class="flex items-center space-x-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-700"
                                     >
-                                        Gamitin ang sukli para sa utang ng customer
-                                    </Label>
-                                </div>
-
-                                <div
-                                    class="grid grid-cols-1 gap-4 md:grid-cols-3"
-                                >
-                                    <!-- Total Amount Display -->
-                                    <div class="space-y-2">
+                                        <Checkbox
+                                            id="payTowardsBalance"
+                                            v-model="payTowardsBalance"
+                                        />
                                         <Label
-                                            class="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                            >Total Amount</Label
+                                            for="payTowardsBalance"
+                                            class="cursor-pointer text-sm font-medium text-gray-900 dark:text-gray-100"
                                         >
-                                        <div
-                                            class="rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-orange-800 dark:bg-orange-900/20"
-                                        >
-                                            <span
-                                                class="text-2xl font-bold text-orange-700 dark:text-orange-400"
-                                                >₱{{
-                                                    cartTotalAmount.toFixed(2)
-                                                }}</span
+                                            Gamitin ang sukli para sa utang ng customer
+                                        </Label>
+                                    </div>
+
+                                    <div
+                                        class="grid grid-cols-1 gap-4 md:grid-cols-3"
+                                    >
+                                        <!-- Total Amount Display -->
+                                        <div class="space-y-2">
+                                            <Label
+                                                class="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                >Total Amount</Label
                                             >
+                                            <div
+                                                class="rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-orange-800 dark:bg-orange-900/20"
+                                            >
+                                                <span
+                                                    class="text-2xl font-bold text-orange-700 dark:text-orange-400"
+                                                    >₱{{
+                                                        cartTotalAmount.toFixed(2)
+                                                    }}</span
+                                                >
+                                            </div>
+                                        </div>
+
+                                        <!-- Amount Tendered Input -->
+                                        <div class="space-y-2">
+                                            <Label
+                                                for="amountTendered"
+                                                class="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                >Amount Received</Label
+                                            >
+                                            <div
+                                                class="rounded-lg border border-teal-200 bg-teal-50 p-4 dark:border-teal-800 dark:bg-teal-900/20"
+                                            >
+                                                <Input
+                                                    id="amountTendered"
+                                                    v-model.number="amountTendered"
+                                                    type="number"
+                                                    min="0"
+                                                    step="0.01"
+                                                    placeholder="0.00"
+                                                    class="border-0 bg-transparent p-0 text-right text-2xl font-bold text-teal-700 placeholder:text-teal-400 focus:ring-0 dark:text-teal-400 dark:placeholder:text-teal-500"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <!-- Change Display -->
+                                        <div class="space-y-2">
+                                            <Label
+                                                class="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                >Change</Label
+                                            >
+                                            <div
+                                                class="rounded-lg border p-4"
+                                                :class="
+                                                    changeAmount > 0
+                                                        ? 'border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-900/20'
+                                                        : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800'
+                                                "
+                                            >
+                                                <span
+                                                    class="text-2xl font-bold"
+                                                    :class="
+                                                        changeAmount > 0
+                                                            ? 'text-emerald-700 dark:text-emerald-400'
+                                                            : 'text-gray-500 dark:text-gray-400'
+                                                    "
+                                                    >₱{{
+                                                        changeAmount.toFixed(2)
+                                                    }}</span
+                                                >
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <!-- Amount Tendered Input -->
-                                    <div class="space-y-2">
-                                        <Label
-                                            for="amountTendered"
-                                            class="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                            >Amount Received</Label
-                                        >
-                                        <div
-                                            class="rounded-lg border border-teal-200 bg-teal-50 p-4 dark:border-teal-800 dark:bg-teal-900/20"
-                                        >
+                                    <!-- Balance Deduction Section -->
+                                    <div
+                                        v-if="payTowardsBalance"
+                                        class="grid grid-cols-1 gap-4 rounded-lg border border-blue-200 bg-blue-50 p-4 md:grid-cols-2 dark:border-blue-800 dark:bg-blue-900/20"
+                                    >
+                                        <div class="space-y-2">
+                                            <Label
+                                                for="deductFromBalance"
+                                                class="text-sm font-medium text-blue-800 dark:text-blue-200"
+                                            >
+                                                Payment towards Utang
+                                            </Label>
                                             <Input
-                                                id="amountTendered"
-                                                v-model.number="amountTendered"
+                                                id="deductFromBalance"
+                                                v-model.number="deductFromBalance"
+                                                type="number"
+                                                min="0"
+                                                :max="
+                                                    Math.min(
+                                                        selectedCustomer?.running_utang_balance ||
+                                                            0,
+                                                        Math.max(
+                                                            0,
+                                                            amountTendered -
+                                                                cartTotalAmount,
+                                                        ),
+                                                    )
+                                                "
+                                                step="0.01"
+                                                placeholder="0.00"
+                                                class="h-12 text-right text-lg font-semibold"
+                                            />
+                                            <p
+                                                class="text-xs text-blue-700 dark:text-blue-300"
+                                            >
+                                                Max: ₱{{
+                                                    Math.min(
+                                                        selectedCustomer?.running_utang_balance ||
+                                                            0,
+                                                        Math.max(
+                                                            0,
+                                                            amountTendered -
+                                                                cartTotalAmount,
+                                                        ),
+                                                    ).toFixed(2)
+                                                }}
+                                            </p>
+                                        </div>
+                                        <div class="space-y-2">
+                                            <Label
+                                                class="text-sm font-medium text-blue-800 dark:text-blue-200"
+                                                >New Balance</Label
+                                            >
+                                            <div
+                                                class="flex h-12 items-center justify-end rounded-lg border border-blue-300 bg-blue-100 p-4 dark:border-blue-600 dark:bg-blue-800/40"
+                                            >
+                                                <span
+                                                    class="text-lg font-bold text-blue-900 dark:text-blue-100"
+                                                >
+                                                    ₱{{
+                                                        (
+                                                            (selectedCustomer?.running_utang_balance ||
+                                                                0) -
+                                                            deductFromBalance
+                                                        ).toFixed(2)
+                                                    }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Utang Payment Layout -->
+                                <div
+                                    v-if="paymentMethod === 'utang'"
+                                    class="space-y-6"
+                                >
+                                    <div
+                                        class="grid grid-cols-1 gap-4 md:grid-cols-2"
+                                    >
+                                        <!-- Total Amount Display -->
+                                        <div class="space-y-2">
+                                            <Label
+                                                class="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                >Total Amount</Label
+                                            >
+                                            <div
+                                                class="rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-orange-800 dark:bg-orange-900/20"
+                                            >
+                                                <span
+                                                    class="text-2xl font-bold text-orange-700 dark:text-orange-400"
+                                                    >₱{{
+                                                        cartTotalAmount.toFixed(2)
+                                                    }}</span
+                                                >
+                                            </div>
+                                        </div>
+
+                                        <!-- Paid Amount Input -->
+                                        <div class="space-y-2">
+                                            <Label
+                                                for="paidAmount"
+                                                class="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                >Amount Paid
+                                                <span class="text-red-500"
+                                                    >*</span
+                                                ></Label
+                                            >
+                                            <Input
+                                                id="paidAmount"
+                                                v-model.number="paidAmount"
                                                 type="number"
                                                 min="0"
                                                 step="0.01"
                                                 placeholder="0.00"
-                                                class="border-0 bg-transparent p-0 text-right text-2xl font-bold text-teal-700 placeholder:text-teal-400 focus:ring-0 dark:text-teal-400 dark:placeholder:text-teal-500"
+                                                class="h-12 border-2 text-right text-lg font-semibold focus:ring-2 focus:ring-blue-500"
                                             />
                                         </div>
                                     </div>
 
-                                    <!-- Change Display -->
-                                    <div class="space-y-2">
+                                    <!-- Balance Display -->
+                                    <div
+                                        v-if="paidAmount < cartTotalAmount"
+                                        class="space-y-2"
+                                    >
                                         <Label
                                             class="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                            >Change</Label
+                                            >New Balance After Transaction</Label
                                         >
                                         <div
-                                            class="rounded-lg border p-4"
-                                            :class="
-                                                changeAmount > 0
-                                                    ? 'border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-900/20'
-                                                    : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800'
-                                            "
+                                            class="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20"
                                         >
                                             <span
-                                                class="text-2xl font-bold"
-                                                :class="
-                                                    changeAmount > 0
-                                                        ? 'text-emerald-700 dark:text-emerald-400'
-                                                        : 'text-gray-500 dark:text-gray-400'
-                                                "
+                                                class="text-xl font-bold text-red-700 dark:text-red-400"
                                                 >₱{{
-                                                    changeAmount.toFixed(2)
-                                                }}</span
-                                            >
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Balance Deduction Section -->
-                                <div
-                                    v-if="payTowardsBalance"
-                                    class="grid grid-cols-1 gap-4 rounded-lg border border-blue-200 bg-blue-50 p-4 md:grid-cols-2 dark:border-blue-800 dark:bg-blue-900/20"
-                                >
-                                    <div class="space-y-2">
-                                        <Label
-                                            for="deductFromBalance"
-                                            class="text-sm font-medium text-blue-800 dark:text-blue-200"
-                                        >
-                                            Payment towards Utang
-                                        </Label>
-                                        <Input
-                                            id="deductFromBalance"
-                                            v-model.number="deductFromBalance"
-                                            type="number"
-                                            min="0"
-                                            :max="
-                                                Math.min(
-                                                    selectedCustomer?.running_utang_balance ||
-                                                        0,
-                                                    Math.max(
-                                                        0,
-                                                        amountTendered -
-                                                            cartTotalAmount,
-                                                    ),
-                                                )
-                                            "
-                                            step="0.01"
-                                            placeholder="0.00"
-                                            class="h-12 text-right text-lg font-semibold"
-                                        />
-                                        <p
-                                            class="text-xs text-blue-700 dark:text-blue-300"
-                                        >
-                                            Max: ₱{{
-                                                Math.min(
-                                                    selectedCustomer?.running_utang_balance ||
-                                                        0,
-                                                    Math.max(
-                                                        0,
-                                                        amountTendered -
-                                                            cartTotalAmount,
-                                                    ),
-                                                ).toFixed(2)
-                                            }}
-                                        </p>
-                                    </div>
-                                    <div class="space-y-2">
-                                        <Label
-                                            class="text-sm font-medium text-blue-800 dark:text-blue-200"
-                                            >New Balance</Label
-                                        >
-                                        <div
-                                            class="flex h-12 items-center justify-end rounded-lg border border-blue-300 bg-blue-100 p-4 dark:border-blue-600 dark:bg-blue-800/40"
-                                        >
-                                            <span
-                                                class="text-lg font-bold text-blue-900 dark:text-blue-100"
-                                            >
-                                                ₱{{
                                                     (
                                                         (selectedCustomer?.running_utang_balance ||
-                                                            0) -
-                                                        deductFromBalance
+                                                            0) +
+                                                        (cartTotalAmount -
+                                                            paidAmount)
                                                     ).toFixed(2)
-                                                }}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Utang Payment Layout -->
-                            <div
-                                v-if="paymentMethod === 'utang'"
-                                class="space-y-6"
-                            >
-                                <div
-                                    class="grid grid-cols-1 gap-4 md:grid-cols-2"
-                                >
-                                    <!-- Total Amount Display -->
-                                    <div class="space-y-2">
-                                        <Label
-                                            class="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                            >Total Amount</Label
-                                        >
-                                        <div
-                                            class="rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-orange-800 dark:bg-orange-900/20"
-                                        >
-                                            <span
-                                                class="text-2xl font-bold text-orange-700 dark:text-orange-400"
-                                                >₱{{
-                                                    cartTotalAmount.toFixed(2)
                                                 }}</span
                                             >
                                         </div>
                                     </div>
-
-                                    <!-- Paid Amount Input -->
-                                    <div class="space-y-2">
-                                        <Label
-                                            for="paidAmount"
-                                            class="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                            >Amount Paid
-                                            <span class="text-red-500"
-                                                >*</span
-                                            ></Label
-                                        >
-                                        <Input
-                                            id="paidAmount"
-                                            v-model.number="paidAmount"
-                                            type="number"
-                                            min="0"
-                                            step="0.01"
-                                            placeholder="0.00"
-                                            class="h-12 border-2 text-right text-lg font-semibold focus:ring-2 focus:ring-blue-500"
-                                        />
-                                    </div>
                                 </div>
 
-                                <!-- Balance Display -->
-                                <div
-                                    v-if="paidAmount < cartTotalAmount"
-                                    class="space-y-2"
-                                >
-                                    <Label
-                                        class="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                        >New Balance After Transaction</Label
-                                    >
-                                    <div
-                                        class="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20"
+                                <!-- Checkout Button Section -->
+                                <div v-if="cartItems.length" class="mt-8 space-y-4">
+                                    <Button
+                                        size="lg"
+                                        class="h-14 w-full bg-green-600 text-lg font-bold text-white shadow-lg hover:bg-green-700"
+                                        :disabled="!isCheckoutValid || isProcessing"
+                                        @click="handleCheckout"
                                     >
                                         <span
-                                            class="text-xl font-bold text-red-700 dark:text-red-400"
-                                            >₱{{
-                                                (
-                                                    (selectedCustomer?.running_utang_balance ||
-                                                        0) +
-                                                    (cartTotalAmount -
-                                                        paidAmount)
-                                                ).toFixed(2)
-                                            }}</span
+                                            v-if="isProcessing"
+                                            class="flex items-center gap-2"
                                         >
+                                            <div
+                                                class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
+                                            ></div>
+                                            Processing...
+                                        </span>
+                                        <span
+                                            v-else
+                                            class="flex items-center gap-2"
+                                        >
+                                            Complete Checkout
+                                        </span>
+                                    </Button>
+
+                                    <!-- Helper Text -->
+                                    <div
+                                        v-if="checkoutHelperText"
+                                        class="text-center"
+                                    >
+                                        <p
+                                            class="px-4 py-2 text-xs text-gray-500 dark:text-gray-400"
+                                        >
+                                            {{ checkoutHelperText }}
+                                        </p>
                                     </div>
                                 </div>
-                            </div>
-
-                            <!-- Checkout Button Section -->
-                            <div v-if="cartItems.length" class="mt-8 space-y-4">
-                                <Button
-                                    size="lg"
-                                    class="h-14 w-full bg-green-600 text-lg font-bold text-white shadow-lg hover:bg-green-700"
-                                    :disabled="!isCheckoutValid || isProcessing"
-                                    @click="handleCheckout"
-                                >
-                                    <span
-                                        v-if="isProcessing"
-                                        class="flex items-center gap-2"
-                                    >
-                                        <div
-                                            class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
-                                        ></div>
-                                        Processing...
-                                    </span>
-                                    <span
-                                        v-else
-                                        class="flex items-center gap-2"
-                                    >
-                                        Complete Checkout
-                                    </span>
-                                </Button>
-
-                                <!-- Helper Text -->
-                                <div
-                                    v-if="checkoutHelperText"
-                                    class="text-center"
-                                >
-                                    <p
-                                        class="px-4 py-2 text-xs text-gray-500 dark:text-gray-400"
-                                    >
-                                        {{ checkoutHelperText }}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                                                        </div>
                             </div>
                         </div>
 
@@ -1024,305 +1013,14 @@ watch(amountTendered, () => {
                     </div>
                 </div>
             </div>
+        </div>
 
-        <!-- Success Modal with Receipt -->
-        <Dialog v-model:open="showSuccessModal">
-            <DialogContent class="max-h-[85vh] max-w-lg flex flex-col">
-                <DialogHeader class="pb-2 text-center flex-shrink-0">
-                    <DialogTitle
-                        class="flex items-center justify-center gap-2 text-xl text-green-600 dark:text-green-400"
-                    >
-                        <span class="text-2xl">✅</span>
-                        Sale Completed!
-                    </DialogTitle>
-                    <DialogDescription class="text-sm text-muted-foreground">
-                        Transaction processed successfully
-                    </DialogDescription>
-                </DialogHeader>
-
-                <div class="flex-1 space-y-5 overflow-y-auto min-h-0">
-                    <!-- Receipt Header -->
-                    <div
-                        class="space-y-2 rounded-lg bg-muted/30 p-4 text-center"
-                    >
-                        <h3 class="text-lg font-bold">JTech POS</h3>
-                        <p class="text-sm text-muted-foreground">
-                            Point of Sale Receipt
-                        </p>
-                    </div>
-
-                    <!-- Receipt Content -->
-                    <div id="receipt-content" class="space-y-4">
-                        <!-- Receipt Details -->
-                        <div v-if="saleData" class="space-y-4">
-                            <!-- Basic Info -->
-                            <div
-                                class="space-y-2 rounded-lg bg-muted/20 p-3 text-sm"
-                            >
-                                <div class="flex justify-between">
-                                    <span class="text-muted-foreground"
-                                        >Invoice #:</span
-                                    >
-                                    <span class="font-mono font-medium">{{
-                                        saleData.invoice_number
-                                    }}</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-muted-foreground"
-                                        >Date:</span
-                                    >
-                                    <span class="font-medium">{{
-                                        formatManilaDateTime(
-                                            saleData.transaction_date,
-                                        )
-                                    }}</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-muted-foreground"
-                                        >Customer:</span
-                                    >
-                                    <span class="font-medium">{{
-                                        saleData.customer_name ||
-                                        'Walk-in Customer'
-                                    }}</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-muted-foreground"
-                                        >Cashier:</span
-                                    >
-                                    <span class="font-medium">{{
-                                        saleData.cashier
-                                    }}</span>
-                                </div>
-                            </div>
-
-                            <!-- Items -->
-                            <div class="space-y-3">
-                                <h4
-                                    class="text-sm font-medium tracking-wide text-muted-foreground uppercase"
-                                >
-                                    Items Sold
-                                </h4>
-                                <div class="space-y-2">
-                                    <div
-                                        v-for="item in saleData.items"
-                                        :key="item.id"
-                                        class="flex items-center justify-between border-b border-border/50 py-2 last:border-0"
-                                    >
-                                        <div class="flex-1">
-                                            <div class="text-sm font-medium">
-                                                {{ item.product_name }}
-                                            </div>
-                                            <div
-                                                class="text-xs text-muted-foreground"
-                                            >
-                                                {{ item.quantity }} × ₱{{
-                                                    item.unit_price.toFixed(2)
-                                                }}
-                                            </div>
-                                        </div>
-                                        <div class="text-sm font-medium">
-                                            ₱{{ item.total_amount.toFixed(2) }}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Total -->
-                            <div
-                                class="space-y-3 rounded-lg bg-muted/30 p-4 text-center"
-                            >
-                                <div class="mb-1 text-xs text-muted-foreground">
-                                    Total Amount
-                                </div>
-                                <div class="text-2xl font-bold">
-                                    ₱{{ saleData.total_amount.toFixed(2) }}
-                                </div>
-                            </div>
-
-                            <!-- Payment Details Section -->
-                            <div class="space-y-2 rounded-lg bg-muted/20 p-3">
-                                <h4
-                                    class="text-sm font-medium tracking-wide text-muted-foreground uppercase"
-                                >
-                                    Payment Details
-                                </h4>
-
-                                <!-- Cash Payment Details -->
-                                <div
-                                    v-if="saleData.payment_type === 'cash'"
-                                    class="space-y-1 text-sm"
-                                >
-                                    <div class="flex justify-between">
-                                        <span class="text-muted-foreground"
-                                            >Payment Method:</span
-                                        >
-                                        <span class="font-medium">💵 Cash</span>
-                                    </div>
-                                    <div
-                                        v-if="saleData.amount_tendered"
-                                        class="flex justify-between"
-                                    >
-                                        <span class="text-muted-foreground"
-                                            >Amount Received:</span
-                                        >
-                                        <span
-                                            >₱{{
-                                                saleData.amount_tendered.toFixed(
-                                                    2,
-                                                )
-                                            }}</span
-                                        >
-                                    </div>
-                                    <div
-                                        v-if="
-                                            saleData.change_amount !==
-                                                undefined &&
-                                            saleData.change_amount !== null
-                                        "
-                                        class="flex justify-between"
-                                    >
-                                        <span class="text-muted-foreground"
-                                            >Change:</span
-                                        >
-                                        <span
-                                            >₱{{
-                                                (
-                                                    saleData.change_amount || 0
-                                                ).toFixed(2)
-                                            }}</span
-                                        >
-                                    </div>
-                                    <div
-                                        v-if="
-                                            saleData.balance_payment &&
-                                            saleData.balance_payment > 0
-                                        "
-                                        class="flex justify-between"
-                                    >
-                                        <span class="text-muted-foreground"
-                                            >Payment Towards Balance:</span
-                                        >
-                                        <span
-                                            >₱{{
-                                                (
-                                                    saleData.balance_payment ||
-                                                    0
-                                                ).toFixed(2)
-                                            }}</span
-                                        >
-                                    </div>
-                                </div>
-
-                                <!-- Utang Payment Details -->
-                                <div
-                                    v-else-if="
-                                        saleData.payment_type === 'utang'
-                                    "
-                                    class="space-y-1 text-sm"
-                                >
-                                    <div class="flex justify-between">
-                                        <span class="text-muted-foreground"
-                                            >Payment Method:</span
-                                        >
-                                        <span class="font-medium"
-                                            >📝 Credit (Utang)</span
-                                        >
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span class="text-muted-foreground"
-                                            >Amount Paid:</span
-                                        >
-                                        <span
-                                            >₱{{
-                                                saleData.paid_amount.toFixed(2)
-                                            }}</span
-                                        >
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Customer Balance (only if customer involved) -->
-                            <div
-                                v-if="saleData.customer_id"
-                                class="space-y-2 rounded-lg bg-muted/20 p-3"
-                            >
-                                <h4
-                                    class="text-sm font-medium tracking-wide text-muted-foreground uppercase"
-                                >
-                                    Customer Balance
-                                </h4>
-                                <div class="space-y-1 text-sm">
-                                    <div
-                                        v-if="
-                                            saleData.original_customer_balance !==
-                                            undefined
-                                        "
-                                        class="flex justify-between"
-                                    >
-                                        <span class="text-muted-foreground"
-                                            >Previous:</span
-                                        >
-                                        <span
-                                            >₱{{
-                                                (
-                                                    saleData.original_customer_balance ||
-                                                    0
-                                                ).toFixed(2)
-                                            }}</span
-                                        >
-                                    </div>
-                                    <div
-                                        class="flex justify-between border-t pt-1 font-medium"
-                                    >
-                                        <span>New Balance:</span>
-                                        <span
-                                            :class="
-                                                (saleData.new_customer_balance ||
-                                                    0) > 0
-                                                    ? 'text-destructive'
-                                                    : ''
-                                            "
-                                        >
-                                            ₱{{
-                                                (
-                                                    saleData.new_customer_balance ||
-                                                    0
-                                                ).toFixed(2)
-                                            }}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Footer Message -->
-                            <div class="rounded-lg bg-muted/30 p-3 text-center">
-                                <p class="text-sm font-medium">
-                                    Thank you for your business!
-                                </p>
-                                <p class="mt-1 text-xs text-muted-foreground">
-                                    {{
-                                        formatManilaDateTime(
-                                            getCurrentManilaDateTime(),
-                                        )
-                                    }}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Modal Actions -->
-                <div class="flex justify-center border-t pt-4 flex-shrink-0">
-                    <Button
-                        @click="closeSuccessModal"
-                        class="bg-green-600 px-8 text-white hover:bg-green-700"
-                    >
-                        Close & New Sale
-                    </Button>
-                </div>
-            </DialogContent>
-        </Dialog>
+        <!-- Sale Receipt Modal -->
+        <SaleReceiptModal
+            v-model:open="showSuccessModal"
+            :sale-data="saleData"
+            @close="closeSuccessModal"
+        />
     </AppLayout>
 </template>
 

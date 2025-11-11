@@ -14,7 +14,7 @@ class UnitSeeder extends Seeder
     {
         $units = [
             // Basic counting units
-            ['unit_name' => 'Piece', 'abbreviation' => 'pc/pcs'],
+            ['unit_name' => 'Piece', 'abbreviation' => 'pc'],
             ['unit_name' => 'Pair', 'abbreviation' => 'pr'],
             ['unit_name' => 'Set', 'abbreviation' => 'set'],
             ['unit_name' => 'Dozen', 'abbreviation' => 'dz'],
@@ -31,16 +31,16 @@ class UnitSeeder extends Seeder
             ['unit_name' => 'Gallon', 'abbreviation' => 'gal'],
 
             // Packaging units
-            ['unit_name' => 'Pack', 'abbreviation' => 'pk'],
-            ['unit_name' => 'Box', 'abbreviation' => 'bx'],
-            ['unit_name' => 'Case', 'abbreviation' => 'cs'],
-            ['unit_name' => 'Bundle', 'abbreviation' => 'bdl'],
-            ['unit_name' => 'Bag', 'abbreviation' => 'bg'],
+            ['unit_name' => 'Pack', 'abbreviation' => 'pack'],
+            ['unit_name' => 'Box', 'abbreviation' => 'box'],
+            ['unit_name' => 'Case', 'abbreviation' => 'case'],
+            ['unit_name' => 'Bundle', 'abbreviation' => 'bundle'],
+            ['unit_name' => 'Bag', 'abbreviation' => 'bag'],
             ['unit_name' => 'Bottle', 'abbreviation' => 'btl'],
-            ['unit_name' => 'Can', 'abbreviation' => 'cn'],
+            ['unit_name' => 'Can', 'abbreviation' => 'can'],
             ['unit_name' => 'Jar', 'abbreviation' => 'jr'],
-            ['unit_name' => 'Tube', 'abbreviation' => 'tb'],
-            ['unit_name' => 'Pouch', 'abbreviation' => 'pch'],
+            ['unit_name' => 'Tube', 'abbreviation' => 'tube'],
+            ['unit_name' => 'Pouch', 'abbreviation' => 'pouch'],
 
             // Length/Area units
             ['unit_name' => 'Meter', 'abbreviation' => 'm'],
@@ -48,14 +48,13 @@ class UnitSeeder extends Seeder
             ['unit_name' => 'Inch', 'abbreviation' => 'in'],
             ['unit_name' => 'Foot', 'abbreviation' => 'ft'],
             ['unit_name' => 'Yard', 'abbreviation' => 'yd'],
-            ['unit_name' => 'Roll', 'abbreviation' => 'rl'],
-            ['unit_name' => 'Sheet', 'abbreviation' => 'sht'],
+            ['unit_name' => 'Roll', 'abbreviation' => 'roll'],
+            ['unit_name' => 'Sheet', 'abbreviation' => 'sheet'],
 
             // Special units common in Philippines
-            ['unit_name' => 'Sack', 'abbreviation' => 'sk'],
-            ['unit_name' => 'Kilo', 'abbreviation' => 'k'],
-            ['unit_name' => 'Tray', 'abbreviation' => 'try'],
-            ['unit_name' => 'Sachet', 'abbreviation' => 'sct'],
+            ['unit_name' => 'Sack', 'abbreviation' => 'sack'],
+            ['unit_name' => 'Tray', 'abbreviation' => 'tray'],
+            ['unit_name' => 'Sachet', 'abbreviation' => 'sachet'],
         ];
 
         DB::table('units')->insert($units);

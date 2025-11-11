@@ -8,12 +8,15 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuTrigger,
+    DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
 import {
     NavigationMenu,
     NavigationMenuItem,
     NavigationMenuList,
     navigationMenuTriggerStyle,
+    NavigationMenuTrigger,
+    NavigationMenuContent,
 } from '@/components/ui/navigation-menu';
 import {
     Sheet,
@@ -31,10 +34,10 @@ import {
 import UserMenuContent from '@/components/UserMenuContent.vue';
 import { getInitials } from '@/composables/useInitials';
 import { toUrl, urlIsActive } from '@/lib/utils';
-import { dashboard } from '@/routes';
+import { dashboard, salesReport } from '@/routes';
 import type { BreadcrumbItem, NavItem } from '@/types';
 import { InertiaLinkProps, Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-vue-next';
+import { Settings, BarChart3, CircleDollarSign, Folder, LayoutGrid, Menu, Package, Search, ShoppingCart, TrendingUp, Users, Banknote, Home } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 interface Props {
@@ -62,23 +65,59 @@ const activeItemStyles = computed(
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Home',
         href: dashboard(),
-        icon: LayoutGrid,
+        icon: Home,
+    },
+    {
+        title: 'New Sale',
+        href: '/sales',
+        icon: ShoppingCart,
+    },
+    {
+        title: 'Utang Payment',
+        href: '/utang-payments',
+        icon: Banknote,
+    },
+    {
+        title: 'Sales Report',
+        href: salesReport(),
+        icon: TrendingUp,
+    },
+    {
+        title: 'Management',
+        icon: Settings,
+        children: [
+            {
+                title: 'Expenses',
+                href: '/expenses',
+                icon: CircleDollarSign,
+            },
+            {
+                title: 'Products',
+                href: '/products',
+                icon: Package,
+            },
+            {
+                title: 'Customers',
+                href: '/customers',
+                icon: Users,
+            },
+        ]
     },
 ];
 
 const rightNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/vue-starter-kit',
-        icon: Folder,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#vue',
-        icon: BookOpen,
-    },
+    // {
+    //     title: 'Repository',
+    //     href: 'https://github.com/laravel/vue-starter-kit',
+    //     icon: Folder,
+    // },
+    // {
+    //     title: 'Documentation',
+    //     href: 'https://laravel.com/docs/starter-kits#vue',
+    //     icon: BookOpen,
+    // },
 ];
 </script>
 
@@ -99,34 +138,59 @@ const rightNavItems: NavItem[] = [
                             </Button>
                         </SheetTrigger>
                         <SheetContent side="left" class="w-[300px] p-6">
-                            <SheetTitle class="sr-only"
+                            <!-- <SheetTitle class="sr-only"
                                 >Navigation Menu</SheetTitle
                             >
                             <SheetHeader class="flex justify-start text-left">
-                                <AppLogoIcon
-                                    class="size-6 fill-current text-black dark:text-white"
-                                />
-                            </SheetHeader>
+                                <AppLogo />
+                            </SheetHeader> -->
                             <div
                                 class="flex h-full flex-1 flex-col justify-between space-y-4 py-6"
                             >
                                 <nav class="-mx-3 space-y-1">
-                                    <Link
-                                        v-for="item in mainNavItems"
-                                        :key="item.title"
-                                        :href="item.href"
-                                        class="flex items-center gap-x-3 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent"
-                                        :class="activeItemStyles(item.href)"
-                                    >
-                                        <component
-                                            v-if="item.icon"
-                                            :is="item.icon"
-                                            class="h-5 w-5"
-                                        />
-                                        {{ item.title }}
-                                    </Link>
+                                    <template v-for="item in mainNavItems" :key="item.title">
+                                        <Link
+                                            v-if="!item.children"
+                                            :href="item.href"
+                                            class="flex items-center gap-x-3 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent"
+                                            :class="activeItemStyles(item.href)"
+                                        >
+                                            <component
+                                                v-if="item.icon"
+                                                :is="item.icon"
+                                                class="h-5 w-5"
+                                            />
+                                            {{ item.title }}
+                                        </Link>
+                                        <div v-else class="space-y-1">
+                                            <div class="flex items-center gap-x-3 px-3 py-2 text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                                                <component
+                                                    v-if="item.icon"
+                                                    :is="item.icon"
+                                                    class="h-5 w-5"
+                                                />
+                                                {{ item.title }}
+                                            </div>
+                                            <div class="ml-8 space-y-1">
+                                                <Link
+                                                    v-for="child in item.children"
+                                                    :key="child.title"
+                                                    :href="child.href"
+                                                    class="flex items-center gap-x-3 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent"
+                                                    :class="activeItemStyles(child.href)"
+                                                >
+                                                    <component
+                                                        v-if="child.icon"
+                                                        :is="child.icon"
+                                                        class="h-4 w-4"
+                                                    />
+                                                    {{ child.title }}
+                                                </Link>
+                                            </div>
+                                        </div>
+                                    </template>
                                 </nav>
-                                <div class="flex flex-col space-y-4">
+                                <!-- <div class="flex flex-col space-y-4">
                                     <a
                                         v-for="item in rightNavItems"
                                         :key="item.title"
@@ -142,7 +206,7 @@ const rightNavItems: NavItem[] = [
                                         />
                                         <span>{{ item.title }}</span>
                                     </a>
-                                </div>
+                                </div> -->
                             </div>
                         </SheetContent>
                     </Sheet>
@@ -163,25 +227,60 @@ const rightNavItems: NavItem[] = [
                                 :key="index"
                                 class="relative flex h-full items-center"
                             >
-                                <Link
-                                    :class="[
-                                        navigationMenuTriggerStyle(),
-                                        activeItemStyles(item.href),
-                                        'h-9 cursor-pointer px-3',
-                                    ]"
-                                    :href="item.href"
-                                >
-                                    <component
-                                        v-if="item.icon"
-                                        :is="item.icon"
-                                        class="mr-2 h-4 w-4"
-                                    />
-                                    {{ item.title }}
-                                </Link>
-                                <div
-                                    v-if="isCurrentRoute(item.href)"
-                                    class="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-black dark:bg-white"
-                                ></div>
+                                <template v-if="!item.children">
+                                    <Link
+                                        :class="[
+                                            navigationMenuTriggerStyle(),
+                                            activeItemStyles(item.href),
+                                            'h-9 cursor-pointer px-3',
+                                        ]"
+                                        :href="item.href"
+                                    >
+                                        <component
+                                            v-if="item.icon"
+                                            :is="item.icon"
+                                            class="mr-2 h-4 w-4"
+                                        />
+                                        {{ item.title }}
+                                    </Link>
+                                    <div
+                                        v-if="isCurrentRoute(item.href)"
+                                        class="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-black dark:bg-white"
+                                    ></div>
+                                </template>
+                                <template v-else>
+                                    <NavigationMenuTrigger
+                                        :class="[
+                                            'h-9 cursor-pointer px-3',
+                                        ]"
+                                    >
+                                        <component
+                                            v-if="item.icon"
+                                            :is="item.icon"
+                                            class="mr-2 h-4 w-4"
+                                        />
+                                        {{ item.title }}
+                                    </NavigationMenuTrigger>
+                                    <NavigationMenuContent>
+                                        <div class="grid w-[400px] gap-3 p-4">
+                                            <Link
+                                                v-for="child in item.children"
+                                                :key="child.title"
+                                                :href="child.href"
+                                                class="flex items-start gap-3 rounded-md p-3 text-sm leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                                            >
+                                                <component
+                                                    v-if="child.icon"
+                                                    :is="child.icon"
+                                                    class="mt-1 h-4 w-4"
+                                                />
+                                                <div class="grid gap-1">
+                                                    <div class="text-sm font-medium">{{ child.title }}</div>
+                                                </div>
+                                            </Link>
+                                        </div>
+                                    </NavigationMenuContent>
+                                </template>
                             </NavigationMenuItem>
                         </NavigationMenuList>
                     </NavigationMenu>
@@ -189,7 +288,7 @@ const rightNavItems: NavItem[] = [
 
                 <div class="ml-auto flex items-center space-x-2">
                     <div class="relative flex items-center space-x-1">
-                        <Button
+                        <!-- <Button
                             variant="ghost"
                             size="icon"
                             class="group h-9 w-9 cursor-pointer"
@@ -197,7 +296,7 @@ const rightNavItems: NavItem[] = [
                             <Search
                                 class="size-5 opacity-80 group-hover:opacity-100"
                             />
-                        </Button>
+                        </Button> -->
 
                         <div class="hidden space-x-1 lg:flex">
                             <template

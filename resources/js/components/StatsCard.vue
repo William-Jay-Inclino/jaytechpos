@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Icon from './Icon.vue'
+import { ref, onMounted, watch } from 'vue'
 
 interface Props {
     title: string
@@ -11,7 +12,10 @@ interface Props {
     loading?: boolean
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
+
+const animatedValue = ref(0)
+const isAnimating = ref(false)
 
 function formatCurrency(value: string | number): string {
     const num = typeof value === 'string' ? parseFloat(value) : value
@@ -26,47 +30,137 @@ function shouldShowCelebration(value: string | number): boolean {
     const num = typeof value === 'string' ? parseFloat(value) : value
     return num > 0
 }
+
+// Animation function for counting effect
+function animateValue(targetValue: number, duration: number = 2000) {
+    if (isAnimating.value) return
+    
+    isAnimating.value = true
+    const startValue = 0
+    const startTime = performance.now()
+    
+    function updateValue(currentTime: number) {
+        const elapsed = currentTime - startTime
+        const progress = Math.min(elapsed / duration, 1)
+        
+        // Use easeOutQuart easing for smooth deceleration
+        const easeProgress = 1 - Math.pow(1 - progress, 4)
+        
+        animatedValue.value = Math.floor(startValue + (targetValue - startValue) * easeProgress)
+        
+        if (progress < 1) {
+            requestAnimationFrame(updateValue)
+        } else {
+            animatedValue.value = targetValue
+            isAnimating.value = false
+        }
+    }
+    
+    requestAnimationFrame(updateValue)
+}
+
+// Function to get numeric value for animation
+function getNumericValue(value: string | number): number {
+    return typeof value === 'string' ? parseFloat(value) || 0 : value
+}
+
+// Function to determine if value should be formatted as currency
+function shouldFormatAsCurrency(title: string): boolean {
+    return title.toLowerCase().includes('amount') || 
+           title.toLowerCase().includes('sales') || 
+           title.toLowerCase().includes('cash') || 
+           title.toLowerCase().includes('benta') || 
+           title.toLowerCase().includes('utang') || 
+           title.toLowerCase().includes('natanggap') || 
+           title.toLowerCase().includes('makolekta') || 
+           title.toLowerCase().includes('kumikita')
+}
+
+// Start animation when component mounts or value changes
+onMounted(() => {
+    if (!props.loading && typeof props.value === 'number') {
+        animateValue(getNumericValue(props.value))
+    }
+})
+
+watch(() => props.value, (newValue) => {
+    if (!props.loading && typeof newValue === 'number') {
+        animateValue(getNumericValue(newValue))
+    }
+}, { immediate: false })
+
+watch(() => props.loading, (isLoading) => {
+    if (!isLoading && typeof props.value === 'number') {
+        // Reset and animate when loading finishes
+        animatedValue.value = 0
+        setTimeout(() => animateValue(getNumericValue(props.value)), 100)
+    }
+})
 </script>
 
 <template>
-    <div class="group relative overflow-hidden rounded-2xl border border-white/20 bg-white/70 backdrop-blur-xl shadow-xl dark:border-gray-700/50 dark:bg-gray-800/70 p-6 hover:shadow-2xl transition-all duration-500">
-        <!-- Gradient overlay -->
-        <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent dark:from-gray-700/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+    <div class="group relative overflow-hidden rounded-3xl border border-white/20 bg-white/80 backdrop-blur-xl shadow-2xl dark:border-gray-700/30 dark:bg-gray-800/80 p-8 sm:p-10 lg:p-12 hover:shadow-3xl transition-all duration-700">
+        <!-- Enhanced gradient overlay with animation -->
+        <div class="absolute inset-0 bg-gradient-to-br from-green-500/5 via-emerald-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+        
+        <!-- Floating decoration elements -->
+        <div class="absolute top-6 right-6 w-20 h-20 bg-gradient-to-br from-green-400/20 to-emerald-400/20 rounded-full blur-xl opacity-50 group-hover:opacity-75 transition-opacity duration-500"></div>
+        <div class="absolute bottom-6 left-6 w-16 h-16 bg-gradient-to-tr from-emerald-400/20 to-teal-400/20 rounded-full blur-xl opacity-30 group-hover:opacity-60 transition-opacity duration-500"></div>
         
         <!-- Content -->
         <div class="relative">
-            <div class="flex items-start justify-between gap-4">
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">
+            <div class="text-center space-y-6">
+                <!-- Title with enhanced styling -->
+                <div class="space-y-2">
+                    <div class="flex justify-center items-center gap-2 mb-4">
+                        <div class="w-12 h-1 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full"></div>
+                        <span class="text-2xl">💰</span>
+                        <div class="w-12 h-1 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full"></div>
+                    </div>
+                    <p class="text-lg sm:text-xl font-semibold text-gray-700 dark:text-gray-300 tracking-wide">
                         {{ title }}
                     </p>
-                    <div v-if="loading" class="mt-2 h-8 w-32 animate-pulse rounded-lg bg-gray-200 dark:bg-gray-700"></div>
-                    <div v-else class="flex items-center gap-3">
-                        <p class="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-400 dark:to-emerald-400 bg-clip-text text-transparent">
-                            {{ typeof value === 'number' && title.toLowerCase().includes('amount') || title.toLowerCase().includes('sales') || title.toLowerCase().includes('cash') || title.toLowerCase().includes('benta') || title.toLowerCase().includes('utang') || title.toLowerCase().includes('natanggap') || title.toLowerCase().includes('makolekta') || title.toLowerCase().includes('kumikita') ? formatCurrency(value) : value }}
+                </div>
+
+                <!-- Value display with enhanced presentation -->
+                <div v-if="loading" class="flex justify-center">
+                    <div class="h-20 w-80 animate-pulse rounded-2xl bg-gray-200 dark:bg-gray-700"></div>
+                </div>
+                <div v-else class="space-y-4">
+                    <div class="relative">
+                        <!-- Main value with animation -->
+                        <p class="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 dark:from-green-400 dark:via-emerald-400 dark:to-teal-400 bg-clip-text text-transparent leading-none transform group-hover:scale-105 transition-transform duration-500">
+                            <template v-if="typeof value === 'number'">
+                                {{ shouldFormatAsCurrency(title) ? formatCurrency(animatedValue) : animatedValue }}
+                            </template>
+                            <template v-else>
+                                {{ value }}
+                            </template>
                         </p>
-                        <!-- Enhanced Celebration Icons -->
-                        <div v-if="shouldShowCelebration(value)" class="flex items-center gap-1">
-                            <span class="text-2xl">🎉</span>
-                            <span class="text-xl">💰</span>
+                        
+                        <!-- Celebration icons with animation -->
+                        <div v-if="shouldShowCelebration(value)" class="flex justify-center items-center gap-2 mt-4">
+                            <span class="text-4xl animate-bounce" style="animation-delay: 0ms">🎉</span>
+                            <span class="text-3xl animate-pulse" style="animation-delay: 200ms">✨</span>
+                            <span class="text-4xl animate-bounce" style="animation-delay: 400ms">💰</span>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <!-- Trend indicator if exists -->
-            <div v-if="trend" class="mt-4 flex items-center text-sm">
+            <!-- Enhanced trend indicator if exists -->
+            <div v-if="trend" class="mt-8 flex justify-center">
                 <span
                     :class="[
-                        'flex items-center px-2 py-1 rounded-full text-xs font-medium',
+                        'flex items-center px-6 py-3 rounded-2xl text-base font-semibold shadow-lg',
                         trend.isPositive 
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' 
-                            : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+                            ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 dark:from-green-900/30 dark:to-emerald-900/30 dark:text-green-300 border border-green-200 dark:border-green-700' 
+                            : 'bg-gradient-to-r from-red-100 to-rose-100 text-red-800 dark:from-red-900/30 dark:to-rose-900/30 dark:text-red-300 border border-red-200 dark:border-red-700'
                     ]"
                 >
                     <Icon 
                         :name="trend.isPositive ? 'trending-up' : 'trending-down'" 
-                        class="mr-1 h-3 w-3" 
+                        class="mr-2 h-5 w-5" 
                     />
                     {{ trend.value }}
                 </span>

@@ -77,7 +77,7 @@ async function updateYear() {
                             <BarChart3 class="h-5 w-5 text-blue-600 dark:text-blue-400" />
                         </div>
                         <h3 class="text-lg font-semibold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
-                            Cash Flow Analysis
+                            Cash Flow
                         </h3>
                     </div>
                 </div>

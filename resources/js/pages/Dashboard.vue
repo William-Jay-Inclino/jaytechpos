@@ -65,35 +65,32 @@ const breadcrumbs: BreadcrumbItem[] = [
                     <!-- Welcome Section -->
                     <div class="mb-8 text-center">
                         <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent mb-3">
-                            Welcome to Your Dashboard
+                            Welcome to JTech Solutions
                         </h1>
+                        <p class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                            Track your business performance and celebrate your success
+                        </p>
                     </div>
 
-                    <!-- Statistics Cards Grid -->
-                    <div class="max-w-7xl mx-auto">
-                        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-12">
-                            <StatsCard
-                                title="Congratulations! Kumikita ka ngayong araw ng"
-                                :value="dailyStats.total_sales_today"
-                                class="transform hover:scale-105 transition-all duration-300"
-                            />
-                            <StatsCard
-                                title="Ayos! May nabayarang utang ngayong araw na"
-                                :value="dailyStats.utang_payments_today"
-                                class="transform hover:scale-105 transition-all duration-300"
-                            />
-                            <StatsCard
-                                title="May makokolekta ka pang utang na"
-                                :value="utangStats.total_amount_receivable"
-                                class="transform hover:scale-105 transition-all duration-300"
-                            />
+                    <!-- Single Prominent Stats Card -->
+                    <div class="max-w-4xl mx-auto">
+                        <div class="relative group">
+                            <!-- Enhanced glow effect -->
+                            <div class="absolute -inset-1 bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 rounded-3xl blur-lg opacity-25 group-hover:opacity-50 transition duration-500"></div>
+                            <div class="relative">
+                                <StatsCard
+                                    title="Congratulations! Kumikita ka ngayong arang ng"
+                                    :value="dailyStats.total_sales_today"
+                                    class="transform hover:scale-[1.02] transition-all duration-500 shadow-2xl border-0 bg-gradient-to-br from-white to-green-50/50 dark:from-gray-800 dark:to-green-900/20 p-8 sm:p-12"
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Main Content Area -->
-            <div class="relative px-4 pb-12 sm:px-6 lg:px-8">
+            <div class="relative px-4 pb-12 pt-8 sm:px-6 lg:px-8">
                 <div class="max-w-7xl mx-auto space-y-8">
                     <!-- Sales Chart Section -->
                     <div class="relative">
