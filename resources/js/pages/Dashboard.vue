@@ -68,7 +68,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                             Welcome to JTech Solutions
                         </h1>
                         <p class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-                            Track your business performance and celebrate your success
+                            Track your business performance
                         </p>
                     </div>
 

@@ -150,8 +150,7 @@ const getRankingColor = (index: number) => {
                     ]"
                 >
                     <component :is="tab.icon" class="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span class="hidden xs:inline sm:inline">{{ tab.label }}</span>
-                    <span class="xs:hidden sm:hidden">{{ tab.label.split(' ')[0] }}</span>
+                    <span>{{ tab.label }}</span>
                 </button>
             </div>
         </div>
