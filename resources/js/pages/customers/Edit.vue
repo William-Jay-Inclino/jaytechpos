@@ -18,14 +18,14 @@ const props = defineProps<{
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Customers',
-        href: '/customers',
-    },
-    {
-        title: `Edit ${props.customer.name}`,
-        href: `/customers/${props.customer.id}/edit`,
-    },
+    // {
+    //     title: 'Customers',
+    //     href: '/customers',
+    // },
+    // {
+    //     title: `Edit ${props.customer.name}`,
+    //     href: `/customers/${props.customer.id}/edit`,
+    // },
 ];
 
 // Form state

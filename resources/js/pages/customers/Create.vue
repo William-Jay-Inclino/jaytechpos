@@ -18,14 +18,14 @@ const props = withDefaults(defineProps<{
 });
 
 const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Customers',
-        href: '/customers',
-    },
-    {
-        title: 'Add Customer',
-        href: '/customers/create',
-    },
+    // {
+    //     title: 'Customers',
+    //     href: '/customers',
+    // },
+    // {
+    //     title: 'Add Customer',
+    //     href: '/customers/create',
+    // },
 ];
 
 // Form state
