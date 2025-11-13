@@ -104,7 +104,7 @@ async function updateYear() {
                         <th class="p-2 sm:p-4 text-left">Month</th>
                         <th class="p-2 sm:p-4 text-right">Income</th>
                         <th class="p-2 sm:p-4 text-right">Expense</th>
-                        <th class="p-2 sm:p-4 text-right">Cash Flow</th>
+                        <th class="p-2 sm:p-4 text-right">Profit</th>
                     </tr>
                 </thead>
                 <tbody v-if="!loading" class="divide-y divide-gray-200/50 dark:divide-gray-600/50">

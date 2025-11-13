@@ -19,6 +19,7 @@ import {
     Banknote,
     BookOpen,
     CircleDollarSign,
+    Home,
     LayoutGrid,
     Package,
     ShoppingCart,
@@ -30,9 +31,9 @@ import AppLogo from './AppLogo.vue';
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Home',
         href: dashboard(),
-        icon: LayoutGrid,
+        icon: Home,
     },
     {
         title: 'New Sale',

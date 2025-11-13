@@ -20,8 +20,8 @@ const props = defineProps<{
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    // { title: 'Expenses', href: '/expenses' },
-    // { title: 'Add Expense', href: '/expenses/create' },
+    { title: 'Expenses', href: '/expenses' },
+    { title: 'Add Expense', href: '/expenses/create' },
 ];
 
 const form = useForm({
