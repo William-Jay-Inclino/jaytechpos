@@ -93,7 +93,7 @@ const breadcrumbs: BreadcrumbItem[] = [
             <div class="relative px-4 pb-12 pt-8 sm:px-6 lg:px-8">
                 <div class="max-w-7xl mx-auto space-y-8">
                     <!-- Sales Chart Section -->
-                    <div class="relative">
+                    <!-- <div class="relative">
                         <div class="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-teal-500/5 rounded-3xl blur-xl"></div>
                         <div class="relative">
                             <SalesChart 
@@ -102,7 +102,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                                 class="transform hover:shadow-2xl transition-all duration-500" 
                             />
                         </div>
-                    </div>
+                    </div> -->
 
                     <!-- Analytics Grid -->
                     <div class="grid gap-6 sm:gap-8 lg:grid-cols-2">
