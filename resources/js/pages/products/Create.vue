@@ -122,7 +122,6 @@ async function submit() {
             createdProduct.value = response.data.product;
             showSuccessModal.value = true;
             form.reset();
-            showSuccessToast('Product created successfully!');
         }
     } catch (error: any) {
         if (error.response?.status === 422) {

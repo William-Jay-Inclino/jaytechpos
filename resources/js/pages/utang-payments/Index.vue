@@ -223,7 +223,7 @@ watch(selectedCustomerId, (newCustomerId) => {
                                             class="flex h-12 w-full cursor-pointer items-center justify-between rounded-md border-2 border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800"
                                         >
                                             <span class="truncate text-left">
-                                                {{ selectedCustomerName || 'Search and select a customer' }}
+                                                {{ selectedCustomerName || '---' }}
                                             </span>
                                             <svg class="h-4 w-4 opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                 <path d="m6 9 6 6 6-6"/>

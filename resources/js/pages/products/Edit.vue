@@ -139,7 +139,6 @@ async function submit() {
         if (response.data.success) {
             updatedProduct.value = response.data.product;
             showSuccessModal.value = true;
-            showSuccessToast('Product updated successfully!');
         }
     } catch (error: any) {
         if (error.response?.status === 422) {

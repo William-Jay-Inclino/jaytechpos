@@ -523,7 +523,7 @@ const getVisiblePages = (): (number | string)[] => {
                                                 <th class="text-left py-3 px-2 font-medium text-gray-700 dark:text-gray-300">Customer</th>
                                                 <th class="text-right py-3 px-2 font-medium text-gray-700 dark:text-gray-300">Amount</th>
                                                 <th class="text-center py-3 px-2 font-medium text-gray-700 dark:text-gray-300">Type</th>
-                                                <th class="text-center py-3 px-2 font-medium text-gray-700 dark:text-gray-300">Actions</th>
+                                                <th class="text-center py-3 px-2 font-medium text-gray-700 dark:text-gray-300"></th>
                                             </tr>
                                         </thead>
                                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
