@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3';
-import { X, Search, UserPlus } from 'lucide-vue-next';
+import { X, Search, UserPlus, Plus, Minus } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 
 // Layout & Components
@@ -106,6 +106,16 @@ function removeCartItem(index: number): void {
 function updateCartItemQuantity(index: number, quantity: number): void {
     if (quantity > 0) {
         cartItems.value[index].quantity = quantity;
+    }
+}
+
+function incrementQuantity(index: number): void {
+    cartItems.value[index].quantity += 1;
+}
+
+function decrementQuantity(index: number): void {
+    if (cartItems.value[index].quantity > 0.01) {
+        cartItems.value[index].quantity = Math.max(0.01, cartItems.value[index].quantity - 1);
     }
 }
 
@@ -451,9 +461,6 @@ watch(amountTendered, () => {
                                                 class="text-red-500"
                                                 >*</span
                                             >
-                                            <span v-else class="text-gray-500"
-                                                >(Optional)</span
-                                            >
                                         </Label>
                                         <Button
                                             type="button"
@@ -643,7 +650,7 @@ watch(amountTendered, () => {
                                         class="flex h-12 w-full cursor-pointer items-center justify-between rounded-md border border-input bg-background px-4 py-3 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
                                     >
                                         <span class="truncate text-left font-medium">
-                                            {{ productSearch || 'Select Product to Add' }}
+                                            {{ productSearch || 'Add item to cart' }}
                                         </span>
                                         <svg class="h-4 w-4 opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                             <path d="m6 9 6 6 6-6"/>
@@ -700,7 +707,7 @@ watch(amountTendered, () => {
                                         No items in cart
                                     </h3>
                                     <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                                        Select a product to start building your sale
+                                        Add item to cart to start building your sale
                                     </p>
                                 </div>
 
@@ -737,13 +744,29 @@ watch(amountTendered, () => {
                                                         <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
                                                             Qty:
                                                         </label>
-                                                        <input
-                                                            type="number"
-                                                            min="1"
-                                                            :value="item.quantity"
-                                                            @input="updateCartItemQuantity(index, parseInt(($event.target as HTMLInputElement).value))"
-                                                            class="w-16 rounded-md border border-gray-300 bg-white px-2 py-1 text-center text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                                        />
+                                                        <div class="flex items-center gap-1 rounded-md border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-700 p-1">
+                                                            <button
+                                                                @click="decrementQuantity(index)"
+                                                                :disabled="item.quantity <= 0.01"
+                                                                class="h-6 w-6 rounded flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent dark:disabled:hover:bg-transparent text-gray-600 dark:text-gray-300"
+                                                            >
+                                                                <Minus class="h-3 w-3" />
+                                                            </button>
+                                                            <input
+                                                                type="number"
+                                                                min="0.01"
+                                                                step="0.01"
+                                                                :value="item.quantity"
+                                                                @input="updateCartItemQuantity(index, parseFloat(($event.target as HTMLInputElement).value))"
+                                                                class="w-12 border-0 bg-transparent px-1 py-1 text-center text-sm text-gray-900 focus:outline-none focus:ring-0 dark:text-white"
+                                                            />
+                                                            <button
+                                                                @click="incrementQuantity(index)"
+                                                                class="h-6 w-6 rounded flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300"
+                                                            >
+                                                                <Plus class="h-3 w-3" />
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                     
                                                     <Button 
@@ -765,7 +788,7 @@ watch(amountTendered, () => {
                                             <thead class="border-b border-gray-200 dark:border-gray-700">
                                                 <tr>
                                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                                        Product
+                                                        Item
                                                     </th>
                                                     <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                                         Qty
@@ -791,13 +814,29 @@ watch(amountTendered, () => {
                                                         </div>
                                                     </td>
                                                     <td class="px-4 py-3 text-center">
-                                                        <input
-                                                            type="number"
-                                                            min="1"
-                                                            :value="item.quantity"
-                                                            @input="updateCartItemQuantity(index, parseInt(($event.target as HTMLInputElement).value))"
-                                                            class="w-16 rounded border border-gray-300 bg-white px-2 py-1 text-center text-sm text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                                        />
+                                                        <div class="flex items-center justify-center gap-1">
+                                                            <button
+                                                                @click="decrementQuantity(index)"
+                                                                :disabled="item.quantity <= 0.01"
+                                                                class="h-6 w-6 rounded flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent dark:disabled:hover:bg-transparent text-gray-600 dark:text-gray-300"
+                                                            >
+                                                                <Minus class="h-3 w-3" />
+                                                            </button>
+                                                            <input
+                                                                type="number"
+                                                                min="0.01"
+                                                                step="0.01"
+                                                                :value="item.quantity"
+                                                                @input="updateCartItemQuantity(index, parseFloat(($event.target as HTMLInputElement).value))"
+                                                                class="w-12 border border-gray-300 rounded bg-white px-1 py-1 text-center text-sm text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                                            />
+                                                            <button
+                                                                @click="incrementQuantity(index)"
+                                                                class="h-6 w-6 rounded flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300"
+                                                            >
+                                                                <Plus class="h-3 w-3" />
+                                                            </button>
+                                                        </div>
                                                     </td>
                                                     <td class="px-4 py-3 text-right">
                                                         <span class="text-sm text-gray-500 dark:text-gray-400">
