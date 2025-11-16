@@ -77,9 +77,9 @@ const buttonText = computed(() => {
                 <DialogTitle class="text-xl text-green-700 dark:text-green-400">
                     {{ modalTitle }}
                 </DialogTitle>
-                <DialogDescription class="text-sm text-muted-foreground">
+                <!-- <DialogDescription class="text-sm text-muted-foreground">
                     {{ modalDescription }}
-                </DialogDescription>
+                </DialogDescription> -->
             </DialogHeader>
 
             <div v-if="product" class="space-y-4">
@@ -97,12 +97,12 @@ const buttonText = computed(() => {
                     </div>
 
                     <!-- Unit -->
-                    <div class="text-sm">
+                    <!-- <div class="text-sm">
                         <span class="text-muted-foreground">Unit:</span>
                         <div class="font-medium">
                             {{ product.unit?.unit_name }} ({{ product.unit?.abbreviation }})
                         </div>
-                    </div>
+                    </div> -->
 
                     <!-- Pricing -->
                     <div class="grid grid-cols-2 gap-4 border-t pt-3">
