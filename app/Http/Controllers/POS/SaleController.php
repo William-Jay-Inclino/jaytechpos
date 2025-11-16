@@ -86,6 +86,10 @@ class SaleController extends Controller
                 'customer_id' => $request->validated('customer_id'),
                 'total_amount' => $request->validated('total_amount'),
                 'paid_amount' => $request->validated('paid_amount'),
+                'amount_tendered' => $request->validated('payment_type') === 'cash'
+                    ? $request->validated('amount_tendered')
+                    : null,
+                'deduct_from_balance' => $request->validated('deduct_from_balance', 0),
                 'invoice_number' => $invoiceNumber,
                 'payment_type' => $request->validated('payment_type'),
                 'transaction_date' => $request->validated('transaction_date'),
@@ -124,19 +128,12 @@ class SaleController extends Controller
             // Load relationships for the resource
             $sale->load(['user', 'customer', 'salesItems.product']);
 
-            // Add payment calculation details to the sale object for the resource
-            $sale->amount_tendered = $request->validated('payment_type') === 'cash'
-                ? $request->validated('amount_tendered', $sale->paid_amount)
-                : null;
-
+            // Add calculated payment details to the sale object for the resource
             $sale->change_amount = $request->validated('payment_type') === 'cash'
                 ? max(0, $request->validated('amount_tendered', 0) - $sale->total_amount - $request->validated('deduct_from_balance', 0))
                 : null;
 
-            $sale->balance_payment = $request->validated('deduct_from_balance', 0);
-
             $sale->original_customer_balance = $previousBalance;
-
             $sale->new_customer_balance = $newBalance;
 
             // Prepare response data using the resource

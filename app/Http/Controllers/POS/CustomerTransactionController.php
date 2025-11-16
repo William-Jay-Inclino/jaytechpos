@@ -68,7 +68,7 @@ class CustomerTransactionController extends Controller
                 'transaction_date' => $request->payment_date,
                 'previous_balance' => $currentBalance,
                 'new_balance' => $newBalance,
-                'transaction_desc' => 'Notes - '.($request->notes ?? 'No notes'),
+                'transaction_desc' => ($request->notes ?? '---'),
                 'reference_id' => null,
                 'transaction_amount' => $request->payment_amount,
             ]);

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { Badge } from '@/components/ui/badge';
 import {
     Dialog,
     DialogContent,
@@ -29,6 +28,9 @@ interface SaleTransaction {
     payment_type?: 'cash' | 'utang';
     total_amount?: number;
     paid_amount?: number;
+    amount_tendered?: number;
+    deduct_from_balance?: number;
+    change_amount?: number;
     notes?: string;
     previous_balance?: number;
     new_balance?: number;
@@ -49,24 +51,6 @@ const emit = defineEmits<{
 const isOpen = computed({
     get: () => props.open,
     set: (value) => emit('update:open', value),
-});
-
-const paymentStatus = computed(() => {
-    if (!props.transaction) return { label: '', variant: 'secondary' as const };
-
-    if (props.transaction.payment_type === 'cash') {
-        return { label: 'Paid in Full', variant: 'default' as const };
-    } else {
-        return { label: 'Utang', variant: 'destructive' as const };
-    }
-});
-
-const outstandingBalance = computed(() => {
-    if (!props.transaction) return '';
-    const totalAmount = props.transaction.total_amount || 0;
-    const paidAmount = props.transaction.paid_amount || 0;
-    const remaining = totalAmount - paidAmount;
-    return remaining > 0 ? formatPhilippinePeso(remaining) : null;
 });
 
 const formatDate = computed(() => {
@@ -97,46 +81,7 @@ const formatDate = computed(() => {
                 </DialogDescription>
             </DialogHeader>
 
-            <div v-if="transaction" class="space-y-5">
-                <!-- Payment Status & Amount -->
-                <div class="space-y-3 rounded-lg bg-muted/30 p-4 text-center">
-                    <div>
-                        <div class="mb-1 text-xs text-muted-foreground">
-                            Total Amount
-                        </div>
-                        <div class="text-2xl font-bold">
-                            {{
-                                formatPhilippinePeso(
-                                    transaction.total_amount || 0,
-                                )
-                            }}
-                        </div>
-                    </div>
-
-                    <Badge :variant="paymentStatus.variant" class="text-xs">{{
-                        paymentStatus.label
-                    }}</Badge>
-
-                    <!-- Paid Amount for Utang -->
-                    <div
-                        v-if="transaction.payment_type === 'utang'"
-                        class="text-sm"
-                    >
-                        <span class="text-muted-foreground">Paid Amount: </span>
-                        <span class="font-medium">{{
-                            formatPhilippinePeso(transaction.paid_amount || 0)
-                        }}</span>
-                    </div>
-
-                    <!-- Outstanding Balance if Utang -->
-                    <div
-                        v-if="outstandingBalance"
-                        class="text-sm font-medium text-destructive"
-                    >
-                        Remaining: {{ outstandingBalance }}
-                    </div>
-                </div>
-
+            <div v-if="transaction" class="space-y-4">
                 <!-- Items Purchased -->
                 <div
                     v-if="
@@ -154,7 +99,7 @@ const formatDate = computed(() => {
                         <div
                             v-for="item in transaction.sales_items"
                             :key="item.id"
-                            class="flex items-center justify-between border-b border-border/50 py-2 last:border-0"
+                            class="flex items-center justify-between border-b border-border/30 py-2 last:border-0"
                         >
                             <div class="flex-1">
                                 <div class="text-sm font-medium">
@@ -169,32 +114,120 @@ const formatDate = computed(() => {
                                 {{ formatPhilippinePeso(item.total_price) }}
                             </div>
                         </div>
+                        
+                        <!-- Total Amount Summary Row -->
+                        <div class="flex items-center justify-between border-t-2 border-border pt-3 mt-3">
+                            <div class="text-base font-semibold">Total Amount</div>
+                            <div class="text-lg font-bold">
+                                {{ formatPhilippinePeso(transaction.total_amount || 0) }}
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Balance Summary (only for Credit) -->
+                <!-- Payment Details Section -->
+                <div class="space-y-3 rounded-lg bg-muted/20 p-4">
+                    <h4
+                        class="text-sm font-medium tracking-wide text-muted-foreground uppercase"
+                    >
+                        Payment Details
+                    </h4>
+
+                    <!-- Cash Payment Details -->
+                    <div
+                        v-if="transaction.payment_type === 'cash'"
+                        class="space-y-2 text-sm"
+                    >
+                        <div class="flex justify-between">
+                            <span class="text-muted-foreground"
+                                >Payment Method:</span
+                            >
+                            <span class="font-medium">💵 Cash</span>
+                        </div>
+                        <div
+                            v-if="transaction.amount_tendered"
+                            class="flex justify-between"
+                        >
+                            <span class="text-muted-foreground"
+                                >Amount Received:</span
+                            >
+                            <span class="font-medium">{{
+                                formatPhilippinePeso(transaction.amount_tendered)
+                            }}</span>
+                        </div>
+                        <div
+                            v-if="
+                                transaction.change_amount !== undefined &&
+                                transaction.change_amount !== null
+                            "
+                            class="flex justify-between"
+                        >
+                            <span class="text-muted-foreground">Change:</span>
+                            <span class="font-medium">{{
+                                formatPhilippinePeso(transaction.change_amount || 0)
+                            }}</span>
+                        </div>
+                        <div
+                            v-if="
+                                transaction.deduct_from_balance &&
+                                transaction.deduct_from_balance > 0
+                            "
+                            class="flex justify-between"
+                        >
+                            <span class="text-muted-foreground"
+                                >Used from Balance:</span
+                            >
+                            <span class="font-medium">{{
+                                formatPhilippinePeso(transaction.deduct_from_balance)
+                            }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Utang Payment Details -->
+                    <div
+                        v-else-if="transaction.payment_type === 'utang'"
+                        class="space-y-2 text-sm"
+                    >
+                        <div class="flex justify-between">
+                            <span class="text-muted-foreground"
+                                >Payment Method:</span
+                            >
+                            <span class="font-medium">📝 Credit (Utang)</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-muted-foreground">Amount Paid:</span>
+                            <span class="font-medium">{{
+                                formatPhilippinePeso(transaction.paid_amount || 0)
+                            }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customer Balance Summary (only for transactions with customers) -->
                 <div
-                    v-if="transaction.payment_type === 'utang'"
-                    class="space-y-2 rounded-lg bg-muted/20 p-3"
+                    v-if="transaction.previous_balance !== undefined && transaction.new_balance !== undefined"
+                    class="space-y-3 rounded-lg bg-muted/20 p-4"
                 >
                     <h4
                         class="text-sm font-medium tracking-wide text-muted-foreground uppercase"
                     >
                         Customer Balance
                     </h4>
-                    <div class="flex justify-between text-sm">
-                        <span>Previous:</span>
-                        <span>{{
-                            transaction.formatted_previous_balance
-                        }}</span>
-                    </div>
-                    <div
-                        class="flex justify-between border-t pt-2 text-sm font-medium"
-                    >
-                        <span>New balance:</span>
-                        <span class="text-destructive">{{
-                            transaction.formatted_new_balance
-                        }}</span>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-muted-foreground">Previous:</span>
+                            <span class="font-medium">{{
+                                transaction.formatted_previous_balance
+                            }}</span>
+                        </div>
+                        <div
+                            class="flex justify-between border-t border-border/50 pt-2 font-semibold"
+                        >
+                            <span>New Balance:</span>
+                            <span class="text-destructive">{{
+                                transaction.formatted_new_balance
+                            }}</span>
+                        </div>
                     </div>
                 </div>
 

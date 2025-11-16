@@ -16,6 +16,8 @@ class Sale extends Model
         'customer_id',
         'total_amount',
         'paid_amount',
+        'amount_tendered',
+        'deduct_from_balance',
         'invoice_number',
         'payment_type',
         'transaction_date',
@@ -27,6 +29,8 @@ class Sale extends Model
         return [
             'total_amount' => 'decimal:2',
             'paid_amount' => 'decimal:2',
+            'amount_tendered' => 'decimal:2',
+            'deduct_from_balance' => 'decimal:2',
             'transaction_date' => 'datetime',
         ];
     }

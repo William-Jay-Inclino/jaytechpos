@@ -76,7 +76,7 @@ class CustomerController extends Controller
                     'reference_id' => null,
                     'previous_balance' => 0,
                     'new_balance' => $startingBalance,
-                    'transaction_desc' => 'Starting Balance',
+                    'transaction_desc' => '---',
                     'transaction_date' => now(),
                     'transaction_amount' => $startingBalance,
                 ]);
@@ -146,7 +146,7 @@ class CustomerController extends Controller
                 'reference_id' => null,
                 'previous_balance' => $currentBalance,
                 'new_balance' => $newBalance,
-                'transaction_desc' => $note ?: 'Balance Update',
+                'transaction_desc' => $note ?: '---',
                 'transaction_date' => now(),
                 'transaction_amount' => $newBalance,
             ]);

@@ -41,6 +41,7 @@ const showCustomerDropdown = ref(false);
 // Transaction history state
 const transactions = ref<CustomerTransaction[]>([]);
 const loadingTransactions = ref(false);
+const showTransactionHistory = ref(false);
 
 // Computed properties
 const selectedCustomer = computed(() => {
@@ -122,6 +123,7 @@ function selectCustomer(customerId: string) {
     selectedCustomerId.value = customerId;
     showCustomerDropdown.value = false;
     customerSearch.value = '';
+    showTransactionHistory.value = false; // Hide transaction history when customer changes
 }
 
 const resetForm = () => {
@@ -132,6 +134,7 @@ const resetForm = () => {
     customerSearch.value = '';
     showCustomerDropdown.value = false;
     transactions.value = [];
+    showTransactionHistory.value = false;
 };
 
 const handleFormSuccess = () => {
@@ -146,6 +149,13 @@ const handleFormSuccess = () => {
 
 const handleFormError = () => {
     showErrorToast('Failed to record payment. Please try again.');
+};
+
+const showTransactionHistoryView = () => {
+    if (selectedCustomerId.value) {
+        showTransactionHistory.value = true;
+        fetchCustomerTransactions(parseInt(selectedCustomerId.value));
+    }
 };
 
 const formatCurrency = formatPhilippinePeso;
@@ -167,9 +177,17 @@ onUnmounted(() => {
 });
 
 // Watch for customer selection changes
-watch(selectedCustomerId, (newCustomerId) => {
+watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
+    // Hide transaction history immediately when selection starts to change
+    if (newCustomerId !== oldCustomerId) {
+        showTransactionHistory.value = false;
+    }
+    
     if (newCustomerId) {
-        fetchCustomerTransactions(parseInt(newCustomerId));
+        // Only fetch if transaction history is being shown
+        if (showTransactionHistory.value) {
+            fetchCustomerTransactions(parseInt(newCustomerId));
+        }
     } else {
         transactions.value = [];
     }
@@ -300,6 +318,16 @@ watch(selectedCustomerId, (newCustomerId) => {
                                                 </span>
                                             </div>
                                         </div>
+
+                                        <!-- View Transaction History Button -->
+                                        <Button
+                                            type="button"
+                                            @click="showTransactionHistoryView"
+                                            variant="outline"
+                                            class="w-full mt-3 text-sm"
+                                        >
+                                            📋 View Transaction History
+                                        </Button>
                                     </div>
                                 </div>
 
@@ -407,6 +435,7 @@ watch(selectedCustomerId, (newCustomerId) => {
                     <!-- Right Column - Transaction History (8 columns on desktop) -->
                     <div class="flex h-full flex-col lg:col-span-8">
                         <CustomerTransactionHistory
+                            v-if="showTransactionHistory"
                             :transactions="transactions"
                             :loading="loadingTransactions"
                             :customer-name="selectedCustomer?.name"

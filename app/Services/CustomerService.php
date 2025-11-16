@@ -72,6 +72,11 @@ class CustomerService
                     'payment_type' => $sale->payment_type,
                     'total_amount' => $sale->total_amount,
                     'paid_amount' => $sale->paid_amount,
+                    'amount_tendered' => $sale->amount_tendered,
+                    'deduct_from_balance' => $sale->deduct_from_balance,
+                    'change_amount' => $sale->payment_type === 'cash' && $sale->amount_tendered
+                        ? max(0, $sale->amount_tendered - $sale->total_amount - ($sale->deduct_from_balance ?? 0))
+                        : null,
                     'notes' => $sale->notes,
                     'sales_items' => $sale->salesItems->map(function ($item) {
                         return [
