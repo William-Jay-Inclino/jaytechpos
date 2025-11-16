@@ -4,14 +4,17 @@ namespace App\Http\Controllers\POS;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCustomerRequest;
+use App\Http\Requests\UpdateBalanceRequest;
 use App\Http\Requests\UpdateCustomerRequest;
 use App\Http\Resources\CustomerResource;
 use App\Models\Customer;
+use App\Models\CustomerTransaction;
 use App\Models\Setting;
 use App\Services\CustomerService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -54,13 +57,33 @@ class CustomerController extends Controller
      */
     public function store(StoreCustomerRequest $request): RedirectResponse
     {
-        $customer = Customer::create([
-            'user_id' => auth()->id(),
-            'name' => $request->validated('name'),
-            'mobile_number' => $request->validated('mobile_number'),
-            'remarks' => $request->validated('remarks'),
-            'interest_rate' => $request->validated('interest_rate'),
-        ]);
+        $customer = DB::transaction(function () use ($request) {
+            $customer = Customer::create([
+                'user_id' => auth()->id(),
+                'name' => $request->validated('name'),
+                'mobile_number' => $request->validated('mobile_number'),
+                'remarks' => $request->validated('remarks'),
+                'interest_rate' => $request->validated('interest_rate'),
+            ]);
+
+            // Create starting balance transaction if amount > 0
+            $startingBalance = $request->validated('starting_balance');
+            if ($startingBalance && $startingBalance > 0) {
+                CustomerTransaction::create([
+                    'user_id' => auth()->id(),
+                    'customer_id' => $customer->id,
+                    'transaction_type' => 'starting_balance',
+                    'reference_id' => null,
+                    'previous_balance' => 0,
+                    'new_balance' => $startingBalance,
+                    'transaction_desc' => 'Starting Balance',
+                    'transaction_date' => now(),
+                    'transaction_amount' => $startingBalance,
+                ]);
+            }
+
+            return $customer;
+        });
 
         return redirect()->route('customers.index')
             ->with('message', 'Customer created successfully!');
@@ -95,6 +118,42 @@ class CustomerController extends Controller
 
         return redirect()->route('customers.index')
             ->with('message', 'Customer updated successfully!');
+    }
+
+    /**
+     * Update the customer's balance.
+     */
+    public function updateBalance(UpdateBalanceRequest $request, Customer $customer): RedirectResponse
+    {
+        $this->authorize('update', $customer);
+
+        $newBalance = $request->validated('balance');
+        $note = $request->validated('note');
+        $currentBalance = $customer->running_utang_balance;
+
+        // Check if balance actually changed
+        if ($newBalance == $currentBalance) {
+            return redirect()->back()
+                ->with('error', 'New balance must be different from current balance.');
+        }
+
+        DB::transaction(function () use ($customer, $newBalance, $note, $currentBalance) {
+            // Create balance update transaction
+            CustomerTransaction::create([
+                'user_id' => auth()->id(),
+                'customer_id' => $customer->id,
+                'transaction_type' => 'balance_update',
+                'reference_id' => null,
+                'previous_balance' => $currentBalance,
+                'new_balance' => $newBalance,
+                'transaction_desc' => $note ?: 'Balance Update',
+                'transaction_date' => now(),
+                'transaction_amount' => $newBalance,
+            ]);
+        });
+
+        return redirect()->back()
+            ->with('message', 'Customer balance updated successfully!');
     }
 
     /**

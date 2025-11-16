@@ -5,7 +5,6 @@ import { ref } from 'vue';
 
 // UI Components
 import SaleDetailsModal from '@/components/modals/SaleDetailsModal.vue';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
 const props = defineProps<{
@@ -32,6 +31,10 @@ const getTransactionTypeLabel = (type: string) => {
             return 'Monthly Interest';
         case 'sale':
             return 'Sale Transaction';
+        case 'starting_balance':
+            return 'Starting Balance';
+        case 'balance_update':
+            return 'Balance Update';
         default:
             return 'Unknown';
     }
@@ -73,13 +76,6 @@ const openSaleDetails = async (transaction: CustomerTransaction) => {
     } finally {
         loadingTransactionIds.value.delete(transaction.id);
     }
-};
-
-const getFormattedPaidAmount = (transaction: CustomerTransaction) => {
-    if (transaction.payment_type === 'cash') {
-        return 'Full Payment';
-    }
-    return formatCurrency(transaction.paid_amount || 0);
 };
 
 const isTransactionLoading = (transactionId: number) => {
@@ -195,7 +191,11 @@ const isTransactionLoading = (transactionId: number) => {
                                         ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400'
                                         : transaction.type === 'monthly_interest'
                                           ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400'
-                                          : 'bg-orange-100 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400',
+                                          : transaction.type === 'starting_balance'
+                                            ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400'
+                                            : transaction.type === 'balance_update'
+                                              ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400'
+                                              : 'bg-orange-100 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400',
                                 ]"
                             >
                                 {{ getTransactionTypeLabel(transaction.type) }}
@@ -218,7 +218,9 @@ const isTransactionLoading = (transactionId: number) => {
                             v-if="
                                 (transaction.type === 'utang_payment' ||
                                     transaction.type === 'sale' ||
-                                    transaction.type === 'monthly_interest') &&
+                                    transaction.type === 'monthly_interest' ||
+                                    transaction.type === 'starting_balance' ||
+                                    transaction.type === 'balance_update') &&
                                 transaction.previous_balance !== undefined
                             "
                             class="rounded bg-gray-100 p-2 text-xs text-gray-600 dark:bg-gray-600 dark:text-gray-400"
@@ -230,6 +232,15 @@ const isTransactionLoading = (transactionId: number) => {
                                 Previous Month:
                                 {{ transaction.formatted_previous_balance }}
                                 → Current Month:
+                                {{ transaction.formatted_new_balance }}
+                            </span>
+                            <span
+                                v-else-if="transaction.type === 'starting_balance'"
+                                class="font-medium break-words"
+                            >
+                                Initial Balance:
+                                {{ transaction.formatted_previous_balance }}
+                                → Starting Balance:
                                 {{ transaction.formatted_new_balance }}
                             </span>
                             <span

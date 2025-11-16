@@ -121,7 +121,7 @@ class SaleSeeder extends Seeder
             'customer_id' => $customer?->id,
             'total_amount' => $totalAmount,
             'paid_amount' => $paidAmount,
-            'invoice_number' => $this->saleService->generateInvoiceNumber(),
+            'invoice_number' => $this->saleService->generateInvoiceNumber($user->id),
             'payment_type' => $paymentType,
             'transaction_date' => $transactionTime,
             'notes' => $this->getRandomSaleNote(),
@@ -146,7 +146,7 @@ class SaleSeeder extends Seeder
             foreach ($randomProducts as $product) {
                 $selectedProducts[] = [
                     'product' => $product,
-                    'quantity' => rand(1, 4)
+                    'quantity' => rand(1, 4),
                 ];
             }
         } elseif ($user->email === 'maria.santos@demo.com') {
@@ -160,13 +160,13 @@ class SaleSeeder extends Seeder
                     if ($quantity > 0) {
                         $selectedProducts[] = [
                             'product' => $product,
-                            'quantity' => $quantity
+                            'quantity' => $quantity,
                         ];
                     }
                 } else {
                     $selectedProducts[] = [
                         'product' => $product,
-                        'quantity' => rand(1, 8) // Higher quantities for fruits/vegetables
+                        'quantity' => rand(1, 8), // Higher quantities for fruits/vegetables
                     ];
                 }
             }
@@ -177,7 +177,7 @@ class SaleSeeder extends Seeder
             foreach ($randomProducts as $product) {
                 $selectedProducts[] = [
                     'product' => $product,
-                    'quantity' => rand(1, 3) // Smaller quantities
+                    'quantity' => rand(1, 3), // Smaller quantities
                 ];
             }
         } else {
@@ -187,12 +187,12 @@ class SaleSeeder extends Seeder
             foreach ($randomProducts as $product) {
                 $selectedProducts[] = [
                     'product' => $product,
-                    'quantity' => rand(1, 5)
+                    'quantity' => rand(1, 5),
                 ];
             }
         }
 
-        return array_filter($selectedProducts, function($item) {
+        return array_filter($selectedProducts, function ($item) {
             return isset($item['product']) && $item['quantity'] > 0;
         });
     }

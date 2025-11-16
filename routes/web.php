@@ -42,6 +42,7 @@ Route::middleware(['throttle:global'])->group(function () {
 
     // customers
     Route::get('customers/{customer}/transactions', [CustomerController::class, 'transactions'])->middleware(['auth', 'verified'])->name('customers.transactions');
+    Route::patch('customers/{customer}/balance', [CustomerController::class, 'updateBalance'])->middleware(['auth', 'verified'])->name('customers.update-balance');
     Route::resource('customers', CustomerController::class)
         ->middleware(['auth', 'verified'])
         ->except(['show']);

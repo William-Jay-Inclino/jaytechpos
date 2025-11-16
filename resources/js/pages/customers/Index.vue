@@ -96,22 +96,6 @@ const formatCurrency = (amount: number) => {
                                 class="pl-10"
                             />
                         </div>
-
-                        <!-- Status Filter -->
-                        <div class="flex gap-1.5 sm:gap-2 overflow-x-auto">
-                            <button v-for="status in [
-                                { key: 'all', label: 'All', count: totalCustomers, color: 'blue' },
-                                { key: 'has_balance', label: 'Has Balance', count: customersWithUtang, color: 'red' },
-                                { key: 'clear', label: 'Clear', count: totalCustomers - customersWithUtang, color: 'green' }
-                            ]" :key="status.key" @click="statusFilter = status.key" :class="[
-                                'px-2.5 py-1.5 sm:px-3 rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap',
-                                statusFilter === status.key
-                                    ? `bg-${status.color}-600 text-white`
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-                            ]">
-                                {{ status.label }} ({{ status.count }})
-                            </button>
-                        </div>
                     </div>
                 </div>
 

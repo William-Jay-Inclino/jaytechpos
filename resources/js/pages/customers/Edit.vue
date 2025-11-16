@@ -11,6 +11,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import EditBalanceModal from '@/components/modal/EditBalanceModal.vue';
+import { Edit3 } from 'lucide-vue-next';
 
 const props = defineProps<{
     customer: Customer;
@@ -33,6 +35,9 @@ const name = ref<string>('');
 const mobileNumber = ref<string>('');
 const remarks = ref<string>('');
 const interestRate = ref<string>('');
+
+// Modal state
+const showBalanceModal = ref(false);
 
 // Initialize form with customer data
 onMounted(() => {
@@ -75,6 +80,11 @@ const handleDelete = async () => {
             }
         });
     }
+};
+
+const handleBalanceSuccess = () => {
+    // Reload the page to refresh customer data
+    router.reload();
 };
 </script>
 
@@ -167,7 +177,6 @@ const handleDelete = async () => {
                                 class="text-sm font-medium text-gray-700 dark:text-gray-300"
                             >
                                 Interest Rate (%)
-                                <span class="text-gray-500">(Default: {{ defaultInterestRate }}%)</span>
                             </Label>
                             <Input
                                 id="interest_rate"
@@ -188,32 +197,6 @@ const handleDelete = async () => {
                                 class="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400"
                             >
                                 {{ errors.interest_rate }}
-                            </div>
-                        </div>
-
-                        <!-- Remarks -->
-                        <div class="space-y-3">
-                            <Label
-                                for="remarks"
-                                class="text-sm font-medium text-gray-700 dark:text-gray-300"
-                            >
-                                Remarks
-                                <span class="text-gray-500">(Optional)</span>
-                            </Label>
-                            <Textarea
-                                id="remarks"
-                                name="remarks"
-                                placeholder="Additional notes about this customer..."
-                                rows="4"
-                                maxlength="1000"
-                                v-model="remarks"
-                                class="border-2 focus:ring-2 focus:ring-blue-500"
-                            />
-                            <div
-                                v-if="errors.remarks"
-                                class="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400"
-                            >
-                                {{ errors.remarks }}
                             </div>
                         </div>
 
@@ -257,9 +240,20 @@ const handleDelete = async () => {
                     
                     <div class="grid gap-4 sm:grid-cols-2">
                         <div>
-                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Current Balance
-                            </p>
+                            <div class="flex items-center justify-between mb-1">
+                                <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Current Balance
+                                </p>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    @click="showBalanceModal = true"
+                                    class="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                    title="Edit balance"
+                                >
+                                    <Edit3 class="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                                </Button>
+                            </div>
                             <p 
                                 :class="[
                                     'text-2xl font-bold',
@@ -284,5 +278,14 @@ const handleDelete = async () => {
                 </div>
             </div>
         </div>
+
+        <!-- Edit Balance Modal -->
+        <EditBalanceModal
+            v-model:open="showBalanceModal"
+            :customer-id="customer.id"
+            :customer-name="customer.name"
+            :current-balance="customer.running_utang_balance || 0"
+            @success="handleBalanceSuccess"
+        />
     </AppLayout>
 </template>

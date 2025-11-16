@@ -54,8 +54,8 @@ class SaleController extends Controller
         try {
             DB::beginTransaction();
 
-            // Generate unique invoice number
-            $invoiceNumber = $this->saleService->generateInvoiceNumber();
+            // Generate unique invoice number for this user
+            $invoiceNumber = $this->saleService->generateInvoiceNumber(auth()->id());
 
             // Get customer and current balance for customer transaction tracking
             $customer = null;
@@ -88,7 +88,7 @@ class SaleController extends Controller
                 'paid_amount' => $request->validated('paid_amount'),
                 'invoice_number' => $invoiceNumber,
                 'payment_type' => $request->validated('payment_type'),
-                'transaction_date' => now(),
+                'transaction_date' => $request->validated('transaction_date'),
                 'notes' => $request->validated('notes'),
             ]);
 
@@ -114,7 +114,7 @@ class SaleController extends Controller
                     'previous_balance' => $previousBalance,
                     'new_balance' => $newBalance,
                     'transaction_desc' => $invoiceNumber,
-                    'transaction_date' => $sale->transaction_date,
+                    'transaction_date' => $request->validated('transaction_date'),
                     'transaction_amount' => $sale->total_amount,
                 ]);
             }

@@ -16,7 +16,7 @@ export interface Customer {
 
 export interface CustomerTransaction {
     id: number;
-    type: 'sale' | 'utang_payment' | 'monthly_interest';
+    type: 'sale' | 'utang_payment' | 'monthly_interest' | 'starting_balance' | 'balance_update';
     date: string;
     amount: number;
     formatted_amount: string;

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users', 'id')->onDelete('cascade');
             $table->string('name');
-            $table->string('mobile_number')->unique();
+            $table->string('mobile_number')->nullable()->unique();
             $table->text('remarks')->nullable();
             $table->boolean('has_utang')->default(false);
             $table->decimal('interest_rate', 5, 2)->nullable();

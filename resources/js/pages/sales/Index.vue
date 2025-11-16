@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3';
-import { Trash2, Search, UserPlus } from 'lucide-vue-next';
+import { X, Search, UserPlus } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 
 // Layout & Components
-import AddProductModal from '@/components/modals/AddProductModal.vue';
 import SaleReceiptModal from '@/components/modals/SaleReceiptModal.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 
@@ -61,7 +60,6 @@ interface SaleResponse {
 }
 
 // Reactive State
-const isAddModalOpen = ref(false);
 const cartItems = ref<CartItem[]>([]);
 const selectedCustomerId = ref<string>('0');
 const paymentMethod = ref<string>('cash');
@@ -77,11 +75,16 @@ const isProcessing = ref(false);
 const customerSearch = ref('');
 const showCustomerDropdown = ref(false);
 
+// Product search state
+const productSearch = ref('');
+const showProductDropdown = ref(false);
+
+// Transaction date
+const transactionDate = ref(new Date().toISOString().split('T')[0]);
+
 
 // Business Logic Functions
-function addProductToCart(data: { product: Product; quantity: number }): void {
-    const { product, quantity } = data;
-
+function addProductToCart(product: Product, quantity: number = 1): void {
     const existingItem = cartItems.value.find(
         (item: CartItem) => item.id === product.id,
     );
@@ -94,8 +97,6 @@ function addProductToCart(data: { product: Product; quantity: number }): void {
             quantity,
         });
     }
-
-    isAddModalOpen.value = false;
 }
 
 function removeCartItem(index: number): void {
@@ -146,6 +147,13 @@ const filteredCustomers = computed(() => {
     return props.customers.filter(customer =>
         customer.name.toLowerCase().includes(customerSearch.value.toLowerCase()) ||
         (customer.mobile_number && customer.mobile_number.toLowerCase().includes(customerSearch.value.toLowerCase()))
+    );
+});
+
+const filteredProducts = computed(() => {
+    if (!productSearch.value) return props.products;
+    return props.products.filter(product =>
+        product.product_name.toLowerCase().includes(productSearch.value.toLowerCase())
     );
 });
 
@@ -242,6 +250,12 @@ function selectCustomer(customerId: string) {
     customerSearch.value = '';
 }
 
+function selectProduct(product: Product) {
+    addProductToCart(product, 1);
+    showProductDropdown.value = false;
+    productSearch.value = '';
+}
+
 // Event Handlers
 function handleCheckout(): void {
     if (!isCheckoutValid.value || isProcessing.value) return;
@@ -267,6 +281,7 @@ function handleCheckout(): void {
             paymentMethod.value === 'cash' ? amountTendered.value : null,
         payment_type: paymentMethod.value,
         notes: null,
+        transaction_date: transactionDate.value,
         deduct_from_balance: payTowardsBalance.value
             ? deductFromBalance.value
             : 0,
@@ -299,6 +314,9 @@ function resetFormData(): void {
     deductFromBalance.value = 0;
     customerSearch.value = '';
     showCustomerDropdown.value = false;
+    productSearch.value = '';
+    showProductDropdown.value = false;
+    transactionDate.value = new Date().toISOString().split('T')[0];
 }
 
 function resetForm(): void {
@@ -313,10 +331,7 @@ function closeSuccessModal(): void {
 }
 
 function handleKeyboardShortcuts(event: KeyboardEvent): void {
-    if (event.ctrlKey && event.key === 'a') {
-        event.preventDefault();
-        isAddModalOpen.value = true;
-    } else if (
+    if (
         event.ctrlKey &&
         event.key === 'Enter' &&
         isCheckoutValid.value
@@ -329,8 +344,14 @@ function handleKeyboardShortcuts(event: KeyboardEvent): void {
 // Handle click outside to close dropdowns
 function handleClickOutside(event: MouseEvent) {
     const customerDropdown = document.querySelector('.customer-dropdown');
+    const productDropdown = document.querySelector('.product-dropdown');
+    
     if (customerDropdown && !customerDropdown.contains(event.target as Node)) {
         showCustomerDropdown.value = false;
+    }
+    
+    if (productDropdown && !productDropdown.contains(event.target as Node)) {
+        showProductDropdown.value = false;
     }
 }
 
@@ -588,6 +609,22 @@ watch(amountTendered, () => {
                                         </button>
                                     </div>
                                 </div>
+
+                                <!-- Transaction Date -->
+                                <div>
+                                    <Label
+                                        for="transactionDate"
+                                        class="mb-2 block text-sm font-medium text-gray-600 dark:text-gray-400"
+                                    >
+                                        Date
+                                    </Label>
+                                    <Input
+                                        id="transactionDate"
+                                        v-model="transactionDate"
+                                        type="date"
+                                        class="h-10 text-sm text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 focus:border-gray-400 dark:focus:border-gray-500 focus:ring-1 focus:ring-gray-400 dark:focus:ring-gray-500"
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -598,13 +635,58 @@ watch(amountTendered, () => {
                         <div
                             class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none"
                         >
-                            <div class="mb-6 flex items-center justify-between">
-                                <Button
-                                    size="lg"
-                                    @click="isAddModalOpen = true"
-                                >
-                                    Add Item
-                                </Button>
+                            <div class="mb-6">
+                                <!-- Product Selection Dropdown -->
+                                <div class="relative product-dropdown">
+                                    <div
+                                        @click="showProductDropdown = !showProductDropdown"
+                                        class="flex h-12 w-full cursor-pointer items-center justify-between rounded-md border border-input bg-background px-4 py-3 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                    >
+                                        <span class="truncate text-left font-medium">
+                                            {{ productSearch || 'Select Product to Add' }}
+                                        </span>
+                                        <svg class="h-4 w-4 opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="m6 9 6 6 6-6"/>
+                                        </svg>
+                                    </div>
+                                    
+                                    <div
+                                        v-if="showProductDropdown"
+                                        class="absolute z-50 mt-1 max-h-80 w-full overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-lg dark:border-gray-700 dark:bg-gray-800"
+                                    >
+                                        <div class="flex items-center border-b px-3 pb-2 mb-2 dark:border-gray-700">
+                                            <Search class="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                                            <input
+                                                v-model="productSearch"
+                                                placeholder="Search products by name..."
+                                                class="flex h-8 w-full rounded-md bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 dark:text-white"
+                                                @click.stop
+                                            />
+                                        </div>
+                                        <div class="max-h-60 overflow-auto">
+                                            <!-- Product Options -->
+                                            <div
+                                                v-for="product in filteredProducts"
+                                                :key="product.id"
+                                                @click="selectProduct(product)"
+                                                class="relative flex cursor-default select-none items-center rounded-sm px-2 py-2.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground cursor-pointer"
+                                            >
+                                                <div class="flex flex-col">
+                                                    <div class="font-medium">{{ product.product_name }}</div>
+                                                    <div class="text-xs text-green-600 dark:text-green-400 font-medium">
+                                                        ₱{{ Number(product.unit_price).toFixed(2) }}/{{ product.unit?.abbreviation || 'unit' }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div
+                                                v-if="filteredProducts.length === 0"
+                                                class="py-6 text-center text-sm text-muted-foreground"
+                                            >
+                                                No products found.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Items List -->
@@ -618,71 +700,39 @@ watch(amountTendered, () => {
                                         No items in cart
                                     </h3>
                                     <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                                        Click "Add Item" to start building your sale
+                                        Select a product to start building your sale
                                     </p>
                                 </div>
 
-                                <!-- Modern Product Cards -->
-                                <div v-else class="divide-y divide-gray-200 dark:divide-gray-700">
-                                    <div 
-                                        v-for="(item, index) in cartItems" 
-                                        :key="item.id"
-                                        class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
-                                    >
-                                        <!-- Mobile Layout (lg and below) -->
-                                        <div class="block xl:hidden space-y-3">
-                                            <!-- Header Row -->
-                                            <div class="flex items-start justify-between">
-                                                <div class="flex-1 min-w-0">
-                                                    <h3 class="text-base font-semibold text-gray-900 dark:text-white truncate">
-                                                        {{ item.product_name }}
-                                                    </h3>
-                                                    <div class="mt-1 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                                                        <span>₱{{ Number(item.unit_price).toFixed(2) }}/{{ item.unit?.abbreviation || 'unit' }}</span>
+                                <!-- Items Display -->
+                                <div v-else>
+                                    <!-- Mobile Layout (lg and below) -->
+                                    <div class="lg:hidden divide-y divide-gray-200 dark:divide-gray-700">
+                                        <div 
+                                            v-for="(item, index) in cartItems" 
+                                            :key="item.id"
+                                            class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                                        >
+                                            <div class="space-y-3">
+                                                <!-- Header Row -->
+                                                <div class="flex items-start justify-between">
+                                                    <div class="flex-1 min-w-0">
+                                                        <h3 class="text-base font-semibold text-gray-900 dark:text-white truncate">
+                                                            {{ item.product_name }}
+                                                        </h3>
+                                                        <div class="mt-1 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                                                            <span>₱{{ Number(item.unit_price).toFixed(2) }}/{{ item.unit?.abbreviation || 'unit' }}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="text-right ml-4">
+                                                        <div class="text-lg font-bold text-green-600 dark:text-green-400">
+                                                            ₱{{ calculateItemTotal(item).toFixed(2) }}
+                                                        </div>
                                                     </div>
                                                 </div>
-                                                <div class="text-right ml-4">
-                                                    <div class="text-lg font-bold text-green-600 dark:text-green-400">
-                                                        ₱{{ calculateItemTotal(item).toFixed(2) }}
-                                                    </div>
-                                                </div>
-                                            </div>
 
-                                            <!-- Controls Row -->
-                                            <div class="flex items-center justify-between pt-2">
-                                                <div class="flex items-center gap-2">
-                                                    <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                        Qty:
-                                                    </label>
-                                                    <input
-                                                        type="number"
-                                                        min="1"
-                                                        :value="item.quantity"
-                                                        @input="updateCartItemQuantity(index, parseInt(($event.target as HTMLInputElement).value))"
-                                                        class="w-16 rounded-md border border-gray-300 bg-white px-2 py-1 text-center text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                                    />
-                                                </div>
-                                                
-                                                <Button 
-                                                    size="sm" 
-                                                    variant="destructive"
-                                                    @click="removeCartItem(index)"
-                                                    class="h-8 px-3"
-                                                >
-                                                    <Trash2 class="h-3 w-3" />
-                                                </Button>
-                                            </div>
-                                        </div>
-
-                                        <!-- Desktop Layout (xl and above) -->
-                                        <div class="hidden xl:flex xl:items-center xl:justify-between">
-                                            <div class="flex items-center space-x-4 flex-1">
-                                                <div class="flex-1 min-w-0">
-                                                    <h3 class="text-base font-semibold text-gray-900 dark:text-white truncate">
-                                                        {{ item.product_name }}
-                                                    </h3>
-                                                </div>
-                                                <div class="flex items-center space-x-6">
+                                                <!-- Controls Row -->
+                                                <div class="flex items-center justify-between pt-2">
                                                     <div class="flex items-center gap-2">
                                                         <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
                                                             Qty:
@@ -695,24 +745,83 @@ watch(amountTendered, () => {
                                                             class="w-16 rounded-md border border-gray-300 bg-white px-2 py-1 text-center text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                                         />
                                                     </div>
-                                                    <span class="text-sm text-gray-500 dark:text-gray-400 min-w-[80px] text-right">
-                                                        ₱{{ Number(item.unit_price).toFixed(2) }}/{{ item.unit?.abbreviation || 'unit' }}
-                                                    </span>
-                                                    <div class="text-lg font-bold text-green-600 dark:text-green-400 min-w-[100px] text-right">
-                                                        ₱{{ calculateItemTotal(item).toFixed(2) }}
-                                                    </div>
+                                                    
+                                                    <Button 
+                                                        size="sm" 
+                                                        variant="ghost"
+                                                        @click="removeCartItem(index)"
+                                                        class="h-8 w-8 p-0 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:text-gray-500 dark:hover:text-red-400 dark:hover:bg-red-950/50"
+                                                    >
+                                                        <X class="h-3 w-3" />
+                                                    </Button>
                                                 </div>
                                             </div>
-                                            <div class="flex items-center gap-2 ml-6">
-                                                <Button 
-                                                    size="sm" 
-                                                    variant="destructive"
-                                                    @click="removeCartItem(index)"
-                                                >
-                                                    <Trash2 class="h-4 w-4" />
-                                                </Button>
-                                            </div>
                                         </div>
+                                    </div>
+
+                                    <!-- Desktop Table Layout (lg and above) -->
+                                    <div class="hidden lg:block">
+                                        <table class="w-full">
+                                            <thead class="border-b border-gray-200 dark:border-gray-700">
+                                                <tr>
+                                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                                        Product
+                                                    </th>
+                                                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                                        Qty
+                                                    </th>
+                                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                                        Price
+                                                    </th>
+                                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                                        Total
+                                                    </th>
+                                                    <th class="px-4 py-3 w-12"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                                <tr 
+                                                    v-for="(item, index) in cartItems" 
+                                                    :key="item.id"
+                                                    class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                                                >
+                                                    <td class="px-4 py-3">
+                                                        <div class="text-sm font-medium text-gray-900 dark:text-white">
+                                                            {{ item.product_name }}
+                                                        </div>
+                                                    </td>
+                                                    <td class="px-4 py-3 text-center">
+                                                        <input
+                                                            type="number"
+                                                            min="1"
+                                                            :value="item.quantity"
+                                                            @input="updateCartItemQuantity(index, parseInt(($event.target as HTMLInputElement).value))"
+                                                            class="w-16 rounded border border-gray-300 bg-white px-2 py-1 text-center text-sm text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                                        />
+                                                    </td>
+                                                    <td class="px-4 py-3 text-right">
+                                                        <span class="text-sm text-gray-500 dark:text-gray-400">
+                                                            ₱{{ Number(item.unit_price).toFixed(2) }} / {{ item.unit?.abbreviation || 'unit' }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="px-4 py-3 text-right">
+                                                        <span class="text-sm font-semibold text-green-600 dark:text-green-400">
+                                                            ₱{{ calculateItemTotal(item).toFixed(2) }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="px-4 py-3">
+                                                        <Button 
+                                                            size="sm" 
+                                                            variant="ghost"
+                                                            @click="removeCartItem(index)"
+                                                            class="h-6 w-6 p-0 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:text-gray-500 dark:hover:text-red-400 dark:hover:bg-red-950/50"
+                                                        >
+                                                            <X class="h-3 w-3" />
+                                                        </Button>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
                             </div>
@@ -1003,13 +1112,6 @@ watch(amountTendered, () => {
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Add Product Modal -->
-                        <AddProductModal
-                            v-model:open="isAddModalOpen"
-                            :products="products"
-                            @add="addProductToCart"
-                        />
                     </div>
                 </div>
             </div>

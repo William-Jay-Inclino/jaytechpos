@@ -32,6 +32,7 @@ class StoreSaleRequest extends FormRequest
             'payment_type' => ['required', 'string', 'in:cash,utang'],
             'notes' => ['nullable', 'string', 'max:1000'],
             'deduct_from_balance' => ['nullable', 'numeric', 'min:0'],
+            'transaction_date' => ['required', 'date'],
         ];
 
         // Conditional validation based on payment type

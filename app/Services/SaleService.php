@@ -8,14 +8,15 @@ use Carbon\Carbon;
 class SaleService
 {
     /**
-     * Generate a unique invoice number.
+     * Generate a unique invoice number for a specific user.
      */
-    public function generateInvoiceNumber(): string
+    public function generateInvoiceNumber(int $userId): string
     {
         $prefix = 'INV-'.date('Y').'-';
 
-        // Get all sales with the current year prefix and extract numbers
-        $existingNumbers = Sale::where('invoice_number', 'like', $prefix.'%')
+        // Get all sales for this user with the current year prefix and extract numbers
+        $existingNumbers = Sale::where('user_id', $userId)
+            ->where('invoice_number', 'like', $prefix.'%')
             ->pluck('invoice_number')
             ->map(function ($invoiceNumber) use ($prefix) {
                 $numberPart = substr($invoiceNumber, strlen($prefix));
