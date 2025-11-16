@@ -27,7 +27,7 @@ Route::middleware(['throttle:global'])->group(function () {
         return Inertia::render('Welcome');
     })->name('home');
 
-    Route::get('dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+    Route::get('dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified', 'redirect-if-admin'])->name('dashboard');
 
     // sales
     Route::get('sales', [SaleController::class, 'index'])->middleware(['auth', 'verified'])->name('sales');
