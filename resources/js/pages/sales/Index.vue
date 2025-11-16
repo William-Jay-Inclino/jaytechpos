@@ -669,12 +669,17 @@ watch(amountTendered, () => {
                     </div>
 
                     <!-- Right Column - Items & Checkout (8 columns on desktop) -->
-                    <div class="lg:col-span-8">
-                        <!-- Items & Payment Section -->
+                    <div class="lg:col-span-8 space-y-6">
+                        <!-- Section 1: Add Products -->
                         <div
                             class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none"
                         >
-                            <div class="mb-6">
+                            <h2 class="mb-4 text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                <span class="text-xl">🛒</span>
+                                Add Products
+                            </h2>
+                            
+                            <div>
                                 <!-- Product Selection Dropdown -->
                                 <div class="relative product-dropdown">
                                     <div
@@ -727,6 +732,22 @@ watch(amountTendered, () => {
                                     </div>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Section 2: Cart Items -->
+                        <div
+                            class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none"
+                        >
+                            <h2 class="mb-4 text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                <span class="text-xl">📦</span>
+                                Cart Items
+                                <span 
+                                    v-if="cartItems.length" 
+                                    class="ml-2 inline-flex items-center justify-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                                >
+                                    {{ cartItems.length }}
+                                </span>
+                            </h2>
 
                             <!-- Items List -->
                             <div class="rounded-lg border border-gray-200 dark:border-gray-700">
@@ -896,9 +917,20 @@ watch(amountTendered, () => {
                                     </div>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Section 3: Payment Details -->
+                        <div
+                            v-if="cartItems.length"
+                            class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none"
+                        >
+                            <h2 class="mb-6 text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                <span class="text-xl">💰</span>
+                                Payment Details
+                            </h2>
 
                             <!-- Payment Summary Section -->
-                            <div v-if="cartItems.length" class="mt-8 space-y-6">
+                            <div class="space-y-6">
                                 <!-- Cash Payment Layout -->
                                 <div
                                     v-if="paymentMethod === 'cash'"
@@ -911,7 +943,7 @@ watch(amountTendered, () => {
                                             selectedCustomer.running_utang_balance >
                                                 0
                                         "
-                                        class="flex items-center space-x-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-700"
+                                        class="flex items-center space-x-3 rounded-lg bg-blue-50 border border-blue-200 p-4 dark:bg-blue-900/20 dark:border-blue-800"
                                     >
                                         <Checkbox
                                             id="payTowardsBalance"
@@ -919,12 +951,13 @@ watch(amountTendered, () => {
                                         />
                                         <Label
                                             for="payTowardsBalance"
-                                            class="cursor-pointer text-sm font-medium text-gray-900 dark:text-gray-100"
+                                            class="cursor-pointer text-sm font-medium text-blue-900 dark:text-blue-100"
                                         >
-                                            Gamitin ang sukli para sa utang ng customer
+                                            💡 Gamitin ang sukli para sa utang ng customer
                                         </Label>
                                     </div>
 
+                                    <!-- Transaction Amounts -->
                                     <div
                                         class="grid grid-cols-1 gap-4 md:grid-cols-3"
                                     >
@@ -1120,41 +1153,38 @@ watch(amountTendered, () => {
                                     <!-- Balance Display -->
                                     <div
                                         v-if="paidAmount < cartTotalAmount"
-                                        class="space-y-2"
+                                        class="rounded-lg border border-red-200 bg-red-50 p-5 dark:border-red-800 dark:bg-red-900/20"
                                     >
-                                        <Label
-                                            class="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                            >New Balance After Transaction</Label
-                                        >
-                                        <div
-                                            class="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20"
-                                        >
-                                            <span
-                                                class="text-xl font-bold text-red-700 dark:text-red-400"
-                                                >₱{{
-                                                    (
-                                                        (selectedCustomer?.running_utang_balance ||
-                                                            0) +
-                                                        (cartTotalAmount -
-                                                            paidAmount)
-                                                    ).toFixed(2)
-                                                }}</span
-                                            >
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-sm font-medium text-red-800 dark:text-red-200">
+                                                    Total Outstanding Balance:
+                                                </span>
+                                                <span
+                                                    class="text-2xl font-bold text-red-700 dark:text-red-400"
+                                                    >₱{{
+                                                        (
+                                                            (selectedCustomer?.running_utang_balance ||
+                                                                0) +
+                                                            (cartTotalAmount -
+                                                                paidAmount)
+                                                        ).toFixed(2)
+                                                    }}</span
+                                                >
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Checkout Button Section -->
-                                <div v-if="cartItems.length" class="mt-8 space-y-4">
+                                <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 space-y-4">
                                     <Button
                                         size="lg"
-                                        class="h-14 w-full bg-green-600 text-lg font-bold text-white shadow-lg hover:bg-green-700"
+                                        class="h-16 w-full bg-green-600 text-xl font-bold text-white shadow-lg hover:bg-green-700 hover:shadow-xl transition-all"
                                         :disabled="!isCheckoutValid || isProcessing"
                                         @click="handleCheckout"
                                     >
                                         <span
                                             v-if="isProcessing"
-                                            class="flex items-center gap-2"
+                                            class="flex items-center justify-center gap-3"
                                         >
                                             <div
                                                 class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
@@ -1163,23 +1193,12 @@ watch(amountTendered, () => {
                                         </span>
                                         <span
                                             v-else
-                                            class="flex items-center gap-2"
+                                            class="flex items-center justify-center gap-3"
                                         >
+                                            <span>✓</span>
                                             Complete Checkout
                                         </span>
                                     </Button>
-
-                                    <!-- Helper Text -->
-                                    <div
-                                        v-if="checkoutHelperText"
-                                        class="text-center"
-                                    >
-                                        <p
-                                            class="px-4 py-2 text-xs text-gray-500 dark:text-gray-400"
-                                        >
-                                            {{ checkoutHelperText }}
-                                        </p>
-                                    </div>
                                 </div>
                             </div>
                         </div>
