@@ -11,7 +11,6 @@ class Product extends Model
 
     protected $fillable = [
         'user_id',
-        'category_id',
         'unit_id',
         'product_name',
         'description',
@@ -40,11 +39,6 @@ class Product extends Model
     public function scopeAvailableForSale($query, $userId = null)
     {
         return $query->active()->ownedBy($userId);
-    }
-
-    public function productCategory()
-    {
-        return $this->belongsTo(ProductCategory::class, 'category_id');
     }
 
     public function unit()

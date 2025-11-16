@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Product, ProductCategory, type BreadcrumbItem } from '@/types';
+import { Product, type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
-import { computed, ref, withDefaults, onMounted, onUnmounted } from 'vue';
+import { computed, ref, withDefaults } from 'vue';
 import axios from 'axios';
 import { Search, Edit, Trash2 } from 'lucide-vue-next';
 
@@ -24,10 +24,8 @@ import { showErrorAlert } from '@/lib/swal';
 
 const props = withDefaults(defineProps<{
     products: Array<Product>;
-    categories: Array<ProductCategory>;
 }>(), {
     products: () => [],
-    categories: () => []
 });
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -39,11 +37,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 // Search and filter state
 const searchQuery = ref('');
-const categoryFilter = ref<string[]>([]);
 const statusFilter = ref('all'); // 'all', 'active', 'inactive'
-
-const showCategoryDropdown = ref(false);
-const categorySearch = ref('');
 
 // Filtered products based on search and filters
 const filteredProducts = computed(() => {
@@ -56,15 +50,7 @@ const filteredProducts = computed(() => {
         const query = searchQuery.value.toLowerCase().trim();
         filtered = filtered.filter(product => 
             product.product_name.toLowerCase().includes(query) ||
-            (product.unit?.unit_name && product.unit.unit_name.toLowerCase().includes(query)) ||
-            (product.product_category?.name && product.product_category.name.toLowerCase().includes(query))
-        );
-    }
-    
-    // Apply category filter
-    if (categoryFilter.value.length > 0) {
-        filtered = filtered.filter(product => 
-            categoryFilter.value.includes(product.category_id?.toString() || '')
+            (product.unit?.unit_name && product.unit.unit_name.toLowerCase().includes(query))
         );
     }
     
@@ -87,57 +73,12 @@ const inactiveProducts = computed(() =>
 
 const totalProducts = computed(() => Array.isArray(props.products) ? props.products.length : 0);
 
-// Computed properties
-const selectedCategoryName = computed(() => {
-    if (categoryFilter.value.length === 0) return 'All Categories';
-    if (categoryFilter.value.length === 1) {
-        const category = props.categories.find(c => c.id.toString() === categoryFilter.value[0]);
-        return category ? category.name : '';
-    }
-    return `${categoryFilter.value.length} categories selected`;
-});
-
-const filteredCategories = computed(() => {
-    if (!categorySearch.value.trim()) return props.categories;
-    return props.categories.filter(category =>
-        category.name.toLowerCase().includes(categorySearch.value.toLowerCase())
-    );
-});
-
 // Helper functions
 const formatCurrency = (amount: number) => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(amount);
-
-const toggleCategory = (categoryId: string) => {
-    if (categoryId === 'all') {
-        categoryFilter.value = [];
-    } else {
-        const index = categoryFilter.value.indexOf(categoryId);
-        if (index > -1) {
-            categoryFilter.value.splice(index, 1);
-        } else {
-            categoryFilter.value.push(categoryId);
-        }
-    }
-};
-
-const clearAllCategories = () => {
-    categoryFilter.value = [];
-    showCategoryDropdown.value = false;
-};
 
 const setStatusFilter = (status: string) => {
     statusFilter.value = status;
 };
-
-
-
-// Handle click outside to close dropdowns
-function handleClickOutside(event: MouseEvent) {
-    const categoryDropdown = document.querySelector('.category-dropdown');
-    if (categoryDropdown && !categoryDropdown.contains(event.target as Node)) {
-        showCategoryDropdown.value = false;
-    }
-}
 
 // Action handlers
 async function deleteProduct(productId: number) {
@@ -172,15 +113,6 @@ async function deleteProduct(productId: number) {
         }
     }
 }
-
-// Lifecycle hooks
-onMounted(() => {
-    document.addEventListener('click', handleClickOutside);
-});
-
-onUnmounted(() => {
-    document.removeEventListener('click', handleClickOutside);
-});
 </script>
 
 <template>
@@ -239,7 +171,7 @@ onUnmounted(() => {
                     </div>
 
                     <!-- Empty State - No Results -->
-                    <div v-else-if="filteredProducts.length === 0 && (searchQuery.trim() || categoryFilter.length > 0 || statusFilter !== 'all')" class="px-4 py-16 sm:px-6 sm:py-20 text-center">
+                    <div v-else-if="filteredProducts.length === 0 && (searchQuery.trim() || statusFilter !== 'all')" class="px-4 py-16 sm:px-6 sm:py-20 text-center">
                         <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
                             <Search class="h-8 w-8 text-gray-400" />
                         </div>
@@ -250,7 +182,7 @@ onUnmounted(() => {
                             Try adjusting your search terms or filter criteria to find what you're looking for.
                         </p>
                         <div class="mt-8">
-                            <Button variant="outline" @click="searchQuery = ''; categoryFilter = []; statusFilter = 'all'" size="lg">
+                            <Button variant="outline" @click="searchQuery = ''; statusFilter = 'all'" size="lg">
                                 Clear All Filters
                             </Button>
                         </div>
@@ -275,13 +207,7 @@ onUnmounted(() => {
                                         <p v-if="product.description" class="text-sm text-gray-500 dark:text-gray-400 mt-1 truncate">
                                             {{ product.description }}
                                         </p>
-                                        <div class="mt-2 flex flex-wrap items-center gap-2">
-                                            <Badge 
-                                                variant="outline"
-                                                class="text-xs bg-gray-50 text-gray-700 border-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600"
-                                            >
-                                                {{ product.product_category?.name || 'Uncategorized' }}
-                                            </Badge>
+                                        <div class="mt-2">
                                             <Badge 
                                                 :variant="product.status === 'active' ? 'default' : 'destructive'"
                                                 :class="product.status === 'active' ? 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900 dark:text-green-200 dark:border-green-800' : ''"
@@ -372,13 +298,7 @@ onUnmounted(() => {
                                             <p v-if="product.description" class="text-sm text-gray-500 dark:text-gray-400 mt-1">
                                                 {{ product.description.length > 60 ? product.description.substring(0, 60) + '...' : product.description }}
                                             </p>
-                                            <div class="flex items-center gap-2 mt-2">
-                                                <Badge 
-                                                    variant="outline"
-                                                    class="text-xs bg-gray-50 text-gray-700 border-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600"
-                                                >
-                                                    {{ product.product_category?.name || 'Uncategorized' }}
-                                                </Badge>
+                                            <div class="mt-2">
                                                 <Badge 
                                                     :variant="product.status === 'active' ? 'default' : 'destructive'"
                                                     :class="product.status === 'active' ? 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900 dark:text-green-200 dark:border-green-800' : ''"

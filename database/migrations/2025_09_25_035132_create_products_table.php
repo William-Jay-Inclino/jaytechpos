@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users', 'id')->onDelete('cascade');
-            $table->foreignId('category_id')->constrained('product_categories', 'id')->restrictOnDelete();
             $table->foreignId('unit_id')->constrained('units', 'id')->restrictOnDelete();
             $table->string('product_name');
             $table->text('description')->nullable();
@@ -25,7 +24,6 @@ return new class extends Migration
 
             // Performance indexes
             $table->index(['user_id', 'status']); // For filtering active products by user (availableForSale scope)
-            $table->index(['user_id', 'category_id']); // For filtering products by category per user
             $table->unique(['user_id', 'product_name']); // Product names unique per user
         });
     }

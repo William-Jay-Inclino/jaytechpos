@@ -7,7 +7,6 @@ use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
-use App\Models\ProductCategory;
 use App\Models\Unit;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Inertia\Inertia;
@@ -21,17 +20,12 @@ class ProductController extends Controller
         $this->authorize('viewAny', Product::class);
 
         $products = Product::ownedBy()
-            ->with(['productCategory', 'unit'])
+            ->with(['unit'])
             ->orderBy('product_name')
             ->get();
 
-        $categories = ProductCategory::activeOwned()
-            ->orderBy('name')
-            ->get(['id', 'name']);
-
         return Inertia::render('products/Index', [
             'products' => ProductResource::collection($products)->resolve(),
-            'categories' => $categories,
         ]);
     }
 
@@ -39,18 +33,10 @@ class ProductController extends Controller
     {
         $this->authorize('create', Product::class);
 
-        $categories = ProductCategory::activeOwned()
-            ->orderBy('name')
-            ->get(['id', 'name']);
-
         $units = Unit::orderBy('unit_name')->get(['id', 'unit_name', 'abbreviation']);
 
-        $defaultCategory = ProductCategory::default()->first();
-
         return Inertia::render('products/Create', [
-            'categories' => $categories,
             'units' => $units,
-            'defaultCategoryId' => $defaultCategory?->id,
         ]);
     }
 
@@ -62,7 +48,7 @@ class ProductController extends Controller
         $validated['user_id'] = auth()->id();
 
         $product = Product::create($validated);
-        $product->load(['productCategory', 'unit']);
+        $product->load(['unit']);
 
         return response()->json([
             'success' => true,
@@ -73,19 +59,14 @@ class ProductController extends Controller
 
     public function edit(string $id)
     {
-        $product = Product::with(['productCategory', 'unit'])->findOrFail($id);
+        $product = Product::with(['unit'])->findOrFail($id);
 
         $this->authorize('view', $product);
-
-        $categories = ProductCategory::activeOwned()
-            ->orderBy('name')
-            ->get(['id', 'name']);
 
         $units = Unit::orderBy('unit_name')->get(['id', 'unit_name', 'abbreviation']);
 
         return Inertia::render('products/Edit', [
             'product' => (new ProductResource($product))->resolve(),
-            'categories' => $categories,
             'units' => $units,
         ]);
     }
@@ -98,7 +79,7 @@ class ProductController extends Controller
 
         $validated = $request->validated();
         $product->update($validated);
-        $product->load(['productCategory', 'unit']);
+        $product->load(['unit']);
 
         return response()->json([
             'success' => true,

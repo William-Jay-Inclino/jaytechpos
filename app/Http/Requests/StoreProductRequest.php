@@ -40,7 +40,6 @@ class StoreProductRequest extends FormRequest
         return [
             'product_name' => 'required|string|max:255|unique:products,product_name',
             'description' => 'nullable|string|max:1000',
-            'category_id' => 'required|exists:product_categories,id',
             'unit_id' => 'required|exists:units,id',
             'unit_price' => 'required|numeric|min:0',
             'cost_price' => 'required|numeric|min:0',
@@ -58,8 +57,6 @@ class StoreProductRequest extends FormRequest
         return [
             'product_name.required' => 'Product name is required.',
             'product_name.unique' => 'A product with this name already exists.',
-            'category_id.required' => 'Please select a category.',
-            'category_id.exists' => 'The selected category is invalid.',
             'unit_id.required' => 'Please select a unit.',
             'unit_id.exists' => 'The selected unit is invalid.',
             'unit_price.required' => 'Unit price is required.',
