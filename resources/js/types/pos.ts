@@ -72,51 +72,10 @@ export interface CartItem extends Product {
     quantity: number;
 }
 
-export interface ProductCategory {
-    id: number;
-    user_id: number;
-    name: string;
-    description: string;
-    status: 'active' | 'inactive';
-    created_at: string;
-    updated_at: string;
-
-    // relationships
-    products?: Product[];
-}
-
-export interface Supplier {
-    id: number;
-    user_id: number;
-    supplier_name: string;
-    contact_name: string;
-    address: string;
-    phone: string;
-    email: string;
-    created_at: string;
-    updated_at: string;
-
-    // relationships
-    products?: Product[];
-}
-
 export interface Unit {
     id: number;
     unit_name: string;
     abbreviation: string;
-    created_at: string;
-    updated_at: string;
-
-    // relationships
-    products?: Product[];
-}
-
-export interface VatRate {
-    id: number;
-    rate_name: string;
-    rate_percentage: number;
-    effective_date: string;
-    is_active: boolean;
     created_at: string;
     updated_at: string;
 
@@ -138,6 +97,5 @@ export interface Product {
     updated_at: string;
 
     // relationships
-    product_category?: ProductCategory;
     unit?: Unit;
 }

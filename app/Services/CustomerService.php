@@ -17,6 +17,7 @@ class CustomerService
         return $customer->customerTransactions()
             ->orderBy('created_at', 'desc')
             ->orderBy('id', 'desc') // Secondary sort by ID for same timestamp
+            ->limit(30)
             ->get()
             ->map(function ($transaction) {
                 return [

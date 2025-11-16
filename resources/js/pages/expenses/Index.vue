@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import ExpensePieChart from '@/components/ExpensePieChart.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { computed, ref, withDefaults, watch } from 'vue';
 import axios from 'axios';
-import { ChevronLeft, ChevronRight, Calendar, Edit, Trash2 } from 'lucide-vue-next';
+import { ChevronLeft, ChevronRight, Calendar, Edit, Trash2, BarChart3 } from 'lucide-vue-next';
 
 // UI Components
 import { Badge } from '@/components/ui/badge';
@@ -42,23 +41,14 @@ interface Expense {
     };
 }
 
-interface ChartDataItem {
-    label: string;
-    amount: number;
-    count: number;
-    color: string;
-}
-
 const props = withDefaults(defineProps<{
     expenses: Array<Expense>;
     categories: Array<ExpenseCategory>;
-    chartData: Array<ChartDataItem>;
     selectedMonth: number;
     selectedYear: number;
 }>(), {
     expenses: () => [],
     categories: () => [],
-    chartData: () => [],
     selectedMonth: new Date().getMonth() + 1,
     selectedYear: new Date().getFullYear(),
 });
@@ -229,11 +219,17 @@ async function deleteExpense(expenseId: number) {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="w-full px-4 py-6 lg:px-8 lg:py-10">
             <div class="mx-auto max-w-7xl space-y-8">
-                <!-- Add New Expense Button -->
-                <div class="flex justify-start">
+                <!-- Action Buttons -->
+                <div class="flex flex-col gap-3 sm:flex-row">
                     <Button as-child class="w-full sm:w-auto">
                         <Link href="/expenses/create">
                             Add Expense
+                        </Link>
+                    </Button>
+                    <Button as-child variant="outline" class="w-full sm:w-auto">
+                        <Link href="/expenses/analytics">
+                            <BarChart3 class="mr-2 h-4 w-4" />
+                            View Analytics
                         </Link>
                     </Button>
                 </div>
@@ -316,31 +312,8 @@ async function deleteExpense(expenseId: number) {
                     </div>
                 </div>
 
-                <!-- Pie Chart Section -->
-                <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                    <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-                            Expense Breakdown by Category
-                        </h2>
-                        <div class="text-sm text-gray-600 dark:text-gray-400">
-                            Total: {{ formatCurrency(totalAmount) }}
-                        </div>
-                    </div>
-                    <ExpensePieChart :data="chartData" />
-                </div>
-
-
-
                 <!-- Expenses List -->
                 <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-                            Expenses for {{ getCurrentMonthYear }}
-                        </h2>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">
-                            {{ totalExpenses }} expenses
-                        </p>
-                    </div>
 
                     <div v-if="!Array.isArray(expenses) || expenses.length === 0" class="px-6 py-16 text-center">
                         <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">

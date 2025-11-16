@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\POS;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreUtangPaymentRequest;
 use App\Http\Resources\CustomerResource;
 use App\Models\Customer;
 use App\Models\CustomerTransaction;
 use App\Traits\HandlesTimezone;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -37,27 +37,12 @@ class CustomerTransactionController extends Controller
     /**
      * Store a new utang payment as a customer transaction
      */
-    public function storeUtangPayment(Request $request): RedirectResponse
+    public function storeUtangPayment(StoreUtangPaymentRequest $request): RedirectResponse
     {
-        $request->validate([
-            'customer_id' => [
-                'required',
-                'integer',
-                'exists:customers,id,user_id,'.auth()->id(),
-            ],
-            'payment_amount' => ['required', 'numeric', 'min:0.01'],
-            'payment_date' => ['required', 'date'],
-            'notes' => ['nullable', 'string', 'max:1000'],
-        ]);
+        $customer = Customer::findOrFail($request->customer_id);
+        $currentBalance = $customer->running_utang_balance;
 
-        $payment = DB::transaction(function () use ($request) {
-            // Get customer and calculate balance from the most recent transaction
-            $customer = Customer::findOrFail($request->customer_id);
-            
-            // Get current balance from the most recently created transaction
-            // Since we use created_at for balance calculation, we should use the current balance
-            $currentBalance = $customer->running_utang_balance;
-            
+        $payment = DB::transaction(function () use ($request, $customer, $currentBalance) {
             $newBalance = $currentBalance - $request->payment_amount;
 
             // Create payment record

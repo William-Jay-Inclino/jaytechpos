@@ -245,33 +245,40 @@ const goToNextPage = () => {
 }
 
 // View sale details
-const viewSaleDetails = (sale: Sale) => {
-    // Transform Sale to SaleTransaction format
-    selectedSale.value = {
-        id: sale.id,
-        type: 'sale' as const,
-        date: sale.transaction_date,
-        amount: sale.total_amount,
-        formatted_amount: formatCurrency(sale.total_amount),
-        description: `Sale to ${sale.customer_name || 'Walk-in Customer'}`,
-        invoice_number: sale.invoice_number,
-        payment_type: sale.payment_type,
-        total_amount: sale.total_amount,
-        paid_amount: sale.paid_amount,
-        notes: sale.notes,
-        previous_balance: 0, // We don't have this data in the Sale interface
-        new_balance: sale.is_utang ? (sale.total_amount - sale.paid_amount) : 0,
-        formatted_previous_balance: formatCurrency(0),
-        formatted_new_balance: formatCurrency(sale.is_utang ? (sale.total_amount - sale.paid_amount) : 0),
-        sales_items: sale.items?.map(item => ({
-            id: item.id,
-            product_name: item.product_name,
-            quantity: item.quantity,
-            unit_price: item.unit_price,
-            total_price: item.total_amount // Note: backend uses total_amount, frontend expects total_price
-        })) || [],
+const viewSaleDetails = async (sale: Sale) => {
+    loading.value = true
+    try {
+        // Get CSRF token from the meta tag
+        const token = document
+            .querySelector('meta[name="csrf-token"]')
+            ?.getAttribute('content');
+
+        const response = await fetch(
+            `/api/sales/${sale.id}`,
+            {
+                method: 'GET',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': token || '',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                credentials: 'same-origin',
+            },
+        );
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        selectedSale.value = data.sale;
+        showSaleDetails.value = true;
+    } catch (error) {
+        console.error('Error fetching sale details:', error);
+    } finally {
+        loading.value = false
     }
-    showSaleDetails.value = true
 }
 
 

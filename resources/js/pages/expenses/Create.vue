@@ -123,26 +123,25 @@ onUnmounted(() => {
     <Head title="Add Expense" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="container mx-auto px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        <div class="w-full px-4 py-6 lg:px-8 lg:py-10">
+            <div class="mx-auto max-w-2xl">
 
-            <!-- Form Card -->
-            <div class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 sm:p-8 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none">
-                <form @submit.prevent="submit" class="space-y-6">
-                    <!-- Expense Name -->
-                    <div class="grid gap-2">
-                        <Label for="name">Expense Name</Label>
-                        <Input
-                            id="name"
-                            v-model="form.name"
-                            type="text"
-                            required
-                            class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
-                        />
-                        <InputError :message="form.errors.name" class="mt-1" />
-                    </div>
-
-                    <!-- Category and Amount Row -->
-                    <div class="grid gap-6 md:grid-cols-2">
+                <!-- Form Card -->
+                <div class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 sm:p-8 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none">
+                    <form @submit.prevent="submit" class="space-y-6">
+                        <!-- Expense Name -->
+                        <div class="grid gap-2">
+                            <Label for="name">Expense Name</Label>
+                            <Input
+                                id="name"
+                                v-model="form.name"
+                                type="text"
+                                required
+                                class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                            />
+                            <InputError :message="form.errors.name" class="mt-1" />
+                        </div>
+                        
                         <!-- Category -->
                         <div class="grid gap-2">
                             <Label for="category_id">Category</Label>
@@ -170,6 +169,7 @@ onUnmounted(() => {
                                             class="h-8 w-full border-0 px-0 focus:ring-0"
                                         />
                                     </div>
+                                    
                                     <div class="max-h-40 overflow-auto">
                                         <div
                                             v-for="category in filteredCategories"
@@ -199,34 +199,36 @@ onUnmounted(() => {
                             />
                             <InputError :message="form.errors.amount" class="mt-1" />
                         </div>
-                    </div>
-
-                    <!-- Expense Date -->
-                    <div class="grid gap-2">
-                        <Label for="expense_date">Expense Date</Label>
-                        <Input
-                            id="expense_date"
-                            v-model="form.expense_date"
-                            type="date"
-                            required
-                            class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
-                        />
-                        <InputError :message="form.errors.expense_date" class="mt-1" />
-                    </div>
-
-                    <!-- Actions -->
-                    <div class="flex items-center gap-4">
-                        <Button type="submit" :disabled="isSubmitting">
-                            {{ isSubmitting ? 'Saving Expense...' : 'Save Expense' }}
-                        </Button>
-                        <Link href="/expenses">
-                            <Button variant="outline" type="button">
-                                Cancel
+    
+                        <!-- Expense Date -->
+                        <div class="grid gap-2">
+                            <Label for="expense_date">Expense Date</Label>
+                            <Input
+                                id="expense_date"
+                                v-model="form.expense_date"
+                                type="date"
+                                required
+                                class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                            />
+                            <InputError :message="form.errors.expense_date" class="mt-1" />
+                        </div>
+    
+                        <!-- Actions -->
+                        <div class="flex items-center gap-4">
+                            <Button type="submit" :disabled="isSubmitting">
+                                {{ isSubmitting ? 'Saving Expense...' : 'Save Expense' }}
                             </Button>
-                        </Link>
-                    </div>
-                </form>
+                            <Link href="/expenses">
+                                <Button variant="outline" type="button">
+                                    Cancel
+                                </Button>
+                            </Link>
+                        </div>
+                    </form>
+                </div>
+
             </div>
+
         </div>
     </AppLayout>
 </template>

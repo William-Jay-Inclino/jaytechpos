@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
 import ProductSuccessModal from '@/components/modals/ProductSuccessModal.vue';
-import ProductCategoryModal from '@/components/modals/ProductCategoryModal.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,14 +9,9 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { showSuccessToast } from '@/lib/toast';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
-import { Settings, Search } from 'lucide-vue-next';
+import { Search } from 'lucide-vue-next';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import axios from 'axios';
-
-interface Category {
-    id: number;
-    name: string;
-}
 
 interface Unit {
     id: number;
@@ -29,15 +23,10 @@ interface Product {
     id: number;
     product_name: string;
     description?: string | null;
-    category_id: number;
     unit_id: number;
     unit_price: number;
     cost_price: number;
     status: string;
-    product_category?: {
-        id: number;
-        name: string;
-    };
     unit?: {
         id: number;
         unit_name: string;
@@ -47,7 +36,6 @@ interface Product {
 
 const props = defineProps<{
     product: Product;
-    categories: Category[];
     units: Unit[];
 }>();
 
@@ -58,7 +46,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const form = useForm({
     product_name: props.product.product_name || '',
-    category_id: props.product.category_id?.toString() || '',
     unit_id: props.product.unit_id?.toString() || '',
     unit_price: props.product.unit_price?.toString() || '',
     cost_price: props.product.cost_price?.toString() || '',
@@ -68,23 +55,12 @@ const form = useForm({
 const showSuccessModal = ref(false);
 const updatedProduct = ref(null);
 const isSubmitting = ref(false);
-const showCategoryModal = ref(false);
-const categories = ref<Category[]>([...props.categories]);
 
 // Search functionality
-const categorySearch = ref('');
 const unitSearch = ref('');
-const showCategoryDropdown = ref(false);
 const showUnitDropdown = ref(false);
 
 // Filtered options
-const filteredCategories = computed(() => {
-    if (!categorySearch.value) return categories.value;
-    return categories.value.filter(category =>
-        category.name.toLowerCase().includes(categorySearch.value.toLowerCase())
-    );
-});
-
 const filteredUnits = computed(() => {
     if (!unitSearch.value) return props.units;
     return props.units.filter(unit =>
@@ -93,24 +69,13 @@ const filteredUnits = computed(() => {
     );
 });
 
-// Get selected category/unit name for display
-const selectedCategoryName = computed(() => {
-    const category = categories.value.find(c => c.id.toString() === form.category_id);
-    return category?.name || '';
-});
-
+// Get selected unit name for display
 const selectedUnitName = computed(() => {
     const unit = props.units.find(u => u.id.toString() === form.unit_id);
     return unit ? `${unit.unit_name} (${unit.abbreviation})` : '';
 });
 
 // Functions to handle selection
-function selectCategory(categoryId: string) {
-    form.category_id = categoryId;
-    showCategoryDropdown.value = false;
-    categorySearch.value = '';
-}
-
 function selectUnit(unitId: string) {
     form.unit_id = unitId;
     showUnitDropdown.value = false;
@@ -127,7 +92,6 @@ async function submit() {
     try {
         const formData = {
             product_name: form.product_name,
-            category_id: parseInt(form.category_id),
             unit_id: parseInt(form.unit_id),
             unit_price: parseFloat(form.unit_price),
             cost_price: parseFloat(form.cost_price),
@@ -163,28 +127,9 @@ function onModalClose() {
     router.visit('/products');
 }
 
-async function handleCategoryUpdated() {
-    // Refresh only active categories without page reload
-    try {
-        const response = await axios.get('/api/product-categories/active');
-        if (response.data.success) {
-            categories.value = response.data.categories;
-        }
-    } catch (error) {
-        console.error('Error refreshing categories:', error);
-    }
-}
-
 // Click outside handler
 function handleClickOutside(event: Event) {
     const target = event.target as Element;
-    
-    // Check if click is outside category dropdown
-    const categoryDropdown = document.querySelector('.category-dropdown');
-    if (categoryDropdown && !categoryDropdown.contains(target)) {
-        showCategoryDropdown.value = false;
-        categorySearch.value = '';
-    }
     
     // Check if click is outside unit dropdown
     const unitDropdown = document.querySelector('.unit-dropdown');
@@ -207,95 +152,30 @@ onUnmounted(() => {
     <Head title="Edit Product" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="container mx-auto px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        <div class="w-full px-4 py-6 lg:px-8 lg:py-10">
 
-            <!-- Form Card -->
-            <div
-                class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 sm:p-8 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none"
-            >
-                <form @submit.prevent="submit" class="space-y-6">
-                    <!-- Product Name -->
-                    <div class="grid gap-2">
-                        <Label for="product_name">Product Name</Label>
-                        <Input
-                            id="product_name"
-                            v-model="form.product_name"
-                            type="text"
-                            required
-                            class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
-                        />
-                        <InputError
-                            :message="form.errors.product_name"
-                            class="mt-1"
-                        />
-                    </div>
-
-                    <!-- Category and Unit Row -->
-                    <div class="grid gap-6 md:grid-cols-2">
-                        <!-- Category -->
+            <div class="mx-auto max-w-2xl">
+                <!-- Form Card -->
+                <div
+                    class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 sm:p-8 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none"
+                >
+                    <form @submit.prevent="submit" class="space-y-6">
+                        <!-- Product Name -->
                         <div class="grid gap-2">
-                            <div class="flex items-center justify-between">
-                                <Label for="category_id">Category</Label>
-                                <Button 
-                                    @click="showCategoryModal = true" 
-                                    variant="outline" 
-                                    size="sm" 
-                                    type="button"
-                                    class="gap-1 text-xs"
-                                >
-                                    <Settings class="h-3 w-3" />
-                                    Manage Categories
-                                </Button>
-                            </div>
-                            <div class="relative category-dropdown">
-                                <div
-                                    @click="showCategoryDropdown = !showCategoryDropdown"
-                                    class="flex h-10 w-full cursor-pointer items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800"
-                                >
-                                    <span class="truncate">
-                                        {{ selectedCategoryName || 'Select category' }}
-                                    </span>
-                                    <svg class="h-4 w-4 opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="m6 9 6 6 6-6"/>
-                                    </svg>
-                                </div>
-                                
-                                <div
-                                    v-if="showCategoryDropdown"
-                                    class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md dark:border-gray-700 dark:bg-gray-800"
-                                >
-                                    <div class="flex items-center border-b px-3 pb-2 mb-2 dark:border-gray-700">
-                                        <Search class="mr-2 h-4 w-4 shrink-0 opacity-50" />
-                                        <input
-                                            v-model="categorySearch"
-                                            placeholder="Search categories..."
-                                            class="flex h-8 w-full rounded-md bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
-                                        />
-                                    </div>
-                                    <div class="max-h-40 overflow-auto">
-                                        <div
-                                            v-for="category in filteredCategories"
-                                            :key="category.id"
-                                            @click="selectCategory(category.id.toString())"
-                                            class="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground cursor-pointer"
-                                        >
-                                            {{ category.name }}
-                                        </div>
-                                        <div
-                                            v-if="filteredCategories.length === 0"
-                                            class="py-6 text-center text-sm text-muted-foreground"
-                                        >
-                                            No categories found.
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <Label for="product_name">Product Name</Label>
+                            <Input
+                                id="product_name"
+                                v-model="form.product_name"
+                                type="text"
+                                required
+                                class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                            />
                             <InputError
-                                :message="form.errors.category_id"
+                                :message="form.errors.product_name"
                                 class="mt-1"
                             />
                         </div>
-
+    
                         <!-- Unit -->
                         <div class="grid gap-2">
                             <Label for="unit_id">Unit</Label>
@@ -347,120 +227,121 @@ onUnmounted(() => {
                                 class="mt-1"
                             />
                         </div>
-                    </div>
-
-                    <!-- Price Row -->
-                    <div class="grid gap-6 md:grid-cols-2">
-                        <!-- Unit Price -->
-                        <div class="grid gap-2">
-                            <Label for="unit_price">Unit Price (₱)</Label>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">
-                                Selling price na ibebenta mo sa customer
-                            </p>
-                            <Input
-                                id="unit_price"
-                                v-model="form.unit_price"
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                required
-                                class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
-                            />
-                            <InputError
-                                :message="form.errors.unit_price"
-                                class="mt-1"
-                            />
+    
+                        <!-- Price Row -->
+                        <div class="grid gap-6 md:grid-cols-2">
+                            <!-- Unit Price -->
+                            <div class="grid gap-2">
+                                <Label for="unit_price">Unit Price (₱)</Label>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">
+                                    Selling price na ibebenta mo sa customer
+                                </p>
+                                <Input
+                                    id="unit_price"
+                                    v-model="form.unit_price"
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    required
+                                    class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                                />
+                                <InputError
+                                    :message="form.errors.unit_price"
+                                    class="mt-1"
+                                />
+                            </div>
+    
+                            <!-- Cost Price -->
+                            <div class="grid gap-2">
+                                <Label for="cost_price">Cost Price (₱)</Label>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">
+                                    Puhunan mo o presyong nabili mo sa supplier
+                                </p>
+                                <Input
+                                    id="cost_price"
+                                    v-model="form.cost_price"
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    required
+                                    class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                                />
+                                <InputError
+                                    :message="form.errors.cost_price"
+                                    class="mt-1"
+                                />
+                            </div>
                         </div>
-
-                        <!-- Cost Price -->
+    
+                        <!-- Status -->
                         <div class="grid gap-2">
-                            <Label for="cost_price">Cost Price (₱)</Label>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">
-                                Puhunan mo o presyong nabili mo sa supplier
-                            </p>
-                            <Input
-                                id="cost_price"
-                                v-model="form.cost_price"
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                required
-                                class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
-                            />
-                            <InputError
-                                :message="form.errors.cost_price"
-                                class="mt-1"
-                            />
-                        </div>
-                    </div>
-
-                    <!-- Status -->
-                    <div class="grid gap-2">
-                        <Label>Status</Label>
-                        <div class="flex items-center gap-4">
-                            <div class="relative">
-                                <button
-                                    type="button"
-                                    @click="form.status = form.status === 'active' ? 'inactive' : 'active'"
-                                    :class="[
-                                        'relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
-                                        form.status === 'active' 
-                                            ? 'bg-green-500' 
-                                            : 'bg-gray-300 dark:bg-gray-600'
-                                    ]"
-                                >
-                                    <span
+                            <Label>Status</Label>
+                            <div class="flex items-center gap-4">
+                                <div class="relative">
+                                    <button
+                                        type="button"
+                                        @click="form.status = form.status === 'active' ? 'inactive' : 'active'"
                                         :class="[
-                                            'inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200',
+                                            'relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
                                             form.status === 'active' 
-                                                ? 'translate-x-6' 
-                                                : 'translate-x-1'
+                                                ? 'bg-green-500' 
+                                                : 'bg-gray-300 dark:bg-gray-600'
                                         ]"
-                                    ></span>
-                                </button>
+                                    >
+                                        <span
+                                            :class="[
+                                                'inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200',
+                                                form.status === 'active' 
+                                                    ? 'translate-x-6' 
+                                                    : 'translate-x-1'
+                                            ]"
+                                        ></span>
+                                    </button>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span 
+                                        :class="[
+                                            'text-sm font-medium',
+                                            form.status === 'active' 
+                                                ? 'text-green-600 dark:text-green-400' 
+                                                : 'text-gray-600 dark:text-gray-400'
+                                        ]"
+                                    >
+                                        {{ form.status === 'active' ? 'Active' : 'Inactive' }}
+                                    </span>
+                                    <span 
+                                        :class="[
+                                            'text-xs px-2 py-1 rounded-full',
+                                            form.status === 'active' 
+                                                ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400' 
+                                                : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
+                                        ]"
+                                    >
+                                        {{ form.status === 'active' ? 'Available for sale' : 'Not available' }}
+                                    </span>
+                                </div>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <span 
-                                    :class="[
-                                        'text-sm font-medium',
-                                        form.status === 'active' 
-                                            ? 'text-green-600 dark:text-green-400' 
-                                            : 'text-gray-600 dark:text-gray-400'
-                                    ]"
-                                >
-                                    {{ form.status === 'active' ? 'Active' : 'Inactive' }}
-                                </span>
-                                <span 
-                                    :class="[
-                                        'text-xs px-2 py-1 rounded-full',
-                                        form.status === 'active' 
-                                            ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400' 
-                                            : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
-                                    ]"
-                                >
-                                    {{ form.status === 'active' ? 'Available for sale' : 'Not available' }}
-                                </span>
-                            </div>
+                            <InputError
+                                :message="form.errors.status"
+                                class="mt-1"
+                            />
                         </div>
-                        <InputError
-                            :message="form.errors.status"
-                            class="mt-1"
-                        />
-                    </div>
-
-                    <!-- Actions -->
-                    <div class="flex items-center gap-4">
-                        <Button type="submit" :disabled="isSubmitting">
-                            {{ isSubmitting ? 'Saving Product...' : 'Save Product' }}
-                        </Button>
-                        <Link href="/products">
-                            <Button variant="outline" type="button">
-                                Cancel
+    
+                        <!-- Actions -->
+                        <div class="flex items-center gap-4">
+                            <Button type="submit" :disabled="isSubmitting">
+                                {{ isSubmitting ? 'Saving Product...' : 'Save Product' }}
                             </Button>
-                        </Link>
-                    </div>
-                </form>
+                            <Link href="/products">
+                                <Button variant="outline" type="button">
+                                    Cancel
+                                </Button>
+                            </Link>
+                        </div>
+                    </form>
+                </div>
             </div>
+
         </div>
 
         <!-- Success Modal -->
@@ -469,12 +350,6 @@ onUnmounted(() => {
             :product="updatedProduct"
             mode="edit"
             @update:open="onModalClose"
-        />
-
-        <!-- Category Management Modal -->
-        <ProductCategoryModal 
-            v-model:open="showCategoryModal"
-            @category-updated="handleCategoryUpdated"
         />
     </AppLayout>
 </template>

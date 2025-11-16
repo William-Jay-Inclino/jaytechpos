@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, watchEffect } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import {
     Chart as ChartJS,
     ArcElement,
@@ -13,6 +13,7 @@ import { Pie } from 'vue-chartjs';
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 interface ChartDataItem {
+    id?: number;
     label: string;
     amount: number;
     count: number;
@@ -21,6 +22,10 @@ interface ChartDataItem {
 
 const props = defineProps<{
     data: ChartDataItem[];
+}>();
+
+const emit = defineEmits<{
+    (e: 'category-click', category: ChartDataItem): void;
 }>();
 
 // Reactive theme detection
@@ -48,6 +53,13 @@ const chartOptions = computed<ChartOptions<'pie'>>(() => {
     return {
         responsive: true,
         maintainAspectRatio: false,
+        onClick: (event, elements) => {
+            if (elements.length > 0) {
+                const index = elements[0].index;
+                const category = props.data[index];
+                emit('category-click', category);
+            }
+        },
         plugins: {
             legend: {
                 position: 'right',
@@ -80,12 +92,22 @@ const chartOptions = computed<ChartOptions<'pie'>>(() => {
                         return [];
                     },
                 },
+                onClick: (event, legendItem, legend) => {
+                    const index = legendItem.index;
+                    if (index !== undefined) {
+                        const category = props.data[index];
+                        emit('category-click', category);
+                    }
+                },
             },
             tooltip: {
                 callbacks: {
                     label: (context) => {
                         const item = props.data[context.dataIndex];
                         return `${item.label}: ₱${item.amount.toLocaleString()} (${item.count} expense${item.count !== 1 ? 's' : ''})`;
+                    },
+                    footer: () => {
+                        return 'Click to view details';
                     },
                 },
             },
@@ -122,7 +144,7 @@ onMounted(() => {
             </div>
         </div>
         
-        <div v-else class="h-64">
+        <div v-else class="h-64 cursor-pointer">
             <Pie :data="chartData" :options="chartOptions" />
         </div>
     </div>

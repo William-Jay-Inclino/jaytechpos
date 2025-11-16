@@ -20,7 +20,7 @@ class CustomerFactory extends Factory
         return [
             'user_id' => User::factory(),
             'name' => fake()->name(),
-            'mobile_number' => '09' . fake()->numerify('#########'),
+            'mobile_number' => '09'.fake()->numerify('#########'),
             'has_utang' => false,
             'interest_rate' => null,
         ];

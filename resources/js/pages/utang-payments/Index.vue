@@ -66,12 +66,30 @@ const selectedCustomerName = computed(() => {
     return customer ? `${customer.name}${customer.mobile_number ? ` (${customer.mobile_number})` : ''}` : '';
 });
 
+const paymentAmountError = computed(() => {
+    if (!paymentAmount.value || !selectedCustomer.value) return '';
+    
+    const amount = parseFloat(paymentAmount.value);
+    const balance = selectedCustomer.value.running_utang_balance || 0;
+    
+    if (amount <= 0) {
+        return 'Payment amount must be greater than zero';
+    }
+    
+    if (amount > balance) {
+        return `Payment amount cannot exceed current balance of ${formatCurrency(balance)}`;
+    }
+    
+    return '';
+});
+
 const isFormValid = computed(() => {
     return (
         selectedCustomerId.value &&
         paymentAmount.value &&
         parseFloat(paymentAmount.value) > 0 &&
-        paymentDate.value
+        paymentDate.value &&
+        !paymentAmountError.value
     );
 });
 
@@ -302,9 +320,20 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
 
                                     <!-- Customer Info Below Selection -->
                                     <div v-if="selectedCustomer" class="space-y-2">
-                                        <!-- Interest Rate (Subtle) -->
-                                        <div class="text-xs text-gray-500 dark:text-gray-400">
-                                            Interest Rate: {{ selectedCustomer.effective_interest_rate?.toFixed(2) || '0.00' }}%
+                                        <!-- Interest Rate and View Transaction History Button -->
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">
+                                                Interest Rate: {{ selectedCustomer.effective_interest_rate?.toFixed(2) || '0.00' }}%
+                                            </span>
+                                            <Button
+                                                type="button"
+                                                @click="showTransactionHistoryView"
+                                                variant="ghost"
+                                                size="sm"
+                                                class="h-7 text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                                            >
+                                                📋 View History
+                                            </Button>
                                         </div>
                                         
                                         <!-- Current Balance (Highlighted) -->
@@ -318,43 +347,50 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                                 </span>
                                             </div>
                                         </div>
-
-                                        <!-- View Transaction History Button -->
-                                        <Button
-                                            type="button"
-                                            @click="showTransactionHistoryView"
-                                            variant="outline"
-                                            class="w-full mt-3 text-sm"
-                                        >
-                                            📋 View Transaction History
-                                        </Button>
                                     </div>
                                 </div>
 
                                 <!-- Payment Amount -->
                                 <div class="space-y-3">
-                                    <Label
-                                        for="payment_amount"
-                                        class="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                    >
-                                        Payment Amount
-                                        <span class="text-red-500">*</span>
-                                    </Label>
-                                    <Input
-                                        id="payment_amount"
-                                        name="payment_amount"
-                                        type="number"
-                                        step="0.01"
-                                        min="0.01"
-                                        placeholder="0.00"
-                                        v-model="paymentAmount"
-                                        class="h-12 border-2 text-right text-lg font-semibold focus:ring-2 focus:ring-blue-500"
-                                    />
+                                    <div class="flex items-center justify-between">
+                                        <Label
+                                            for="payment_amount"
+                                            class="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                        >
+                                            Payment Amount
+                                            <span class="text-red-500">*</span>
+                                        </Label>
+                                    </div>
+                                    <div class="relative">
+                                        <Input
+                                            id="payment_amount"
+                                            name="payment_amount"
+                                            type="number"
+                                            step="0.01"
+                                            min="0.01"
+                                            :max="selectedCustomer?.running_utang_balance || undefined"
+                                            placeholder="0.00"
+                                            v-model="paymentAmount"
+                                            class="h-12 border-2 text-right text-lg font-semibold focus:ring-2 focus:ring-blue-500"
+                                        />
+                                    </div>
                                     <div
-                                        v-if="errors.payment_amount"
+                                        v-if="paymentAmountError"
+                                        class="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400"
+                                    >
+                                        {{ paymentAmountError }}
+                                    </div>
+                                    <div
+                                        v-else-if="errors.payment_amount"
                                         class="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400"
                                     >
                                         {{ errors.payment_amount }}
+                                    </div>
+                                    <div
+                                        v-if="selectedCustomer && !paymentAmountError && paymentAmount"
+                                        class="text-xs text-gray-600 dark:text-gray-400"
+                                    >
+                                        Remaining balance: {{ formatCurrency((selectedCustomer.running_utang_balance || 0) - parseFloat(paymentAmount || '0')) }}
                                     </div>
                                 </div>
 

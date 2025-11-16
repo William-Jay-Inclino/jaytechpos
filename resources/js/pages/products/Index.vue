@@ -62,23 +62,8 @@ const filteredProducts = computed(() => {
     return filtered;
 });
 
-// Computed properties
-const activeProducts = computed(() => 
-    Array.isArray(props.products) ? props.products.filter(product => product.status === 'active').length : 0
-);
-
-const inactiveProducts = computed(() => 
-    Array.isArray(props.products) ? props.products.filter(product => product.status === 'inactive').length : 0
-);
-
-const totalProducts = computed(() => Array.isArray(props.products) ? props.products.length : 0);
-
 // Helper functions
 const formatCurrency = (amount: number) => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(amount);
-
-const setStatusFilter = (status: string) => {
-    statusFilter.value = status;
-};
 
 // Action handlers
 async function deleteProduct(productId: number) {
@@ -275,6 +260,9 @@ async function deleteProduct(productId: number) {
                                         <th class="py-3 px-4 text-right text-sm font-medium text-gray-900 dark:text-white">
                                             Prices
                                         </th>
+                                        <th class="py-3 px-4 text-center text-sm font-medium text-gray-900 dark:text-white">
+                                            Status
+                                        </th>
                                         <th class="py-3 pl-4 pr-6 text-right text-sm font-medium text-gray-900 dark:text-white">
                                             Actions
                                         </th>
@@ -298,14 +286,6 @@ async function deleteProduct(productId: number) {
                                             <p v-if="product.description" class="text-sm text-gray-500 dark:text-gray-400 mt-1">
                                                 {{ product.description.length > 60 ? product.description.substring(0, 60) + '...' : product.description }}
                                             </p>
-                                            <div class="mt-2">
-                                                <Badge 
-                                                    :variant="product.status === 'active' ? 'default' : 'destructive'"
-                                                    :class="product.status === 'active' ? 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900 dark:text-green-200 dark:border-green-800' : ''"
-                                                >
-                                                    {{ product.status === 'active' ? 'Active' : 'Inactive' }}
-                                                </Badge>
-                                            </div>
                                         </td>
                                         <td class="py-4 px-4 text-right">
                                             <div class="flex flex-col gap-1">
@@ -322,6 +302,14 @@ async function deleteProduct(productId: number) {
                                                     </span>
                                                 </div>
                                             </div>
+                                        </td>
+                                        <td class="py-4 px-4 text-center">
+                                            <Badge 
+                                                :variant="product.status === 'active' ? 'default' : 'destructive'"
+                                                :class="product.status === 'active' ? 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900 dark:text-green-200 dark:border-green-800' : ''"
+                                            >
+                                                {{ product.status === 'active' ? 'Active' : 'Inactive' }}
+                                            </Badge>
                                         </td>
                                         <td class="py-4 pl-4 pr-6">
                                             <div class="flex items-center justify-end gap-2">

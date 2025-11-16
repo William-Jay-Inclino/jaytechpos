@@ -4,7 +4,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\POS\CustomerController;
 use App\Http\Controllers\POS\CustomerTransactionController;
 use App\Http\Controllers\POS\ExpenseController;
-use App\Http\Controllers\POS\ProductCategoryController;
+// use App\Http\Controllers\POS\ProductCategoryController;
 use App\Http\Controllers\POS\ProductController;
 use App\Http\Controllers\POS\SaleController;
 use Illuminate\Support\Facades\Route;
@@ -53,6 +53,8 @@ Route::middleware(['throttle:global'])->group(function () {
         ->except(['show']);
 
     // expenses
+    Route::get('expenses/analytics', [ExpenseController::class, 'analytics'])->middleware(['auth', 'verified'])->name('expenses.analytics');
+    Route::get('expenses/category/{categoryId}', [ExpenseController::class, 'categoryExpenses'])->middleware(['auth', 'verified'])->name('expenses.category');
     Route::resource('expenses', ExpenseController::class)
         ->middleware(['auth', 'verified'])
         ->except(['show']);
@@ -68,12 +70,15 @@ Route::middleware(['throttle:global'])->group(function () {
         Route::get('customers/{customer}/transactions', [CustomerController::class, 'getTransactions'])->name('customers.api.transactions');
         Route::get('customers/{customer}/transactions/{transactionId}', [CustomerController::class, 'getTransactionDetails'])->name('customers.api.transaction-details');
 
+        // Sale API endpoints
+        Route::get('sales/{sale}', [SaleController::class, 'show'])->name('sales.api.show');
+
         // Product Category API endpoints
-        Route::get('product-categories', [ProductCategoryController::class, 'index'])->name('product-categories.api.index');
-        Route::get('product-categories/active', [ProductCategoryController::class, 'active'])->name('product-categories.api.active');
-        Route::post('product-categories', [ProductCategoryController::class, 'store'])->name('product-categories.api.store');
-        Route::put('product-categories/{productCategory}', [ProductCategoryController::class, 'update'])->name('product-categories.api.update');
-        Route::delete('product-categories/{productCategory}', [ProductCategoryController::class, 'destroy'])->name('product-categories.api.destroy');
+        // Route::get('product-categories', [ProductCategoryController::class, 'index'])->name('product-categories.api.index');
+        // Route::get('product-categories/active', [ProductCategoryController::class, 'active'])->name('product-categories.api.active');
+        // Route::post('product-categories', [ProductCategoryController::class, 'store'])->name('product-categories.api.store');
+        // Route::put('product-categories/{productCategory}', [ProductCategoryController::class, 'update'])->name('product-categories.api.update');
+        // Route::delete('product-categories/{productCategory}', [ProductCategoryController::class, 'destroy'])->name('product-categories.api.destroy');
 
         // Sales Report API endpoints
         Route::get('sales-report/data', [App\Http\Controllers\SalesReportController::class, 'getSalesData'])->name('sales-report.api.data');

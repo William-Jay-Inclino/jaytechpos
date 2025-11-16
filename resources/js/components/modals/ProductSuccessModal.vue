@@ -17,9 +17,6 @@ interface Product {
     unit_price: number;
     cost_price: number;
     status: string;
-    product_category?: {
-        name: string;
-    };
     unit?: {
         unit_name: string;
         abbreviation: string;
@@ -99,19 +96,11 @@ const buttonText = computed(() => {
                         </Badge>
                     </div>
 
-                    <!-- Category & Unit -->
-                    <div class="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <span class="text-muted-foreground">Category:</span>
-                            <div class="font-medium">
-                                {{ product.product_category?.name || 'N/A' }}
-                            </div>
-                        </div>
-                        <div>
-                            <span class="text-muted-foreground">Unit:</span>
-                            <div class="font-medium">
-                                {{ product.unit?.unit_name }} ({{ product.unit?.abbreviation }})
-                            </div>
+                    <!-- Unit -->
+                    <div class="text-sm">
+                        <span class="text-muted-foreground">Unit:</span>
+                        <div class="font-medium">
+                            {{ product.unit?.unit_name }} ({{ product.unit?.abbreviation }})
                         </div>
                     </div>
 

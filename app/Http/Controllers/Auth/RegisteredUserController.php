@@ -44,7 +44,7 @@ class RegisteredUserController extends Controller
         ]);
 
         // Create default categories for the new user
-        $userSetupService = new UserSetupService();
+        $userSetupService = new UserSetupService;
         $userSetupService->createDefaultCategories($user);
 
         event(new Registered($user));

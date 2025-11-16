@@ -16,7 +16,7 @@ class DatabaseSeeder extends Seeder
             // Basic setup
             UserSeeder::class,
             UnitSeeder::class,
-            CategorySeeder::class,
+            ExpenseCategorySeeder::class,
             UpdateExpenseCategoriesWithColorsSeeder::class,
 
             // Business data

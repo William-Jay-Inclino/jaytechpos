@@ -15,7 +15,6 @@ it('can view expenses index with default month and year', function () {
             ->component('expenses/Index')
             ->has('expenses')
             ->has('categories')
-            ->has('chartData')
             ->has('selectedMonth')
             ->has('selectedYear')
             ->where('selectedMonth', (int) now()->format('n'))

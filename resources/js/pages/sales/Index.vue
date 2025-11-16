@@ -79,8 +79,15 @@ const showCustomerDropdown = ref(false);
 const productSearch = ref('');
 const showProductDropdown = ref(false);
 
-// Transaction date
+// Transaction date and time
 const transactionDate = ref(new Date().toISOString().split('T')[0]);
+const transactionTime = ref(
+    new Date().toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        hour12: false 
+    })
+);
 
 
 // Business Logic Functions
@@ -171,6 +178,15 @@ const selectedCustomerName = computed(() => {
     if (selectedCustomerId.value === '0') return 'Walk-in Customer';
     const customer = props.customers.find(c => c.id.toString() === selectedCustomerId.value);
     return customer ? `${customer.name}${customer.mobile_number ? ` (${customer.mobile_number})` : ''}` : '';
+});
+
+const formattedTime12Hr = computed(() => {
+    if (!transactionTime.value) return '';
+    const [hours, minutes] = transactionTime.value.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${minutes} ${ampm}`;
 });
 
 // Customer data for form display - just use current customer since form is reset after checkout
@@ -291,7 +307,7 @@ function handleCheckout(): void {
             paymentMethod.value === 'cash' ? amountTendered.value : null,
         payment_type: paymentMethod.value,
         notes: null,
-        transaction_date: transactionDate.value,
+        transaction_date: `${transactionDate.value} ${transactionTime.value}`,
         deduct_from_balance: payTowardsBalance.value
             ? deductFromBalance.value
             : 0,
@@ -327,6 +343,11 @@ function resetFormData(): void {
     productSearch.value = '';
     showProductDropdown.value = false;
     transactionDate.value = new Date().toISOString().split('T')[0];
+    transactionTime.value = new Date().toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        hour12: false 
+    });
 }
 
 function resetForm(): void {
@@ -617,20 +638,31 @@ watch(amountTendered, () => {
                                     </div>
                                 </div>
 
-                                <!-- Transaction Date -->
+                                <!-- Transaction Date & Time -->
                                 <div>
                                     <Label
-                                        for="transactionDate"
                                         class="mb-2 block text-sm font-medium text-gray-600 dark:text-gray-400"
                                     >
-                                        Date
+                                        Date & Time
                                     </Label>
-                                    <Input
-                                        id="transactionDate"
-                                        v-model="transactionDate"
-                                        type="date"
-                                        class="h-10 text-sm text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 focus:border-gray-400 dark:focus:border-gray-500 focus:ring-1 focus:ring-gray-400 dark:focus:ring-gray-500"
-                                    />
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <Input
+                                                id="transactionDate"
+                                                v-model="transactionDate"
+                                                type="date"
+                                                class="h-10 text-sm text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 focus:border-gray-400 dark:focus:border-gray-500 focus:ring-1 focus:ring-gray-400 dark:focus:ring-gray-500"
+                                            />
+                                        </div>
+                                        <div>
+                                            <Input
+                                                id="transactionTime"
+                                                v-model="transactionTime"
+                                                type="time"
+                                                class="h-10 text-sm text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 focus:border-gray-400 dark:focus:border-gray-500 focus:ring-1 focus:ring-gray-400 dark:focus:ring-gray-500"
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

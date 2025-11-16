@@ -36,13 +36,34 @@ class ExpenseController extends Controller
             ->orderBy('name')
             ->get(['id', 'name', 'color']);
 
-        // Generate pie chart data
-        $chartData = $expenses->groupBy('category.name')
-            ->map(function ($categoryExpenses, $categoryName) {
+        return Inertia::render('expenses/Index', [
+            'expenses' => ExpenseResource::collection($expenses)->resolve(),
+            'categories' => $categories,
+            'selectedMonth' => (int) $month,
+            'selectedYear' => (int) $year,
+        ]);
+    }
+
+    public function analytics(Request $request)
+    {
+        $this->authorize('viewAny', Expense::class);
+
+        // Get year from request, default to current year
+        $year = $request->get('year', now()->format('Y'));
+
+        $expenses = Expense::ownedBy()
+            ->with(['category'])
+            ->whereYear('expense_date', $year)
+            ->get();
+
+        // Generate pie chart data with category IDs
+        $chartData = $expenses->groupBy('category.id')
+            ->map(function ($categoryExpenses) {
                 $category = $categoryExpenses->first()?->category;
 
                 return [
-                    'label' => $categoryName ?? 'No Category',
+                    'id' => $category?->id,
+                    'label' => $category?->name ?? 'No Category',
                     'amount' => $categoryExpenses->sum('amount'),
                     'count' => $categoryExpenses->count(),
                     'color' => $category?->color ?? '#6B7280', // Default to gray if no category
@@ -50,12 +71,26 @@ class ExpenseController extends Controller
             })
             ->values();
 
-        return Inertia::render('expenses/Index', [
-            'expenses' => ExpenseResource::collection($expenses)->resolve(),
-            'categories' => $categories,
+        return Inertia::render('expenses/Analytics', [
             'chartData' => $chartData,
-            'selectedMonth' => (int) $month,
             'selectedYear' => (int) $year,
+        ]);
+    }
+
+    public function categoryExpenses(Request $request, $categoryId)
+    {
+        $this->authorize('viewAny', Expense::class);
+
+        $year = $request->get('year', now()->format('Y'));
+
+        $expenses = Expense::ownedBy()
+            ->where('category_id', $categoryId)
+            ->whereYear('expense_date', $year)
+            ->orderBy('expense_date', 'desc')
+            ->get(['id', 'name', 'amount', 'expense_date']);
+
+        return response()->json([
+            'expenses' => $expenses,
         ]);
     }
 
