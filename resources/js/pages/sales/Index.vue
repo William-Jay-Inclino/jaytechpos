@@ -907,28 +907,6 @@ watch(amountTendered, () => {
                                     v-if="paymentMethod === 'cash'"
                                     class="space-y-6"
                                 >
-                                    <!-- Pay towards balance checkbox (only show if customer has running balance) -->
-                                    <div
-                                        v-if="
-                                            selectedCustomer &&
-                                            selectedCustomer.running_utang_balance >
-                                                0
-                                        "
-                                        class="flex items-center space-x-3 rounded-lg bg-blue-50 border border-blue-200 p-4 dark:bg-blue-900/20 dark:border-blue-800"
-                                    >
-                                        <Checkbox
-                                            id="payTowardsBalance"
-                                            v-model="payTowardsBalance"
-                                            class="h-5 w-5 rounded-md border-2 border-blue-300 bg-white text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-blue-600 dark:bg-gray-700"
-                                        />
-                                        <Label
-                                            for="payTowardsBalance"
-                                            class="cursor-pointer text-sm font-medium text-blue-900 dark:text-blue-100"
-                                        >
-                                            💡 Gamitin ang sukli para sa utang ng customer
-                                        </Label>
-                                    </div>
-
                                     <!-- Transaction Amounts -->
                                     <div
                                         class="grid grid-cols-1 gap-4 md:grid-cols-3"
@@ -1000,6 +978,28 @@ watch(amountTendered, () => {
                                                 >
                                             </div>
                                         </div>
+                                    </div>
+
+                                    <!-- Pay towards balance checkbox (only show if customer has running balance) -->
+                                    <div
+                                        v-if="
+                                            selectedCustomer &&
+                                            selectedCustomer.running_utang_balance >
+                                                0
+                                        "
+                                        class="flex items-center space-x-3 rounded-lg bg-blue-50 border border-blue-200 p-4 dark:bg-blue-900/20 dark:border-blue-800"
+                                    >
+                                        <Checkbox
+                                            id="payTowardsBalance"
+                                            v-model="payTowardsBalance"
+                                            class="h-5 w-5 rounded-md border-2 border-blue-300 bg-white text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-blue-600 dark:bg-gray-700"
+                                        />
+                                        <Label
+                                            for="payTowardsBalance"
+                                            class="cursor-pointer text-sm font-medium text-blue-900 dark:text-blue-100"
+                                        >
+                                            💡 Gamitin ang sukli para sa utang ng customer
+                                        </Label>
                                     </div>
 
                                     <!-- Balance Deduction Section -->
