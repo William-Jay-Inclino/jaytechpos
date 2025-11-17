@@ -13,14 +13,16 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::latest()
-            ->paginate(10)
+        $users = User::where('role', '!=', UserRole::Admin)
+            ->latest()
+            ->paginate(15)
             ->through(function ($user) {
                 return [
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
                     'role' => $user->role->label(),
+                    'status' => $user->status,
                     'created_at' => $user->created_at->format('M d, Y'),
                 ];
             });
@@ -32,12 +34,7 @@ class UserController extends Controller
 
     public function create()
     {
-        return Inertia::render('admin/users/Create', [
-            'roles' => collect(UserRole::cases())->map(fn ($role) => [
-                'value' => $role->value,
-                'label' => $role->label(),
-            ])->toArray(),
-        ]);
+        return Inertia::render('admin/users/Create');
     }
 
     public function store(Request $request)
@@ -46,14 +43,14 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|string|in:admin,user',
         ]);
 
         User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
-            'role' => $validated['role'],
+            'role' => 'user',
+            'status' => 'active',
         ]);
 
         return redirect()->route('admin.users.index')
@@ -68,43 +65,86 @@ class UserController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'role' => $user->role->value,
+                'status' => $user->status,
             ],
-            'roles' => collect(UserRole::cases())->map(fn ($role) => [
-                'value' => $role->value,
-                'label' => $role->label(),
-            ])->toArray(),
         ]);
     }
 
     public function update(Request $request, User $user)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
-            'password' => 'nullable|string|min:8|confirmed',
-            'role' => 'required|string|in:admin,user',
+            'name' => 'sometimes|required|string|max:255',
+            'email' => 'sometimes|required|string|email|max:255|unique:users,email,'.$user->id,
+            'password' => 'sometimes|required|string|min:8|confirmed',
+            'status' => 'sometimes|required|string|in:active,inactive',
         ]);
 
-        $data = [
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'role' => $validated['role'],
-        ];
+        $data = [];
 
-        if (! empty($validated['password'])) {
+        if (isset($validated['name'])) {
+            $data['name'] = $validated['name'];
+        }
+
+        if (isset($validated['email'])) {
+            $data['email'] = $validated['email'];
+        }
+
+        if (isset($validated['password'])) {
             $data['password'] = Hash::make($validated['password']);
+        }
+
+        if (isset($validated['status'])) {
+            $data['status'] = $validated['status'];
         }
 
         $user->update($data);
 
-        return redirect()->route('admin.users.index')
-            ->with('success', 'User updated successfully.');
+        return back()->with('success', 'User updated successfully.');
     }
 
     public function destroy(User $user)
     {
         if ($user->id === auth()->id()) {
             return back()->with('error', 'You cannot delete yourself.');
+        }
+
+        // Check if user is active
+        if ($user->status === 'active') {
+            return back()->with('error', 'Cannot delete an active user. Please set the user to inactive first.');
+        }
+
+        // Check for associated records
+        $hasCustomerTransactions = $user->customerTransactions()->exists();
+        $hasSales = $user->sales()->exists();
+        $hasCustomers = $user->customers()->exists();
+        $hasProducts = $user->products()->exists();
+        $hasExpenses = $user->expenses()->exists();
+        $hasExpenseCategories = $user->expenseCategories()->exists();
+
+        if ($hasCustomerTransactions || $hasSales || $hasCustomers || $hasProducts || $hasExpenses || $hasExpenseCategories) {
+            $associations = [];
+            if ($hasCustomerTransactions) {
+                $associations[] = 'customer transactions';
+            }
+            if ($hasSales) {
+                $associations[] = 'sales';
+            }
+            if ($hasCustomers) {
+                $associations[] = 'customers';
+            }
+            if ($hasProducts) {
+                $associations[] = 'products';
+            }
+            if ($hasExpenses) {
+                $associations[] = 'expenses';
+            }
+            if ($hasExpenseCategories) {
+                $associations[] = 'expense categories';
+            }
+
+            $message = 'Cannot delete user. This user has associated '.implode(', ', $associations).'.';
+
+            return back()->with('error', $message);
         }
 
         $user->delete();

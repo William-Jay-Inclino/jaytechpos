@@ -1,155 +1,104 @@
 <script setup lang="ts">
-import { Head, Form } from '@inertiajs/vue3'
-import AdminLayout from '@/layouts/AdminLayout.vue'
-
-interface Role {
-    value: string
-    label: string
-}
-
-interface Props {
-    roles: Role[]
-}
-
-defineProps<Props>()
+import InputError from '@/components/InputError.vue';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import AdminLayout from '@/layouts/AdminLayout.vue';
+import { showSuccessToast } from '@/lib/toast';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 
 const breadcrumbs = [
     { title: 'Users', href: '/admin/users' },
-    { title: 'Create User', href: '/admin/users/create' }
-]
+    { title: 'Add User', href: '/admin/users/create' },
+];
+
+const form = useForm({
+    name: '',
+    email: '',
+    password: '',
+    password_confirmation: '',
+    role: 'user',
+});
 </script>
 
 <template>
-    <Head title="Create User" />
+    <Head title="Add User" />
 
     <AdminLayout :breadcrumbs="breadcrumbs">
-        <div class="space-y-6">
-            <!-- Page Header -->
-            <div>
-                <h2 class="text-2xl font-bold text-gray-900">Create New User</h2>
-                <p class="text-gray-600 mt-1">Add a new user to the system.</p>
-            </div>
+        <div class="w-full px-4 py-6 lg:px-8 lg:py-10">
+            <div class="mx-auto max-w-2xl">
 
-            <!-- Create Form -->
-            <div class="bg-white rounded-lg shadow-sm">
-                <div class="p-6 border-b">
-                    <h3 class="text-lg font-semibold text-gray-900">User Information</h3>
-                </div>
-                
-                <Form
-                    action="/admin/users"
-                    method="post"
-                    #default="{ errors, processing }"
-                    class="p-6"
-                >
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Form Card -->
+                <div class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 sm:p-8 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none">
+                    <form @submit.prevent="form.post('/admin/users', { onSuccess: () => { form.reset(); showSuccessToast('User created successfully!'); } })" class="space-y-6">
                         <!-- Name -->
-                        <div>
-                            <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
-                                Full Name
-                            </label>
-                            <input
-                                type="text"
-                                name="name"
+                        <div class="grid gap-2">
+                            <Label for="name">Full Name</Label>
+                            <Input
                                 id="name"
+                                v-model="form.name"
+                                type="text"
                                 required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Enter full name"
-                            >
-                            <p v-if="errors.name" class="mt-1 text-sm text-red-600">{{ errors.name }}</p>
+                                class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                            />
+                            <InputError :message="form.errors.name" class="mt-1" />
                         </div>
 
                         <!-- Email -->
-                        <div>
-                            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
-                                Email Address
-                            </label>
-                            <input
-                                type="email"
-                                name="email"
+                        <div class="grid gap-2">
+                            <Label for="email">Email Address</Label>
+                            <Input
                                 id="email"
+                                v-model="form.email"
+                                type="email"
                                 required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Enter email address"
-                            >
-                            <p v-if="errors.email" class="mt-1 text-sm text-red-600">{{ errors.email }}</p>
+                                class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                            />
+                            <InputError :message="form.errors.email" class="mt-1" />
                         </div>
 
                         <!-- Password -->
-                        <div>
-                            <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
-                                Password
-                            </label>
-                            <input
-                                type="password"
-                                name="password"
+                        <div class="grid gap-2">
+                            <Label for="password">Password</Label>
+                            <Input
                                 id="password"
+                                v-model="form.password"
+                                type="password"
                                 required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Enter password"
-                            >
-                            <p v-if="errors.password" class="mt-1 text-sm text-red-600">{{ errors.password }}</p>
+                                class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                            />
+                            <InputError :message="form.errors.password" class="mt-1" />
                         </div>
 
                         <!-- Confirm Password -->
-                        <div>
-                            <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-1">
-                                Confirm Password
-                            </label>
-                            <input
-                                type="password"
-                                name="password_confirmation"
+                        <div class="grid gap-2">
+                            <Label for="password_confirmation">Confirm Password</Label>
+                            <Input
                                 id="password_confirmation"
+                                v-model="form.password_confirmation"
+                                type="password"
                                 required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Confirm password"
-                            >
+                                class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                            />
+                            <InputError :message="form.errors.password_confirmation" class="mt-1" />
                         </div>
 
-                        <!-- Role -->
-                        <div class="md:col-span-2">
-                            <label for="role" class="block text-sm font-medium text-gray-700 mb-1">
-                                Role
-                            </label>
-                            <select
-                                name="role"
-                                id="role"
-                                required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            >
-                                <option value="">Select a role</option>
-                                <option v-for="role in roles" :key="role.value" :value="role.value">
-                                    {{ role.label }}
-                                </option>
-                            </select>
-                            <p v-if="errors.role" class="mt-1 text-sm text-red-600">{{ errors.role }}</p>
+                        <!-- Actions -->
+                        <div class="flex items-center gap-4">
+                            <Button type="submit" :disabled="form.processing">
+                                {{ form.processing ? 'Creating User...' : 'Create User' }}
+                            </Button>
+                            <Link href="/admin/users">
+                                <Button variant="outline" type="button">
+                                    Cancel
+                                </Button>
+                            </Link>
                         </div>
-                    </div>
+                    </form>
+                </div>
 
-                    <!-- Form Actions -->
-                    <div class="mt-6 flex items-center justify-end space-x-3">
-                        <a
-                            href="/admin/users"
-                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                        >
-                            Cancel
-                        </a>
-                        <button
-                            type="submit"
-                            :disabled="processing"
-                            :class="[
-                                'px-4 py-2 text-sm font-medium text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
-                                processing 
-                                    ? 'bg-gray-400 cursor-not-allowed' 
-                                    : 'bg-blue-600 hover:bg-blue-700'
-                            ]"
-                        >
-                            <span v-if="processing">Creating...</span>
-                            <span v-else>Create User</span>
-                        </button>
-                    </div>
-                </Form>
             </div>
+
         </div>
     </AdminLayout>
 </template>

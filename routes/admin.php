@@ -7,12 +7,12 @@ use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+// Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
 // Profile Management
-Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
-Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-Route::patch('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+// Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
+// Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+// Route::patch('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
 
 // User Management
 Route::prefix('users')->name('users.')->group(function () {
@@ -25,12 +25,12 @@ Route::prefix('users')->name('users.')->group(function () {
 });
 
 // Analytics
-Route::prefix('analytics')->name('analytics.')->group(function () {
-    Route::get('/', [AnalyticsController::class, 'index'])->name('index');
-    Route::get('/sales', [AnalyticsController::class, 'sales'])->name('sales');
-    Route::get('/products', [AnalyticsController::class, 'products'])->name('products');
-    Route::get('/customers', [AnalyticsController::class, 'customers'])->name('customers');
-});
+// Route::prefix('analytics')->name('analytics.')->group(function () {
+//     Route::get('/', [AnalyticsController::class, 'index'])->name('index');
+//     Route::get('/sales', [AnalyticsController::class, 'sales'])->name('sales');
+//     Route::get('/products', [AnalyticsController::class, 'products'])->name('products');
+//     Route::get('/customers', [AnalyticsController::class, 'customers'])->name('customers');
+// });
 
 // Activity Logs
 Route::prefix('activity-logs')->name('activity-logs.')->group(function () {

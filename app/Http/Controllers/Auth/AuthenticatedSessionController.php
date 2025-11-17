@@ -48,7 +48,7 @@ class AuthenticatedSessionController extends Controller
 
         // Redirect admin users to admin dashboard, regular users to main dashboard
         if ($user->role === UserRole::Admin) {
-            return redirect()->intended(route('admin.dashboard', absolute: false));
+            return redirect()->intended(route('users.index', absolute: false));
         }
 
         return redirect()->intended(route('dashboard', absolute: false));

@@ -39,9 +39,7 @@ const flash = computed(() => page.props.flash as any)
 const { isDark, toggleTheme } = useTheme()
 
 const navigation = [
-    { name: 'Dashboard', href: '/admin' },
     { name: 'Users', href: '/admin/users' },
-    { name: 'Analytics', href: '/admin/analytics' },
     { name: 'Activity Logs', href: '/admin/activity-logs' },
 ]
 

@@ -1,169 +1,175 @@
 <script setup lang="ts">
-import { Head, Form } from '@inertiajs/vue3'
-import AdminLayout from '@/layouts/AdminLayout.vue'
+import InputError from '@/components/InputError.vue';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import AdminLayout from '@/layouts/AdminLayout.vue';
+import { showSuccessToast } from '@/lib/toast';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 
 interface User {
     id: number
     name: string
     email: string
     role: string
-}
-
-interface Role {
-    value: string
-    label: string
+    status: string
 }
 
 interface Props {
     user: User
-    roles: Role[]
 }
 
-defineProps<Props>()
+const props = defineProps<Props>();
 
 const breadcrumbs = [
     { title: 'Users', href: '/admin/users' },
     { title: 'Edit User', href: '' }
-]
+];
+
+// Form for updating user information
+const infoForm = useForm({
+    name: props.user.name,
+    email: props.user.email,
+    role: props.user.role,
+});
+
+// Form for updating password
+const passwordForm = useForm({
+    password: '',
+    password_confirmation: '',
+});
+
+// Form for updating status
+const statusForm = useForm({
+    status: props.user.status,
+});
 </script>
 
 <template>
     <Head :title="`Edit ${user.name}`" />
 
     <AdminLayout :breadcrumbs="breadcrumbs">
-        <div class="space-y-6">
-            <!-- Page Header -->
-            <div>
-                <h2 class="text-2xl font-bold text-gray-900">Edit User</h2>
-                <p class="text-gray-600 mt-1">Update user information and role.</p>
-            </div>
+        <div class="w-full px-4 py-6 lg:px-8 lg:py-10">
+            <div class="mx-auto max-w-2xl space-y-6">
 
-            <!-- Edit Form -->
-            <div class="bg-white rounded-lg shadow-sm">
-                <div class="p-6 border-b">
-                    <h3 class="text-lg font-semibold text-gray-900">User Information</h3>
-                </div>
-                
-                <Form
-                    :action="`/admin/users/${user.id}`"
-                    method="put"
-                    #default="{ errors, processing, data }"
-                    class="p-6"
-                >
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- User Information Form -->
+                <div class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 sm:p-8 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none">
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">User Information</h3>
+                        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Update the user's name and email address.</p>
+                    </div>
+
+                    <form @submit.prevent="infoForm.put(`/admin/users/${user.id}`, { onSuccess: () => { showSuccessToast('User information updated successfully!'); } })" class="space-y-6">
                         <!-- Name -->
-                        <div>
-                            <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
-                                Full Name
-                            </label>
-                            <input
-                                type="text"
-                                name="name"
+                        <div class="grid gap-2">
+                            <Label for="name">Full Name</Label>
+                            <Input
                                 id="name"
-                                :value="user.name"
+                                v-model="infoForm.name"
+                                type="text"
                                 required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Enter full name"
-                            >
-                            <p v-if="errors.name" class="mt-1 text-sm text-red-600">{{ errors.name }}</p>
+                                class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                            />
+                            <InputError :message="infoForm.errors.name" class="mt-1" />
                         </div>
 
                         <!-- Email -->
-                        <div>
-                            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
-                                Email Address
-                            </label>
-                            <input
-                                type="email"
-                                name="email"
+                        <div class="grid gap-2">
+                            <Label for="email">Email Address</Label>
+                            <Input
                                 id="email"
-                                :value="user.email"
+                                v-model="infoForm.email"
+                                type="email"
                                 required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Enter email address"
-                            >
-                            <p v-if="errors.email" class="mt-1 text-sm text-red-600">{{ errors.email }}</p>
+                                class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                            />
+                            <InputError :message="infoForm.errors.email" class="mt-1" />
                         </div>
 
-                        <!-- Password -->
-                        <div>
-                            <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
-                                New Password
-                            </label>
-                            <input
-                                type="password"
-                                name="password"
+                        <!-- Actions -->
+                        <div class="flex items-center gap-4">
+                            <Button type="submit" :disabled="infoForm.processing">
+                                {{ infoForm.processing ? 'Updating...' : 'Update Information' }}
+                            </Button>
+                            <Link href="/admin/users">
+                                <Button variant="outline" type="button">
+                                    Cancel
+                                </Button>
+                            </Link>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Change Status Form -->
+                <div class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 sm:p-8 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none">
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Change Status</h3>
+                        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Update the user's account status.</p>
+                    </div>
+
+                    <form @submit.prevent="statusForm.put(`/admin/users/${user.id}`, { onSuccess: () => { showSuccessToast('User status updated successfully!'); } })" class="space-y-6">
+                        <!-- Status -->
+                        <div class="grid gap-2">
+                            <Label for="status">Status</Label>
+                            <Select v-model="statusForm.status">
+                                <SelectTrigger class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100">
+                                    <SelectValue placeholder="Select status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="active">Active</SelectItem>
+                                    <SelectItem value="inactive">Inactive</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <InputError :message="statusForm.errors.status" class="mt-1" />
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex items-center gap-4">
+                            <Button type="submit" :disabled="statusForm.processing">
+                                {{ statusForm.processing ? 'Updating...' : 'Update Status' }}
+                            </Button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Change Password Form -->
+                <div class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 sm:p-8 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none">
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Change Password</h3>
+                        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Update the user's password.</p>
+                    </div>
+
+                    <form @submit.prevent="passwordForm.put(`/admin/users/${user.id}`, { onSuccess: () => { passwordForm.reset(); showSuccessToast('Password updated successfully!'); } })" class="space-y-6">
+                        <!-- New Password -->
+                        <div class="grid gap-2">
+                            <Label for="password">New Password</Label>
+                            <Input
                                 id="password"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Leave blank to keep current password"
-                            >
-                            <p v-if="errors.password" class="mt-1 text-sm text-red-600">{{ errors.password }}</p>
-                            <p class="mt-1 text-xs text-gray-500">Leave blank to keep current password</p>
-                        </div>
-
-                        <!-- Confirm Password -->
-                        <div>
-                            <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-1">
-                                Confirm New Password
-                            </label>
-                            <input
+                                v-model="passwordForm.password"
                                 type="password"
-                                name="password_confirmation"
-                                id="password_confirmation"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Confirm new password"
-                            >
-                        </div>
-
-                        <!-- Role -->
-                        <div class="md:col-span-2">
-                            <label for="role" class="block text-sm font-medium text-gray-700 mb-1">
-                                Role
-                            </label>
-                            <select
-                                name="role"
-                                id="role"
-                                :value="user.role"
                                 required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            >
-                                <option value="">Select a role</option>
-                                <option 
-                                    v-for="role in roles" 
-                                    :key="role.value" 
-                                    :value="role.value"
-                                    :selected="role.value === user.role"
-                                >
-                                    {{ role.label }}
-                                </option>
-                            </select>
-                            <p v-if="errors.role" class="mt-1 text-sm text-red-600">{{ errors.role }}</p>
+                                class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                            />
+                            <InputError :message="passwordForm.errors.password" class="mt-1" />
                         </div>
-                    </div>
 
-                    <!-- Form Actions -->
-                    <div class="mt-6 flex items-center justify-end space-x-3">
-                        <a
-                            href="/admin/users"
-                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                        >
-                            Cancel
-                        </a>
-                        <button
-                            type="submit"
-                            :disabled="processing"
-                            :class="[
-                                'px-4 py-2 text-sm font-medium text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
-                                processing 
-                                    ? 'bg-gray-400 cursor-not-allowed' 
-                                    : 'bg-blue-600 hover:bg-blue-700'
-                            ]"
-                        >
-                            <span v-if="processing">Updating...</span>
-                            <span v-else>Update User</span>
-                        </button>
-                    </div>
-                </Form>
+                        <!-- Actions -->
+                        <div class="flex items-center gap-4">
+                            <Button type="submit" :disabled="passwordForm.processing">
+                                {{ passwordForm.processing ? 'Updating...' : 'Update Password' }}
+                            </Button>
+                            <Button 
+                                variant="outline" 
+                                type="button"
+                                @click="passwordForm.reset()"
+                            >
+                                Clear
+                            </Button>
+                        </div>
+                    </form>
+                </div>
+
             </div>
         </div>
     </AdminLayout>

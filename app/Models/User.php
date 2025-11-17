@@ -18,6 +18,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'status',
     ];
 
     protected $hidden = [
@@ -49,9 +50,9 @@ class User extends Authenticatable
         return $this->role->canAccessAdmin();
     }
 
-    public function activityLogs()
+    public function customerTransactions()
     {
-        return $this->hasMany(ActivityLog::class);
+        return $this->hasMany(CustomerTransaction::class, 'user_id');
     }
 
     public function sales()
@@ -67,11 +68,6 @@ class User extends Authenticatable
     public function products()
     {
         return $this->hasMany(Product::class);
-    }
-
-    public function productCategories()
-    {
-        return $this->hasMany(ProductCategory::class);
     }
 
     public function expenses()
