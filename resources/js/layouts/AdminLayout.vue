@@ -134,7 +134,7 @@ const goToProfile = () => {
         <!-- Main Content -->
         <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
             <!-- Flash Messages -->
-            <Alert v-if="flash.success" class="mb-6 border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/50">
+            <!-- <Alert v-if="flash.success" class="mb-6 border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/50">
                 <CheckCircle class="h-4 w-4 text-green-600 dark:text-green-400" />
                 <AlertDescription class="text-green-800 dark:text-green-200">
                     {{ flash.success }}
@@ -146,7 +146,7 @@ const goToProfile = () => {
                 <AlertDescription>
                     {{ flash.error }}
                 </AlertDescription>
-            </Alert>
+            </Alert> -->
 
             <!-- Breadcrumbs -->
             <Breadcrumb v-if="breadcrumbs.length > 0" class="mb-6">

@@ -9,10 +9,13 @@ use Illuminate\Support\Facades\Route;
 
 // Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
-// Profile Management
-// Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
-// Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-// Route::patch('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+
+// Profile Management (admin prefix to avoid conflict)
+Route::prefix('admin/profile')->name('admin.profile.')->group(function () {
+    Route::get('/', [ProfileController::class, 'show'])->name('show');
+    Route::patch('/', [ProfileController::class, 'update'])->name('update');
+    Route::patch('/password', [ProfileController::class, 'updatePassword'])->name('password');
+});
 
 // User Management
 Route::prefix('users')->name('users.')->group(function () {

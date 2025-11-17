@@ -1,3 +1,19 @@
+test('users with inactive status cannot authenticate', function () {
+    $user = User::factory()->create([
+        'status' => 'inactive',
+        'password' => bcrypt('password'),
+    ]);
+
+    $response = $this->post(route('login.store'), [
+        'email' => $user->email,
+        'password' => 'password',
+    ]);
+
+    $this->assertGuest();
+    $response->assertSessionHasErrors('email');
+    $errors = session('errors');
+    $this->assertStringContainsString('not active', $errors->first('email'));
+});
 <?php
 
 use App\Models\User;

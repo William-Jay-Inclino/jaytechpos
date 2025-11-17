@@ -12,9 +12,19 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
+
 class User extends Authenticatable
 {
+
     use HasFactory, LogsActivity, LogsActivityWithRequest, Notifiable, TwoFactorAuthenticatable;
+
+    /**
+     * Scope a query to only include active users.
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
 
     protected $fillable = [
         'name',

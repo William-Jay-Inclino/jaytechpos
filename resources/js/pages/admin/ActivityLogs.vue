@@ -96,20 +96,18 @@ const clearFilters = () => {
     <Head title="Activity Logs" />
 
     <AdminLayout :breadcrumbs="breadcrumbs">
-        <div class="space-y-6">
-            <!-- Page Header -->
-            <div>
-                <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Activity Logs</h2>
-                <p class="text-gray-600 dark:text-gray-400 mt-1">Monitor user activities and system events</p>
-            </div>
+        <div class="w-full px-3 py-4 lg:px-8 lg:py-10">
+            <div class="mx-auto max-w-7xl">
+                <!-- Page Header -->
+                <div class="mb-4 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Activity Logs</h2>
+                        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Monitor user activities and system events.</p>
+                    </div>
+                </div>
 
-            <!-- Filters -->
-            <Card>
-                <CardHeader>
-                    <CardTitle class="text-base">Filters</CardTitle>
-                    <CardDescription>Search and filter activity logs</CardDescription>
-                </CardHeader>
-                <CardContent>
+                <!-- Filters -->
+                <div class="mb-4 rounded-xl border border-gray-200 bg-white p-3 shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:p-4">
                     <div class="space-y-4">
                         <!-- Search -->
                         <div class="flex flex-col sm:flex-row gap-4">
@@ -166,75 +164,86 @@ const clearFilters = () => {
                             </div>
                         </div>
                     </div>
-                </CardContent>
-            </Card>
+                </div>
 
-            <!-- Activity Logs Table -->
-            <Card>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>User</TableHead>
-                            <TableHead>Description</TableHead>
-                            <TableHead>IP Address</TableHead>
-                            <TableHead>Device</TableHead>
-                            <TableHead class="text-right">Time</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        <TableRow v-if="!activities.data.length">
-                            <TableCell colspan="5" class="text-center py-8 text-gray-500">
-                                No activity logs found
-                            </TableCell>
-                        </TableRow>
-                        <TableRow v-for="activity in activities.data" :key="activity.id">
-                            <TableCell>
-                                <div>
-                                    <div class="font-medium">{{ activity.causer.name }}</div>
-                                    <div class="text-xs text-gray-500">{{ activity.causer.email }}</div>
-                                </div>
-                            </TableCell>
-                            <TableCell>
-                                <div class="text-sm">{{ activity.description || 'No description' }}</div>
-                            </TableCell>
-                            <TableCell>
-                                <div class="text-sm text-gray-600">{{ activity.ip_address }}</div>
-                            </TableCell>
-                            <TableCell>
-                                <div class="text-sm" :title="activity.user_agent">{{ activity.device_info }}</div>
-                            </TableCell>
-                            <TableCell class="text-right text-sm text-gray-500">
-                                <span :title="activity.created_at">{{ activity.created_at_diff }}</span>
-                            </TableCell>
-                        </TableRow>
-                    </TableBody>
-                </Table>
-
-                <!-- Pagination -->
-                <div class="flex items-center justify-between px-6 py-4 border-t" v-if="activities.data.length">
-                    <div class="text-sm text-gray-600">
-                        Showing {{ activities.meta.from }} to {{ activities.meta.to }} of {{ activities.meta.total }} results
+                <!-- Activity Logs Table -->
+                <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                    <!-- Empty State - No Logs -->
+                    <div v-if="!activities.data.length" class="px-4 py-16 text-center sm:px-6 sm:py-20">
+                        <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
+                            <span class="text-3xl">📋</span>
+                        </div>
+                        <h3 class="mt-6 text-lg font-semibold text-gray-900 dark:text-white">
+                            No activity logs found
+                        </h3>
+                        <p class="mx-auto mt-2 max-w-md text-sm text-gray-500 dark:text-gray-400">
+                            Try adjusting your search terms or date filters.
+                        </p>
                     </div>
-                    <div class="flex gap-2">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            :disabled="activities.meta.current_page === 1"
-                            @click="router.visit(`/admin/activity-logs?page=${activities.meta.current_page - 1}`)"
-                        >
-                            Previous
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            :disabled="activities.meta.current_page === activities.meta.last_page"
-                            @click="router.visit(`/admin/activity-logs?page=${activities.meta.current_page + 1}`)"
-                        >
-                            Next
-                        </Button>
+
+                    <!-- Table -->
+                    <div v-else>
+                        <Table>
+                            <TableHeader>
+                                <TableRow class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
+                                    <TableHead class="text-left text-sm font-medium text-gray-900 dark:text-white">User</TableHead>
+                                    <TableHead class="text-left text-sm font-medium text-gray-900 dark:text-white">Description</TableHead>
+                                    <TableHead class="text-left text-sm font-medium text-gray-900 dark:text-white">IP Address</TableHead>
+                                    <TableHead class="text-left text-sm font-medium text-gray-900 dark:text-white">Device</TableHead>
+                                    <TableHead class="text-right text-sm font-medium text-gray-900 dark:text-white">Time</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                <TableRow v-for="activity in activities.data" :key="activity.id" class="border-b border-gray-200 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700/50">
+                                    <TableCell>
+                                        <div>
+                                            <div class="font-medium text-gray-900 dark:text-white">{{ activity.causer.name }}</div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">{{ activity.causer.email }}</div>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div class="text-sm text-gray-900 dark:text-white">{{ activity.description || 'No description' }}</div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div class="text-sm text-gray-600 dark:text-gray-400">{{ activity.ip_address }}</div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div class="text-sm text-gray-900 dark:text-white" :title="activity.user_agent">{{ activity.device_info }}</div>
+                                    </TableCell>
+                                    <TableCell class="text-right text-sm text-gray-500 dark:text-gray-400">
+                                        <span :title="activity.created_at">{{ activity.created_at_diff }}</span>
+                                    </TableCell>
+                                </TableRow>
+                            </TableBody>
+                        </Table>
+
+                        <!-- Pagination -->
+                        <div class="flex items-center justify-between border-t border-gray-200 px-6 py-4 dark:border-gray-700" v-if="activities.data.length">
+                            <div class="text-sm text-gray-500 dark:text-gray-400">
+                                Showing {{ activities.meta.from }} to {{ activities.meta.to }} of {{ activities.meta.total }} results
+                            </div>
+                            <div class="flex gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    :disabled="activities.meta.current_page === 1"
+                                    @click="router.visit(`/admin/activity-logs?page=${activities.meta.current_page - 1}`)"
+                                >
+                                    Previous
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    :disabled="activities.meta.current_page === activities.meta.last_page"
+                                    @click="router.visit(`/admin/activity-logs?page=${activities.meta.current_page + 1}`)"
+                                >
+                                    Next
+                                </Button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </Card>
+            </div>
         </div>
     </AdminLayout>
 </template>
