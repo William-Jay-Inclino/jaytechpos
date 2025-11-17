@@ -90,6 +90,18 @@ const clearFilters = () => {
     endDate.value = ''
     applyFilters()
 }
+
+// Try to trigger the native date picker on focus for browsers that support showPicker()
+function openDatePicker(event: FocusEvent) {
+    const target = event.target as HTMLInputElement
+    try {
+        if (target && typeof (target as any).showPicker === 'function') {
+            ;(target as any).showPicker()
+        }
+    } catch (e) {
+        // ignore — not all browsers support showPicker
+    }
+}
 </script>
 
 <template>
@@ -111,12 +123,12 @@ const clearFilters = () => {
                     <div class="space-y-4">
                         <!-- Search -->
                         <div class="flex flex-col sm:flex-row gap-4">
-                            <div class="flex-1 relative">
+                            <div class="flex-1 relative min-w-0">
                                 <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                                 <Input
                                     v-model="searchQuery"
                                     placeholder="Search by user or description..."
-                                    class="pl-9"
+                                    class="pl-9 w-full"
                                     @keydown.enter="applyFilters"
                                 />
                             </div>
@@ -128,29 +140,34 @@ const clearFilters = () => {
                                 variant="outline" 
                                 size="sm"
                                 @click="setToday"
-                                class="w-fit"
+                                class="w-full sm:w-auto"
                             >
                                 Today
                             </Button>
-                            <div class="flex flex-col sm:flex-row gap-4 flex-1">
-                                <div class="flex-1">
+                            <div class="flex flex-col sm:flex-row gap-4 flex-1 min-w-0">
+                                <div class="flex-1 min-w-0">
                                     <Input
+                                        id="start_date"
                                         v-model="startDate"
                                         type="date"
                                         placeholder="Start date"
+                                        class="w-full"
                                     />
                                 </div>
-                                <div class="flex-1">
+                                <div class="flex-1 min-w-0">
                                     <Input
+                                        id="end_date"
                                         v-model="endDate"
                                         type="date"
                                         placeholder="End date"
+                                        class="w-full"
                                     />
                                 </div>
                             </div>
-                            <div class="flex gap-2">
+                            <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                                 <Button 
                                     @click="applyFilters"
+                                    class="w-full sm:w-auto"
                                 >
                                     Apply
                                 </Button>
@@ -158,6 +175,7 @@ const clearFilters = () => {
                                     variant="outline" 
                                     @click="clearFilters"
                                     v-if="searchQuery || startDate || endDate"
+                                    class="w-full sm:w-auto"
                                 >
                                     Clear
                                 </Button>

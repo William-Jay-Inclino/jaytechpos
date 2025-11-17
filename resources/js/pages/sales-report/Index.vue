@@ -604,14 +604,14 @@ const getVisiblePages = (): (number | string)[] => {
                                 </div>
 
                                 <!-- Pagination Controls -->
-                                <div v-if="salesData.pagination.last_page > 1" class="mt-6 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 pt-4">
+                                <div v-if="salesData.pagination.last_page > 1" class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between border-t border-gray-200 dark:border-gray-700 pt-4 gap-3">
                                     <div class="text-sm text-gray-500 dark:text-gray-400">
                                         Showing {{ ((salesData.pagination.current_page - 1) * salesData.pagination.per_page) + 1 }} 
                                         to {{ Math.min(salesData.pagination.current_page * salesData.pagination.per_page, salesData.pagination.total) }} 
                                         of {{ salesData.pagination.total }} results
                                     </div>
                                     
-                                    <div class="flex items-center gap-2">
+                                    <div class="flex flex-wrap items-center gap-2">
                                         <!-- Previous Button -->
                                         <Button 
                                             @click="goToPreviousPage"
@@ -625,7 +625,7 @@ const getVisiblePages = (): (number | string)[] => {
                                         </Button>
 
                                         <!-- Page Numbers -->
-                                        <div class="flex items-center gap-1">
+                                        <div class="flex items-center gap-1 overflow-x-auto whitespace-nowrap max-w-full sm:max-w-none">
                                             <template v-for="page in getVisiblePages()" :key="page">
                                                 <Button
                                                     v-if="page === '...'"

@@ -198,7 +198,7 @@ const formatCurrency = (amount: number) => {
                                         class="h-8 px-3"
                                     >
                                         <Link :href="`/customers/${customer.id}/edit`">
-                                            <Edit class="h-3 w-3 mr-1.5" />
+                                            <Edit class="h-3 w-3" />
                                         </Link>
                                     </Button>
                                     
@@ -209,7 +209,7 @@ const formatCurrency = (amount: number) => {
                                         class="h-8 px-3 bg-blue-600 hover:bg-blue-700 text-white"
                                     >
                                         <Link :href="`/customers/${customer.id}/transactions`">
-                                            <FileText class="h-3 w-3 mr-1.5 text-white" />
+                                            <FileText class="h-3 w-3 text-white" />
                                         </Link>
                                     </Button>
                                 </div>
