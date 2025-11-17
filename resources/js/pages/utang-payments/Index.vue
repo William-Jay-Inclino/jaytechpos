@@ -268,7 +268,7 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                         
                                         <div
                                             v-if="showCustomerDropdown"
-                                            class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-lg dark:border-gray-700 dark:bg-gray-800"
+                                                class="absolute z-50 mt-1 max-h-[60vh] w-full overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-lg dark:border-gray-700 dark:bg-gray-800"
                                         >
                                             <div class="flex items-center border-b px-3 pb-2 mb-2 dark:border-gray-700">
                                                 <Search class="mr-2 h-4 w-4 shrink-0 opacity-50" />
@@ -279,7 +279,7 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                                     @click.stop
                                                 />
                                             </div>
-                                            <div class="max-h-40 overflow-auto">
+                                            <div class="max-h-[52vh] overflow-auto">
                                                 <div
                                                     v-for="customer in filteredCustomers"
                                                     :key="customer.id"
