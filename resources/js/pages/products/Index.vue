@@ -189,9 +189,6 @@ async function deleteProduct(productId: number) {
                                         <h3 class="text-base font-semibold text-gray-900 dark:text-white truncate">
                                             {{ product.product_name }}
                                         </h3>
-                                        <p v-if="product.description" class="text-sm text-gray-500 dark:text-gray-400 mt-1 truncate">
-                                            {{ product.description }}
-                                        </p>
                                         <div class="mt-2">
                                             <Badge 
                                                 :variant="product.status === 'active' ? 'default' : 'destructive'"
@@ -279,13 +276,7 @@ async function deleteProduct(productId: number) {
                                                 <h4 class="font-semibold text-gray-900 dark:text-white">
                                                     {{ product.product_name }}
                                                 </h4>
-                                                <span v-if="product.unit?.unit_name" class="text-sm text-gray-500 dark:text-gray-400">
-                                                    per {{ product.unit.unit_name }}
-                                                </span>
                                             </div>
-                                            <p v-if="product.description" class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                                {{ product.description.length > 60 ? product.description.substring(0, 60) + '...' : product.description }}
-                                            </p>
                                         </td>
                                         <td class="py-4 px-4 text-right">
                                             <div class="flex flex-col gap-1">

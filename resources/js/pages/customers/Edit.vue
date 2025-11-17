@@ -133,12 +133,11 @@ const handleBalanceSuccess = () => {
                     </form>
                 </div>
 
-                <!-- Customer Information -->
                 <div
                     class="mt-6 rounded-xl border border-gray-300 bg-gray-50 p-6 shadow-sm ring-1 ring-gray-100 dark:border-gray-700 dark:bg-gray-900/50 dark:ring-gray-800 dark:shadow-none"
                 >
                     <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
-                        Customer Information
+                        Utang Details
                     </h3>
                     
                     <div class="grid gap-4 sm:grid-cols-2">
