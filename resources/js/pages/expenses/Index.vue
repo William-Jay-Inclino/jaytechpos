@@ -376,7 +376,7 @@ async function deleteExpense(expenseId: number) {
                                     class="h-8 px-3"
                                 >
                                     <Link :href="`/expenses/${expense.id}/edit`">
-                                        <Edit class="h-3 w-3 mr-1.5" />
+                                        <Edit class="h-3 w-3" />
                                         <span class="hidden sm:inline">Edit</span>
                                     </Link>
                                 </Button>
@@ -387,7 +387,7 @@ async function deleteExpense(expenseId: number) {
                                     @click="deleteExpense(expense.id)"
                                     class="h-8 px-3"
                                 >
-                                    <Trash2 class="h-3 w-3 mr-1.5" />
+                                    <Trash2 class="h-3 w-3" />
                                     <span class="hidden sm:inline">Delete</span>
                                 </Button>
                             </div>

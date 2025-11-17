@@ -228,7 +228,7 @@ async function deleteProduct(productId: number) {
                                         class="h-8 px-3"
                                     >
                                         <Link :href="`/products/${product.id}/edit`">
-                                            <Edit class="h-3 w-3 mr-1.5" />
+                                            <Edit class="h-3 w-3" />
                                             <span class="hidden sm:inline">Edit</span>
                                         </Link>
                                     </Button>
@@ -239,7 +239,7 @@ async function deleteProduct(productId: number) {
                                         @click="deleteProduct(product.id)"
                                         class="h-8 px-3"
                                     >
-                                        <Trash2 class="h-3 w-3 mr-1.5" />
+                                        <Trash2 class="h-3 w-3" />
                                         <span class="hidden sm:inline">Delete</span>
                                     </Button>
                                 </div>
