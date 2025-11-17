@@ -37,9 +37,9 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const breadcrumbs = [
-    { title: 'Users', href: '/admin/users' }
-]
+// const breadcrumbs = [
+//     { title: 'Users', href: '/admin/users' }
+// ]
 
 // Search state
 const searchQuery = ref('')
@@ -130,7 +130,7 @@ const deleteUser = (userId: number) => {
 <template>
     <Head title="User Management" />
 
-    <AdminLayout :breadcrumbs="breadcrumbs">
+    <AdminLayout>
         <div class="w-full px-3 py-4 lg:px-8 lg:py-10">
             <div class="mx-auto max-w-7xl">
                 <!-- Page Header -->
@@ -155,7 +155,7 @@ const deleteUser = (userId: number) => {
                         <Input
                             v-model="searchQuery"
                             type="text"
-                            placeholder="Search by name, email, or role..."
+                            placeholder="Search by name or email..."
                             class="pl-10"
                         />
                     </div>

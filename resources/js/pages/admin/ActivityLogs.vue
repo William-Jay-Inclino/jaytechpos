@@ -58,9 +58,9 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const breadcrumbs = [
-    { title: 'Activity Logs', href: '/admin/activity-logs' }
-]
+// const breadcrumbs = [
+//     { title: 'Activity Logs', href: '/admin/activity-logs' }
+// ]
 
 // Filter state
 const searchQuery = ref(props.filters.search || '')
@@ -95,7 +95,7 @@ const clearFilters = () => {
 <template>
     <Head title="Activity Logs" />
 
-    <AdminLayout :breadcrumbs="breadcrumbs">
+    <AdminLayout>
         <div class="w-full px-3 py-4 lg:px-8 lg:py-10">
             <div class="mx-auto max-w-7xl">
                 <!-- Page Header -->
@@ -196,10 +196,10 @@ const clearFilters = () => {
                             <TableBody>
                                 <TableRow v-for="activity in activities.data" :key="activity.id" class="border-b border-gray-200 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700/50">
                                     <TableCell>
-                                        <div>
+                                        <!-- <div> -->
                                             <div class="font-medium text-gray-900 dark:text-white">{{ activity.causer.name }}</div>
-                                            <div class="text-xs text-gray-500 dark:text-gray-400">{{ activity.causer.email }}</div>
-                                        </div>
+                                            <!-- <div class="text-xs text-gray-500 dark:text-gray-400">{{ activity.causer.email }}</div> -->
+                                        <!-- </div> -->
                                     </TableCell>
                                     <TableCell>
                                         <div class="text-sm text-gray-900 dark:text-white">{{ activity.description || 'No description' }}</div>

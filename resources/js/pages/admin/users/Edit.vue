@@ -22,10 +22,10 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const breadcrumbs = [
-    { title: 'Users', href: '/admin/users' },
-    { title: 'Edit User', href: '' }
-];
+// const breadcrumbs = [
+//     { title: 'Users', href: '/admin/users' },
+//     { title: 'Edit User', href: '' }
+// ];
 
 // Form for updating user information
 const infoForm = useForm({
@@ -49,7 +49,7 @@ const statusForm = useForm({
 <template>
     <Head :title="`Edit ${user.name}`" />
 
-    <AdminLayout :breadcrumbs="breadcrumbs">
+    <AdminLayout>
         <div class="w-full px-4 py-6 lg:px-8 lg:py-10">
             <div class="mx-auto max-w-2xl space-y-6">
 
@@ -90,7 +90,7 @@ const statusForm = useForm({
                         <!-- Actions -->
                         <div class="flex items-center gap-4">
                             <Button type="submit" :disabled="infoForm.processing">
-                                {{ infoForm.processing ? 'Updating...' : 'Update Information' }}
+                                {{ infoForm.processing ? 'Updating...' : 'Update' }}
                             </Button>
                             <Link href="/admin/users">
                                 <Button variant="outline" type="button">
@@ -127,7 +127,7 @@ const statusForm = useForm({
                         <!-- Actions -->
                         <div class="flex items-center gap-4">
                             <Button type="submit" :disabled="statusForm.processing">
-                                {{ statusForm.processing ? 'Updating...' : 'Update Status' }}
+                                {{ statusForm.processing ? 'Updating...' : 'Update' }}
                             </Button>
                         </div>
                     </form>
@@ -157,7 +157,7 @@ const statusForm = useForm({
                         <!-- Actions -->
                         <div class="flex items-center gap-4">
                             <Button type="submit" :disabled="passwordForm.processing">
-                                {{ passwordForm.processing ? 'Updating...' : 'Update Password' }}
+                                {{ passwordForm.processing ? 'Updating...' : 'Update' }}
                             </Button>
                             <Button 
                                 variant="outline" 

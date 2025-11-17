@@ -7,10 +7,10 @@ import AdminLayout from '@/layouts/AdminLayout.vue';
 import { showSuccessToast } from '@/lib/toast';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
-const breadcrumbs = [
-    { title: 'Users', href: '/admin/users' },
-    { title: 'Add User', href: '/admin/users/create' },
-];
+// const breadcrumbs = [
+//     { title: 'Users', href: '/admin/users' },
+//     { title: 'Add User', href: '/admin/users/create' },
+// ];
 
 const form = useForm({
     name: '',
@@ -24,7 +24,7 @@ const form = useForm({
 <template>
     <Head title="Add User" />
 
-    <AdminLayout :breadcrumbs="breadcrumbs">
+    <AdminLayout>
         <div class="w-full px-4 py-6 lg:px-8 lg:py-10">
             <div class="mx-auto max-w-2xl">
 

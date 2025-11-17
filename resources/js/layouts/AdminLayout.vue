@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { usePage, router } from '@inertiajs/vue3'
+import { usePage, router, Link } from '@inertiajs/vue3'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -62,7 +62,7 @@ const goToProfile = () => {
                     
                     <div class="flex items-center space-x-6">
                         <!-- Navigation -->
-                        <nav class="flex space-x-6">
+                        <nav class="flex space-x-2">
                             <Button 
                                 v-for="item in navigation" 
                                 :key="item.name"
@@ -70,7 +70,7 @@ const goToProfile = () => {
                                 size="sm"
                                 as-child
                             >
-                                <a
+                                <Link
                                     :href="item.href"
                                     :class="[
                                         $page.url.startsWith(item.href)
@@ -79,7 +79,7 @@ const goToProfile = () => {
                                     ]"
                                 >
                                     {{ item.name }}
-                                </a>
+                                </Link>
                             </Button>
                         </nav>
 
