@@ -27,6 +27,8 @@ interface Props {
 
 const props = defineProps<Props>();
 
+console.log('expenses', props.expenses);
+
 const emit = defineEmits<{
     (e: 'update:open', value: boolean): void;
 }>();
@@ -75,18 +77,50 @@ const expensesByMonth = computed(() => {
     
     return Array.from(grouped.entries())
         .sort((a, b) => monthOrder.indexOf(a[0]) - monthOrder.indexOf(b[0]))
-        .map(([month, expenses]) => ({
-            month,
-            expenses: expenses.sort((a, b) => 
-                new Date(b.expense_date).getTime() - new Date(a.expense_date).getTime()
-            ),
-            total: expenses.reduce((sum, exp) => sum + exp.amount, 0),
-        }));
+        .map(([month, expenses]) => {
+            // Helper to parse and sanitize amount
+            const parseAmount = (val: any) => {
+                if (typeof val === 'number') return val;
+                if (typeof val === 'string') {
+                    // Remove all except digits and decimal point, then parse
+                    const cleaned = val.replace(/[^\d.]/g, '');
+                    // If multiple decimals, keep only the first
+                    const parts = cleaned.split('.');
+                    if (parts.length > 2) {
+                        return parseFloat(parts[0] + '.' + parts.slice(1).join(''));
+                    }
+                    return parseFloat(cleaned);
+                }
+                return 0;
+            };
+            return {
+                month,
+                expenses: expenses.sort((a, b) => 
+                    new Date(b.expense_date).getTime() - new Date(a.expense_date).getTime()
+                ),
+                total: expenses.reduce((sum, exp) => sum + parseAmount(exp.amount), 0),
+            };
+        });
 });
 
-// Total amount
+// Total amount (parse and sanitize like in expensesByMonth)
+const parseAmount = (val: any) => {
+    if (typeof val === 'number') return val;
+    if (typeof val === 'string') {
+        // Remove all except digits and decimal point, then parse
+        const cleaned = val.replace(/[^\d.]/g, '');
+        // If multiple decimals, keep only the first
+        const parts = cleaned.split('.');
+        if (parts.length > 2) {
+            return parseFloat(parts[0] + '.' + parts.slice(1).join(''));
+        }
+        return parseFloat(cleaned);
+    }
+    return 0;
+};
+
 const totalAmount = computed(() => {
-    return props.expenses.reduce((sum, expense) => sum + expense.amount, 0);
+    return props.expenses.reduce((sum, expense) => sum + parseAmount(expense.amount), 0);
 });
 
 // Generate badge style based on category color
