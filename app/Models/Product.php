@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\LogsActivityWithRequest;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Product extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity, LogsActivityWithRequest;
 
     protected $fillable = [
         'user_id',
@@ -54,5 +57,13 @@ class Product extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['product_name', 'description', 'unit_price', 'cost_price', 'status', 'unit_id'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

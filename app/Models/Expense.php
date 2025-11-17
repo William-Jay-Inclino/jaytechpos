@@ -2,13 +2,16 @@
 
 namespace App\Models;
 
+use App\Traits\LogsActivityWithRequest;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Expense extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity, LogsActivityWithRequest;
 
     protected $fillable = [
         'user_id',
@@ -41,5 +44,13 @@ class Expense extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(ExpenseCategory::class, 'category_id');
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['name', 'amount', 'expense_date', 'category_id'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

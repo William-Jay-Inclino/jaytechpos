@@ -2,13 +2,16 @@
 
 namespace App\Models;
 
+use App\Traits\LogsActivityWithRequest;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Customer extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity, LogsActivityWithRequest;
 
     protected $fillable = [
         'user_id',
@@ -101,5 +104,13 @@ class Customer extends Model
         }
 
         return \App\Models\Setting::getDefaultUtangInterestRate();
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['name', 'mobile_number', 'has_utang', 'interest_rate', 'remarks'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

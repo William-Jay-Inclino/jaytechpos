@@ -2,13 +2,16 @@
 
 namespace App\Models;
 
+use App\Traits\LogsActivityWithRequest;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class CustomerTransaction extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity, LogsActivityWithRequest;
 
     protected $fillable = [
         'user_id',
@@ -57,5 +60,13 @@ class CustomerTransaction extends Model
     public function scopeOrderedByDate($query, string $direction = 'desc')
     {
         return $query->orderBy('transaction_date', $direction);
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['transaction_type', 'transaction_amount', 'previous_balance', 'new_balance', 'transaction_desc', 'transaction_date', 'reference_id'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }
