@@ -49,7 +49,7 @@ const goToProfile = () => {
         <header class="bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between items-center py-4">
-                    <h1 class="text-xl font-semibold text-gray-900 dark:text-gray-100">JTechPOS</h1>
+                    <h1 class="text-xl font-semibold text-gray-900 dark:text-gray-100">SimplePOS</h1>
                     
                     <div class="flex items-center space-x-6">
                         <!-- Navigation -->

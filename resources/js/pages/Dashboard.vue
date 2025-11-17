@@ -65,7 +65,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                     <!-- Welcome Section -->
                     <div class="mb-8 text-center">
                         <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent mb-3">
-                            Welcome to JTech POS
+                            Welcome to SimplePOS
                         </h1>
                         <p class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
                             Track your business performance

@@ -81,7 +81,7 @@ const handleClose = () => {
                 <div
                     class="space-y-2 rounded-lg bg-muted/30 p-4 text-center"
                 >
-                    <h3 class="text-lg font-bold">JTech</h3>
+                    <h3 class="text-lg font-bold">SimplePOS</h3>
                     <p class="text-sm text-muted-foreground">
                         Point of Sale Receipt
                     </p>
