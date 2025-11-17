@@ -670,65 +670,54 @@ watch(amountTendered, () => {
 
                     <!-- Right Column - Items & Checkout (8 columns on desktop) -->
                     <div class="lg:col-span-8 space-y-6">
-                        <!-- Section 1: Add Products -->
-                        <div
-                            class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none"
-                        >
-                            <h2 class="mb-4 text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                <span class="text-xl">🛒</span>
-                                Add Products
-                            </h2>
                             
-                            <div>
-                                <!-- Product Selection Dropdown -->
-                                <div class="relative product-dropdown">
+                        <!-- Product Selection Dropdown -->
+                        <div class="relative product-dropdown">
+                            <div
+                                @click="showProductDropdown = !showProductDropdown"
+                                class="flex h-12 w-full cursor-pointer items-center justify-between rounded-md border border-input bg-background px-4 py-3 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
+                            >
+                                <span class="truncate text-left font-medium">
+                                    {{ productSearch || 'Add item to cart' }}
+                                </span>
+                                <svg class="h-4 w-4 opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="m6 9 6 6 6-6"/>
+                                </svg>
+                            </div>
+                            
+                            <div
+                                v-if="showProductDropdown"
+                                class="absolute z-50 mt-1 max-h-[60vh] w-full overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-lg dark:border-gray-700 dark:bg-gray-800"
+                            >
+                                <div class="flex items-center border-b px-3 pb-2 mb-2 dark:border-gray-700">
+                                    <Search class="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                                    <input
+                                        v-model="productSearch"
+                                        placeholder="Search products by name..."
+                                        class="flex h-8 w-full rounded-md bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 dark:text-white"
+                                        @click.stop
+                                    />
+                                </div>
+                                <div class="max-h-[52vh] overflow-auto">
+                                    <!-- Product Options -->
                                     <div
-                                        @click="showProductDropdown = !showProductDropdown"
-                                        class="flex h-12 w-full cursor-pointer items-center justify-between rounded-md border border-input bg-background px-4 py-3 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                        v-for="product in filteredProducts"
+                                        :key="product.id"
+                                        @click="selectProduct(product)"
+                                        class="relative flex cursor-default select-none items-center rounded-sm px-2 py-2.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground cursor-pointer"
                                     >
-                                        <span class="truncate text-left font-medium">
-                                            {{ productSearch || 'Add item to cart' }}
-                                        </span>
-                                        <svg class="h-4 w-4 opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="m6 9 6 6 6-6"/>
-                                        </svg>
+                                        <div class="flex flex-col">
+                                            <div class="font-medium">{{ product.product_name }}</div>
+                                            <div class="text-xs text-green-600 dark:text-green-400 font-medium">
+                                                ₱{{ Number(product.unit_price).toFixed(2) }}/{{ product.unit?.abbreviation || 'unit' }}
+                                            </div>
+                                        </div>
                                     </div>
-                                    
                                     <div
-                                        v-if="showProductDropdown"
-                                        class="absolute z-50 mt-1 max-h-[60vh] w-full overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-lg dark:border-gray-700 dark:bg-gray-800"
+                                        v-if="filteredProducts.length === 0"
+                                        class="py-6 text-center text-sm text-muted-foreground"
                                     >
-                                        <div class="flex items-center border-b px-3 pb-2 mb-2 dark:border-gray-700">
-                                            <Search class="mr-2 h-4 w-4 shrink-0 opacity-50" />
-                                            <input
-                                                v-model="productSearch"
-                                                placeholder="Search products by name..."
-                                                class="flex h-8 w-full rounded-md bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 dark:text-white"
-                                                @click.stop
-                                            />
-                                        </div>
-                                        <div class="max-h-[52vh] overflow-auto">
-                                            <!-- Product Options -->
-                                            <div
-                                                v-for="product in filteredProducts"
-                                                :key="product.id"
-                                                @click="selectProduct(product)"
-                                                class="relative flex cursor-default select-none items-center rounded-sm px-2 py-2.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground cursor-pointer"
-                                            >
-                                                <div class="flex flex-col">
-                                                    <div class="font-medium">{{ product.product_name }}</div>
-                                                    <div class="text-xs text-green-600 dark:text-green-400 font-medium">
-                                                        ₱{{ Number(product.unit_price).toFixed(2) }}/{{ product.unit?.abbreviation || 'unit' }}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div
-                                                v-if="filteredProducts.length === 0"
-                                                class="py-6 text-center text-sm text-muted-foreground"
-                                            >
-                                                No products found.
-                                            </div>
-                                        </div>
+                                        No products found.
                                     </div>
                                 </div>
                             </div>
@@ -738,183 +727,169 @@ watch(amountTendered, () => {
                         <div
                             class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none"
                         >
-                            <h2 class="mb-4 text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                <span class="text-xl">📦</span>
-                                Cart Items
-                                <span 
-                                    v-if="cartItems.length" 
-                                    class="ml-2 inline-flex items-center justify-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                                >
-                                    {{ cartItems.length }}
-                                </span>
-                            </h2>
-
-                            <!-- Items List -->
-                            <div class="rounded-lg border border-gray-200 dark:border-gray-700">
-                                <!-- Empty state -->
-                                <div v-if="!cartItems.length" class="px-6 py-16 text-center">
-                                    <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
-                                        <span class="text-3xl">📝</span>
-                                    </div>
-                                    <h3 class="mt-6 text-lg font-medium text-gray-900 dark:text-white">
-                                        No items in cart
-                                    </h3>
-                                    <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                                        Add item to cart to start building your sale
-                                    </p>
+                            <!-- Empty state -->
+                            <div v-if="!cartItems.length" class="px-6 py-16 text-center">
+                                <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
+                                    <span class="text-3xl">📝</span>
                                 </div>
+                                <h3 class="mt-6 text-lg font-medium text-gray-900 dark:text-white">
+                                    No items in cart
+                                </h3>
+                                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                                    Add item to cart to start building your sale
+                                </p>
+                            </div>
 
-                                <!-- Items Display -->
-                                <div v-else>
-                                    <!-- Mobile Layout (lg and below) -->
-                                    <div class="lg:hidden divide-y divide-gray-200 dark:divide-gray-700">
-                                        <div 
-                                            v-for="(item, index) in cartItems" 
-                                            :key="item.id"
-                                            class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
-                                        >
-                                            <div class="space-y-3">
-                                                <!-- Header Row -->
-                                                <div class="flex items-start justify-between">
-                                                    <div class="flex-1 min-w-0">
-                                                        <h3 class="text-base font-semibold text-gray-900 dark:text-white truncate">
-                                                            {{ item.product_name }}
-                                                        </h3>
-                                                        <div class="mt-1 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                                                            <span>₱{{ Number(item.unit_price).toFixed(2) }}/{{ item.unit?.abbreviation || 'unit' }}</span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="text-right ml-4">
-                                                        <div class="text-lg font-bold text-green-600 dark:text-green-400">
-                                                            ₱{{ calculateItemTotal(item).toFixed(2) }}
-                                                        </div>
+                            <!-- Items Display -->
+                            <div v-else>
+                                <!-- Mobile Layout (lg and below) -->
+                                <div class="lg:hidden divide-y divide-gray-200 dark:divide-gray-700">
+                                    <div 
+                                        v-for="(item, index) in cartItems" 
+                                        :key="item.id"
+                                        class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                                    >
+                                        <div class="space-y-3">
+                                            <!-- Header Row -->
+                                            <div class="flex items-start justify-between">
+                                                <div class="flex-1 min-w-0">
+                                                    <h3 class="text-base font-semibold text-gray-900 dark:text-white truncate">
+                                                        {{ item.product_name }}
+                                                    </h3>
+                                                    <div class="mt-1 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                                                        <span>₱{{ Number(item.unit_price).toFixed(2) }}/{{ item.unit?.abbreviation || 'unit' }}</span>
                                                     </div>
                                                 </div>
-
-                                                <!-- Controls Row -->
-                                                <div class="flex items-center justify-between pt-2">
-                                                    <div class="flex items-center gap-2">
-                                                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                            Qty:
-                                                        </label>
-                                                        <div class="flex items-center gap-1 rounded-md border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-700 p-1">
-                                                            <button
-                                                                @click="decrementQuantity(index)"
-                                                                :disabled="item.quantity <= 0.01"
-                                                                class="h-6 w-6 rounded flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent dark:disabled:hover:bg-transparent text-gray-600 dark:text-gray-300"
-                                                            >
-                                                                <Minus class="h-3 w-3" />
-                                                            </button>
-                                                            <input
-                                                                type="number"
-                                                                min="0.01"
-                                                                step="0.01"
-                                                                :value="item.quantity"
-                                                                @input="updateCartItemQuantity(index, parseFloat(($event.target as HTMLInputElement).value))"
-                                                                class="w-12 border-0 bg-transparent px-1 py-1 text-center text-sm text-gray-900 focus:outline-none focus:ring-0 dark:text-white"
-                                                            />
-                                                            <button
-                                                                @click="incrementQuantity(index)"
-                                                                class="h-6 w-6 rounded flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300"
-                                                            >
-                                                                <Plus class="h-3 w-3" />
-                                                            </button>
-                                                        </div>
+                                                <div class="text-right ml-4">
+                                                    <div class="text-lg font-bold text-green-600 dark:text-green-400">
+                                                        ₱{{ calculateItemTotal(item).toFixed(2) }}
                                                     </div>
-                                                    
+                                                </div>
+                                            </div>
+
+                                            <!-- Controls Row -->
+                                            <div class="flex items-center justify-between pt-2">
+                                                <div class="flex items-center gap-2">
+                                                    <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                        Qty:
+                                                    </label>
+                                                    <div class="flex items-center gap-1 rounded-md border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-700 p-1">
+                                                        <button
+                                                            @click="decrementQuantity(index)"
+                                                            :disabled="item.quantity <= 0.01"
+                                                            class="h-6 w-6 rounded flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent dark:disabled:hover:bg-transparent text-gray-600 dark:text-gray-300"
+                                                        >
+                                                            <Minus class="h-3 w-3" />
+                                                        </button>
+                                                        <input
+                                                            type="number"
+                                                            min="0.01"
+                                                            step="0.01"
+                                                            :value="item.quantity"
+                                                            @input="updateCartItemQuantity(index, parseFloat(($event.target as HTMLInputElement).value))"
+                                                            class="w-12 border-0 bg-transparent px-1 py-1 text-center text-sm text-gray-900 focus:outline-none focus:ring-0 dark:text-white"
+                                                        />
+                                                        <button
+                                                            @click="incrementQuantity(index)"
+                                                            class="h-6 w-6 rounded flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300"
+                                                        >
+                                                            <Plus class="h-3 w-3" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                
+                                                <Button 
+                                                    size="sm" 
+                                                    variant="ghost"
+                                                    @click="removeCartItem(index)"
+                                                    class="h-8 w-8 p-0 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:text-gray-500 dark:hover:text-red-400 dark:hover:bg-red-950/50"
+                                                >
+                                                    <X class="h-3 w-3" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Desktop Table Layout (lg and above) -->
+                                <div class="hidden lg:block">
+                                    <table class="w-full">
+                                        <thead class="border-b border-gray-200 dark:border-gray-700">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                                    Item
+                                                </th>
+                                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                                    Qty
+                                                </th>
+                                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                                    Price
+                                                </th>
+                                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                                    Total
+                                                </th>
+                                                <th class="px-4 py-3 w-12"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                            <tr 
+                                                v-for="(item, index) in cartItems" 
+                                                :key="item.id"
+                                                class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                                            >
+                                                <td class="px-4 py-3">
+                                                    <div class="text-sm font-medium text-gray-900 dark:text-white">
+                                                        {{ item.product_name }}
+                                                    </div>
+                                                </td>
+                                                <td class="px-4 py-3 text-center">
+                                                    <div class="flex items-center justify-center gap-1">
+                                                        <button
+                                                            @click="decrementQuantity(index)"
+                                                            :disabled="item.quantity <= 0.01"
+                                                            class="h-6 w-6 rounded flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent dark:disabled:hover:bg-transparent text-gray-600 dark:text-gray-300"
+                                                        >
+                                                            <Minus class="h-3 w-3" />
+                                                        </button>
+                                                        <input
+                                                            type="number"
+                                                            min="0.01"
+                                                            step="0.01"
+                                                            :value="item.quantity"
+                                                            @input="updateCartItemQuantity(index, parseFloat(($event.target as HTMLInputElement).value))"
+                                                            class="w-12 border border-gray-300 rounded bg-white px-1 py-1 text-center text-sm text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                                        />
+                                                        <button
+                                                            @click="incrementQuantity(index)"
+                                                            class="h-6 w-6 rounded flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300"
+                                                        >
+                                                            <Plus class="h-3 w-3" />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                                <td class="px-4 py-3 text-right">
+                                                    <span class="text-sm text-gray-500 dark:text-gray-400">
+                                                        ₱{{ Number(item.unit_price).toFixed(2) }} / {{ item.unit?.abbreviation || 'unit' }}
+                                                    </span>
+                                                </td>
+                                                <td class="px-4 py-3 text-right">
+                                                    <span class="text-sm font-semibold text-green-600 dark:text-green-400">
+                                                        ₱{{ calculateItemTotal(item).toFixed(2) }}
+                                                    </span>
+                                                </td>
+                                                <td class="px-4 py-3">
                                                     <Button 
                                                         size="sm" 
                                                         variant="ghost"
                                                         @click="removeCartItem(index)"
-                                                        class="h-8 w-8 p-0 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:text-gray-500 dark:hover:text-red-400 dark:hover:bg-red-950/50"
+                                                        class="h-6 w-6 p-0 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:text-gray-500 dark:hover:text-red-400 dark:hover:bg-red-950/50"
                                                     >
                                                         <X class="h-3 w-3" />
                                                     </Button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Desktop Table Layout (lg and above) -->
-                                    <div class="hidden lg:block">
-                                        <table class="w-full">
-                                            <thead class="border-b border-gray-200 dark:border-gray-700">
-                                                <tr>
-                                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                                        Item
-                                                    </th>
-                                                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                                        Qty
-                                                    </th>
-                                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                                        Price
-                                                    </th>
-                                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                                        Total
-                                                    </th>
-                                                    <th class="px-4 py-3 w-12"></th>
-                                                </tr>
-                                            </thead>
-                                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                                                <tr 
-                                                    v-for="(item, index) in cartItems" 
-                                                    :key="item.id"
-                                                    class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
-                                                >
-                                                    <td class="px-4 py-3">
-                                                        <div class="text-sm font-medium text-gray-900 dark:text-white">
-                                                            {{ item.product_name }}
-                                                        </div>
-                                                    </td>
-                                                    <td class="px-4 py-3 text-center">
-                                                        <div class="flex items-center justify-center gap-1">
-                                                            <button
-                                                                @click="decrementQuantity(index)"
-                                                                :disabled="item.quantity <= 0.01"
-                                                                class="h-6 w-6 rounded flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent dark:disabled:hover:bg-transparent text-gray-600 dark:text-gray-300"
-                                                            >
-                                                                <Minus class="h-3 w-3" />
-                                                            </button>
-                                                            <input
-                                                                type="number"
-                                                                min="0.01"
-                                                                step="0.01"
-                                                                :value="item.quantity"
-                                                                @input="updateCartItemQuantity(index, parseFloat(($event.target as HTMLInputElement).value))"
-                                                                class="w-12 border border-gray-300 rounded bg-white px-1 py-1 text-center text-sm text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                                            />
-                                                            <button
-                                                                @click="incrementQuantity(index)"
-                                                                class="h-6 w-6 rounded flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300"
-                                                            >
-                                                                <Plus class="h-3 w-3" />
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                    <td class="px-4 py-3 text-right">
-                                                        <span class="text-sm text-gray-500 dark:text-gray-400">
-                                                            ₱{{ Number(item.unit_price).toFixed(2) }} / {{ item.unit?.abbreviation || 'unit' }}
-                                                        </span>
-                                                    </td>
-                                                    <td class="px-4 py-3 text-right">
-                                                        <span class="text-sm font-semibold text-green-600 dark:text-green-400">
-                                                            ₱{{ calculateItemTotal(item).toFixed(2) }}
-                                                        </span>
-                                                    </td>
-                                                    <td class="px-4 py-3">
-                                                        <Button 
-                                                            size="sm" 
-                                                            variant="ghost"
-                                                            @click="removeCartItem(index)"
-                                                            class="h-6 w-6 p-0 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:text-gray-500 dark:hover:text-red-400 dark:hover:bg-red-950/50"
-                                                        >
-                                                            <X class="h-3 w-3" />
-                                                        </Button>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
@@ -924,10 +899,6 @@ watch(amountTendered, () => {
                             v-if="cartItems.length"
                             class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none"
                         >
-                            <h2 class="mb-6 text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                <span class="text-xl">💰</span>
-                                Payment Details
-                            </h2>
 
                             <!-- Payment Summary Section -->
                             <div class="space-y-6">
@@ -948,6 +919,7 @@ watch(amountTendered, () => {
                                         <Checkbox
                                             id="payTowardsBalance"
                                             v-model="payTowardsBalance"
+                                            class="h-5 w-5 rounded-md border-2 border-blue-300 bg-white text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-blue-600 dark:bg-gray-700"
                                         />
                                         <Label
                                             for="payTowardsBalance"
