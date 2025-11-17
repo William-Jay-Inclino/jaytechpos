@@ -204,128 +204,72 @@ const deleteUser = (userId: number) => {
 
                     <!-- Users List -->
                     <div v-else>
-                        <!-- Mobile Cards -->
-                        <div class="block divide-y divide-gray-100 dark:divide-gray-700 lg:hidden">
-                            <div
-                                v-for="user in filteredUsers"
-                                :key="user.id"
-                                class="space-y-3 p-4 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50"
-                            >
-                                <!-- Header Row -->
-                                <div class="flex items-start justify-between">
-                                    <div class="min-w-0 flex-1">
-                                        <h3 class="truncate text-base font-semibold text-gray-900 dark:text-white">
-                                            {{ user.name }}
-                                        </h3>
-                                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                            {{ user.email }}
-                                        </p>
-                                        <div class="mt-2 flex items-center gap-2">
-                                            <Badge 
-                                                :variant="user.status === 'active' ? 'default' : 'secondary'"
-                                            >
-                                                {{ user.status === 'active' ? 'Active' : 'Inactive' }}
-                                            </Badge>
-                                            <span class="text-xs text-gray-500 dark:text-gray-400">
-                                                {{ user.created_at }}
-                                            </span>
+
+                            <div class="overflow-x-auto">
+                                <table class="min-w-[900px] w-full" aria-label="Users table">
+                            <thead class="bg-gray-50 dark:bg-gray-700/50">
+                                <tr class="border-b border-gray-200 dark:border-gray-700">
+                                    <th class="w-96 py-3 pl-6 pr-4 text-left text-sm font-medium text-gray-900 dark:text-white">
+                                        User
+                                    </th>
+                                    <th class="w-32 px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white">
+                                        Status
+                                    </th>
+                                    <th class="w-40 px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white">
+                                        Created
+                                    </th>
+                                    <th class="w-48 py-3 pl-4 pr-6 text-right text-sm font-medium text-gray-900 dark:text-white">
+                                        Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr 
+                                    v-for="user in filteredUsers" 
+                                    :key="user.id"
+                                    class="border-b border-gray-200 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700/50"
+                                >
+                                    <td class="w-96 py-4 pl-6 pr-4">
+                                        <div>
+                                            <h3 class="text-base font-semibold text-gray-900 dark:text-white">
+                                                {{ user.name }}
+                                            </h3>
+                                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                                {{ user.email }}
+                                            </p>
                                         </div>
-                                    </div>
-                                </div>
-
-                                <!-- Actions Row -->
-                                <div class="flex items-center justify-end gap-2 pt-2">
-                                    <Button 
-                                        size="sm" 
-                                        variant="outline" 
-                                        as-child
-                                        class="h-8 px-3"
-                                    >
-                                        <Link :href="`/admin/users/${user.id}/edit`">
-                                            <Edit class="mr-1.5 h-3 w-3" />
-                                            Edit
-                                        </Link>
-                                    </Button>
-                                    
-                                    <Button 
-                                        size="sm" 
-                                        variant="destructive"
-                                        class="h-8 px-3"
-                                        @click="deleteUser(user.id)"
-                                    >
-                                        <Trash2 class="mr-1.5 h-3 w-3" />
-                                        Delete
-                                    </Button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Desktop Table -->
-                        <div class="hidden lg:block">
-                            <table class="w-full">
-                                <thead class="bg-gray-50 dark:bg-gray-700/50">
-                                    <tr class="border-b border-gray-200 dark:border-gray-700">
-                                        <th class="w-96 py-3 pl-6 pr-4 text-left text-sm font-medium text-gray-900 dark:text-white">
-                                            User
-                                        </th>
-                                        <th class="w-32 px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white">
-                                            Status
-                                        </th>
-                                        <th class="w-40 px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white">
-                                            Created
-                                        </th>
-                                        <th class="w-48 py-3 pl-4 pr-6 text-right text-sm font-medium text-gray-900 dark:text-white">
-                                            Actions
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr 
-                                        v-for="user in filteredUsers" 
-                                        :key="user.id"
-                                        class="border-b border-gray-200 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700/50"
-                                    >
-                                        <td class="w-96 py-4 pl-6 pr-4">
-                                            <div>
-                                                <h3 class="text-base font-semibold text-gray-900 dark:text-white">
-                                                    {{ user.name }}
-                                                </h3>
-                                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                                    {{ user.email }}
-                                                </p>
-                                            </div>
-                                        </td>
-                                        <td class="w-32 px-4 py-4">
-                                            <Badge 
-                                                :variant="user.status === 'active' ? 'default' : 'secondary'"
+                                    </td>
+                                    <td class="w-32 px-4 py-4">
+                                        <Badge 
+                                            :variant="user.status === 'active' ? 'default' : 'secondary'"
+                                        >
+                                            {{ user.status === 'active' ? 'Active' : 'Inactive' }}
+                                        </Badge>
+                                    </td>
+                                    <td class="w-40 px-4 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                        {{ user.created_at }}
+                                    </td>
+                                    <td class="w-48 py-4 pl-4 pr-6">
+                                        <div class="flex items-center justify-end gap-2">
+                                            <Button size="sm" variant="outline" as-child>
+                                                <Link :href="`/admin/users/${user.id}/edit`">
+                                                    <Edit class="h-4 w-4" />
+                                                </Link>
+                                            </Button>
+                                            
+                                            <Button 
+                                                size="sm" 
+                                                variant="destructive"
+                                                @click="deleteUser(user.id)"
                                             >
-                                                {{ user.status === 'active' ? 'Active' : 'Inactive' }}
-                                            </Badge>
-                                        </td>
-                                        <td class="w-40 px-4 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                            {{ user.created_at }}
-                                        </td>
-                                        <td class="w-48 py-4 pl-4 pr-6">
-                                            <div class="flex items-center justify-end gap-2">
-                                                <Button size="sm" variant="outline" as-child>
-                                                    <Link :href="`/admin/users/${user.id}/edit`">
-                                                        <Edit class="h-4 w-4" />
-                                                    </Link>
-                                                </Button>
-                                                
-                                                <Button 
-                                                    size="sm" 
-                                                    variant="destructive"
-                                                    @click="deleteUser(user.id)"
-                                                >
-                                                    <Trash2 class="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                                                <Trash2 class="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                            </div>
 
                         <!-- Pagination -->
                         <div v-if="lastPage > 1" class="flex items-center justify-between border-t border-gray-200 px-4 py-4 dark:border-gray-700 sm:px-6">
