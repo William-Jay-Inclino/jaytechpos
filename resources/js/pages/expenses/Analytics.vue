@@ -37,9 +37,22 @@ interface Expense {
 const props = withDefaults(defineProps<{
     chartData: Array<ChartDataItem>;
     selectedYear: number;
+    monthlyExpenses?: Array<{ month: string; amount: number }>;
 }>(), {
     chartData: () => [],
     selectedYear: new Date().getFullYear(),
+    monthlyExpenses: () => [],
+});
+const monthOrder = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December',
+];
+
+const sortedMonthlyExpenses = computed(() => {
+    if (!Array.isArray(props.monthlyExpenses)) return [];
+    return [...props.monthlyExpenses].sort((a, b) => {
+        return monthOrder.indexOf(a.month) - monthOrder.indexOf(b.month);
+    });
 });
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -232,10 +245,49 @@ watch(selectedYear, () => {
                     
                     <ExpensePieChart v-else :data="chartData" @category-click="handleCategoryClick" />
                 </div>
+
+                <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                    <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+                                Monthly Expenses
+                            </h2>
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                Total expenses for each month in {{ selectedYear }}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead>
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900">Month</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                                <tr v-if="sortedMonthlyExpenses.length === 0">
+                                    <td colspan="2" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400 text-base">
+                                        No monthly expense data available.
+                                    </td>
+                                </tr>
+                                <tr v-for="row in sortedMonthlyExpenses" :key="row.month" class="hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors">
+                                    <td class="px-6 py-4 whitespace-nowrap text-base font-medium text-gray-900 dark:text-white">
+                                        {{ row.month }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-base font-semibold text-primary dark:text-primary">
+                                        {{ formatCurrency(row.amount) }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
             </div>
         </div>
 
-        <!-- Category Details Modal -->
+
         <ExpenseCategoryDetailsModal
             v-model:open="showCategoryModal"
             :category-name="selectedCategory?.label || ''"

@@ -71,9 +71,23 @@ class ExpenseController extends Controller
             })
             ->values();
 
+        // Expenses by month for the year
+        $monthlyExpenses = $expenses->groupBy(function ($expense) {
+            return \Carbon\Carbon::parse($expense->expense_date)->format('F');
+        })->map(function ($monthExpenses, $month) {
+            return [
+                'month' => $month,
+                'amount' => $monthExpenses->sum('amount'),
+            ];
+        })->sortBy(function ($item) {
+            // Sort by month number
+            return \DateTime::createFromFormat('F', $item['month'])->format('n');
+        })->values();
+
         return Inertia::render('expenses/Analytics', [
             'chartData' => $chartData,
             'selectedYear' => (int) $year,
+            'monthlyExpenses' => $monthlyExpenses,
         ]);
     }
 
