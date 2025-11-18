@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\ExpenseCategory;
 use App\Models\User;
+use App\Enums\UserRole;
 use Illuminate\Database\Seeder;
 
 class ExpenseCategorySeeder extends Seeder
@@ -13,7 +14,7 @@ class ExpenseCategorySeeder extends Seeder
      */
     public function run(): void
     {
-        $users = User::all();
+        $users = User::where('role', '!=', UserRole::Admin->value)->get();
 
         $categories = [
             'Rent',

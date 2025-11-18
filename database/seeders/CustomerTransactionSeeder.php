@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\UtangPayment;
 use App\Models\UtangTracking;
 use Illuminate\Database\Seeder;
+use App\Enums\UserRole;
 
 class CustomerTransactionSeeder extends Seeder
 {
@@ -17,7 +18,7 @@ class CustomerTransactionSeeder extends Seeder
      */
     public function run(): void
     {
-        $users = User::all();
+        $users = User::where('role', '!=', UserRole::Admin->value)->get();
 
         foreach ($users as $user) {
             $this->createCustomerTransactionsForUser($user);

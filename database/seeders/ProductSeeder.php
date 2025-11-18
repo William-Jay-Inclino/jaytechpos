@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use App\Enums\UserRole;
 
 class ProductSeeder extends Seeder
 {
@@ -13,7 +14,7 @@ class ProductSeeder extends Seeder
      */
     public function run(): void
     {
-        $users = User::all();
+        $users = User::where('role', '!=', UserRole::Admin->value)->get();
 
         foreach ($users as $user) {
             $this->createProductsForUser($user);

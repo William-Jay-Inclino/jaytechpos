@@ -6,6 +6,7 @@ use App\Models\Customer;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
+use App\Enums\UserRole;
 
 class MonthlyInterestSeeder extends Seeder
 {
@@ -14,7 +15,7 @@ class MonthlyInterestSeeder extends Seeder
      */
     public function run(): void
     {
-        $users = User::all();
+        $users = User::where('role', '!=', UserRole::Admin->value)->get();
 
         foreach ($users as $user) {
             $this->createMonthlyInterestForUser($user);

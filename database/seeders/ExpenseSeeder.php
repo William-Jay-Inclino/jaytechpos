@@ -7,6 +7,7 @@ use App\Models\ExpenseCategory;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
+use App\Enums\UserRole;
 
 class ExpenseSeeder extends Seeder
 {
@@ -15,7 +16,7 @@ class ExpenseSeeder extends Seeder
      */
     public function run(): void
     {
-        $users = User::all();
+        $users = User::where('role', '!=', UserRole::Admin->value)->get();
 
         foreach ($users as $user) {
             $this->createExpensesForUser($user);

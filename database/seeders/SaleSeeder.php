@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\SaleService;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
+use App\Enums\UserRole;
 
 class SaleSeeder extends Seeder
 {
@@ -25,7 +26,7 @@ class SaleSeeder extends Seeder
      */
     public function run(): void
     {
-        $users = User::all();
+    $users = User::where('role', '!=', UserRole::Admin->value)->get();
 
         foreach ($users as $user) {
             $this->createSalesForUser($user);

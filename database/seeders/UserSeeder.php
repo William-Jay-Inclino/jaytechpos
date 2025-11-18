@@ -34,19 +34,19 @@ class UserSeeder extends Seeder
         ]);
 
         // User 2: Mini Grocery Store
-        User::create([
-            'name' => 'Roberto Cruz',
-            'email' => 'roberto.cruz@demo.com',
-            'password' => bcrypt('password'),
-            'email_verified_at' => now(),
-        ]);
+        // User::create([
+        //     'name' => 'Roberto Cruz',
+        //     'email' => 'roberto.cruz@demo.com',
+        //     'password' => bcrypt('password'),
+        //     'email_verified_at' => now(),
+        // ]);
 
         // User 3: Sari-Sari Store
-        User::create([
-            'name' => 'Luz Reyes',
-            'email' => 'luz.reyes@demo.com',
-            'password' => bcrypt('password'),
-            'email_verified_at' => now(),
-        ]);
+        // User::create([
+        //     'name' => 'Luz Reyes',
+        //     'email' => 'luz.reyes@demo.com',
+        //     'password' => bcrypt('password'),
+        //     'email_verified_at' => now(),
+        // ]);
     }
 }

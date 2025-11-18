@@ -7,6 +7,7 @@ use App\Models\CustomerTransaction;
 use App\Models\Sale;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use App\Enums\UserRole;
 
 class CustomerTransactionRebuilderSeeder extends Seeder
 {
@@ -18,9 +19,12 @@ class CustomerTransactionRebuilderSeeder extends Seeder
         // First, clear existing customer transactions
         CustomerTransaction::truncate();
 
-        $users = User::all();
+        $users = User::where('role', '!=', UserRole::Admin->value)->get();
 
         foreach ($users as $user) {
+            if($user->role === UserRole::Admin) {
+                continue;
+            }
             $this->rebuildCustomerTransactionsForUser($user);
         }
     }

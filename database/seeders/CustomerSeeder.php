@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Customer;
 use App\Models\User;
+use App\Enums\UserRole;
 use Illuminate\Database\Seeder;
 
 class CustomerSeeder extends Seeder
@@ -32,10 +33,11 @@ class CustomerSeeder extends Seeder
             'Cabrera', 'Vargas', 'De Leon', 'Salazar', 'Miranda', 'Velasco', 'Tolentino', 'Valencia', 'Francisco', 'Domingo',
         ];
 
-        // Get all users
-        $users = User::all();
+        // Get all users that is not admin
+        $users = User::where('role', '!=', UserRole::Admin->value)->get();
 
         foreach ($users as $user) {
+
             // Generate 50+ customers per user
             $customerCount = rand(50, 65);
 

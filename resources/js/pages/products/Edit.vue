@@ -72,7 +72,7 @@ const filteredUnits = computed(() => {
 // Get selected unit name for display
 const selectedUnitName = computed(() => {
     const unit = props.units.find(u => u.id.toString() === form.unit_id);
-    return unit ? `${unit.unit_name} (${unit.abbreviation})` : '';
+    return unit ? unit.abbreviation : '';
 });
 
 // Functions to handle selection
@@ -176,57 +176,7 @@ onUnmounted(() => {
                             />
                         </div>
     
-                        <!-- Unit -->
-                        <div class="grid gap-2">
-                            <Label for="unit_id">Unit</Label>
-                            <div class="relative unit-dropdown">
-                                <div
-                                    @click="showUnitDropdown = !showUnitDropdown"
-                                    class="flex h-10 w-full cursor-pointer items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800"
-                                >
-                                    <span class="truncate">
-                                        {{ selectedUnitName || 'Select unit' }}
-                                    </span>
-                                    <svg class="h-4 w-4 opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="m6 9 6 6 6-6"/>
-                                    </svg>
-                                </div>
-                                
-                                <div
-                                    v-if="showUnitDropdown"
-                                    class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md dark:border-gray-700 dark:bg-gray-800"
-                                >
-                                    <div class="flex items-center border-b px-3 pb-2 mb-2 dark:border-gray-700">
-                                        <Search class="mr-2 h-4 w-4 shrink-0 opacity-50" />
-                                        <input
-                                            v-model="unitSearch"
-                                            placeholder="Search units..."
-                                            class="flex h-8 w-full rounded-md bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
-                                        />
-                                    </div>
-                                    <div class="max-h-40 overflow-auto">
-                                        <div
-                                            v-for="unit in filteredUnits"
-                                            :key="unit.id"
-                                            @click="selectUnit(unit.id.toString())"
-                                            class="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground cursor-pointer"
-                                        >
-                                            {{ unit.unit_name }} ({{ unit.abbreviation }})
-                                        </div>
-                                        <div
-                                            v-if="filteredUnits.length === 0"
-                                            class="py-6 text-center text-sm text-muted-foreground"
-                                        >
-                                            No units found.
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <InputError
-                                :message="form.errors.unit_id"
-                                class="mt-1"
-                            />
-                        </div>
+                        
     
                         <!-- Price Row -->
                         <div class="grid gap-6 md:grid-cols-2">
@@ -272,60 +222,116 @@ onUnmounted(() => {
                                 />
                             </div>
                         </div>
-    
-                        <!-- Status -->
-                        <div class="grid gap-2">
-                            <Label>Status</Label>
-                            <div class="flex items-center gap-4">
-                                <div class="relative">
-                                    <button
-                                        type="button"
-                                        @click="form.status = form.status === 'active' ? 'inactive' : 'active'"
-                                        :class="[
-                                            'relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
-                                            form.status === 'active' 
-                                                ? 'bg-green-500' 
-                                                : 'bg-gray-300 dark:bg-gray-600'
-                                        ]"
+                        
+                        <div class="grid gap-6 md:grid-cols-2 md:items-end">
+                            <!-- Unit -->
+                            <div class="grid gap-2">
+                                <Label for="unit_id">Unit</Label>
+                                <div class="relative unit-dropdown">
+                                    <div
+                                        @click="showUnitDropdown = !showUnitDropdown"
+                                        class="flex h-10 w-full cursor-pointer items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800"
                                     >
-                                        <span
-                                            :class="[
-                                                'inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200',
-                                                form.status === 'active' 
-                                                    ? 'translate-x-6' 
-                                                    : 'translate-x-1'
-                                            ]"
-                                        ></span>
-                                    </button>
+                                        <span class="truncate">
+                                            {{ selectedUnitName || 'Select unit' }}
+                                        </span>
+                                        <svg class="h-4 w-4 opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="m6 9 6 6 6-6"/>
+                                        </svg>
+                                    </div>
+                                    
+                                    <div
+                                        v-if="showUnitDropdown"
+                                        class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md dark:border-gray-700 dark:bg-gray-800"
+                                    >
+                                        <div class="flex items-center border-b px-3 pb-2 mb-2 dark:border-gray-700">
+                                            <Search class="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                                            <input
+                                                v-model="unitSearch"
+                                                placeholder="Search units..."
+                                                class="flex h-8 w-full rounded-md bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                                            />
+                                        </div>
+                                        <div class="max-h-40 overflow-auto">
+                                            <div
+                                                v-for="unit in filteredUnits"
+                                                :key="unit.id"
+                                                @click="selectUnit(unit.id.toString())"
+                                                class="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground cursor-pointer"
+                                            >
+                                                {{ unit.unit_name }} ({{ unit.abbreviation }})
+                                            </div>
+                                            <div
+                                                v-if="filteredUnits.length === 0"
+                                                class="py-6 text-center text-sm text-muted-foreground"
+                                            >
+                                                No units found.
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="flex items-center gap-2">
-                                    <span 
-                                        :class="[
-                                            'text-sm font-medium',
-                                            form.status === 'active' 
-                                                ? 'text-green-600 dark:text-green-400' 
-                                                : 'text-gray-600 dark:text-gray-400'
-                                        ]"
-                                    >
-                                        {{ form.status === 'active' ? 'Active' : 'Inactive' }}
-                                    </span>
-                                    <span 
-                                        :class="[
-                                            'text-xs px-2 py-1 rounded-full',
-                                            form.status === 'active' 
-                                                ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400' 
-                                                : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
-                                        ]"
-                                    >
-                                        {{ form.status === 'active' ? 'Available for sale' : 'Not available' }}
-                                    </span>
-                                </div>
+                                <InputError
+                                    :message="form.errors.unit_id"
+                                    class="mt-1"
+                                />
                             </div>
-                            <InputError
-                                :message="form.errors.status"
-                                class="mt-1"
-                            />
+
+                            <!-- Status -->
+                            <div class="grid gap-2">
+                                <Label>Status</Label>
+                                <div class="flex items-center gap-4">
+                                    <div class="relative">
+                                        <button
+                                            type="button"
+                                            @click="form.status = form.status === 'active' ? 'inactive' : 'active'"
+                                            :class="[
+                                                'relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
+                                                form.status === 'active' 
+                                                    ? 'bg-green-500' 
+                                                    : 'bg-gray-300 dark:bg-gray-600'
+                                            ]"
+                                        >
+                                            <span
+                                                :class="[
+                                                    'inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200',
+                                                    form.status === 'active' 
+                                                        ? 'translate-x-6' 
+                                                        : 'translate-x-1'
+                                                ]"
+                                            ></span>
+                                        </button>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span 
+                                            :class="[
+                                                'text-sm font-medium',
+                                                form.status === 'active' 
+                                                    ? 'text-green-600 dark:text-green-400' 
+                                                    : 'text-gray-600 dark:text-gray-400'
+                                            ]"
+                                        >
+                                            {{ form.status === 'active' ? 'Active' : 'Inactive' }}
+                                        </span>
+                                        <span 
+                                            :class="[
+                                                'text-xs px-2 py-1 rounded-full',
+                                                form.status === 'active' 
+                                                    ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400' 
+                                                    : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
+                                            ]"
+                                        >
+                                            {{ form.status === 'active' ? 'Available for sale' : 'Not available' }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <InputError
+                                    :message="form.errors.status"
+                                    class="mt-1"
+                                />
+                            </div>
                         </div>
+
+                        
     
                         <!-- Actions -->
                         <div class="flex items-center gap-4">
