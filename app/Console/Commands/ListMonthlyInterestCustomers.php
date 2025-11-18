@@ -62,6 +62,7 @@ class ListMonthlyInterestCustomers extends Command
 
         if ($count === 0) {
             $this->info('No customers require monthly interest processing this month.');
+
             return 0;
         }
 
@@ -79,6 +80,7 @@ class ListMonthlyInterestCustomers extends Command
                     $rate = $rate / 100.0;
                 }
                 $interest = number_format((float) round($c->running_utang_balance * $rate, 2), 2);
+
                 return [
                     'id' => $c->id,
                     'name' => $c->name,

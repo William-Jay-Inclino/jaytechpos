@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { CustomerTransaction } from '@/types';
-import { formatManilaDateTime, formatPhilippinePeso } from '@/utils/timezone';
 import { ref } from 'vue';
+import { CustomerTransaction, Sale } from '@/types/pos';
+import { formatManilaDateTime, formatPhilippinePeso } from '@/utils/timezone';
 
 // UI Components
 import SaleDetailsModal from '@/components/modals/SaleDetailsModal.vue';
@@ -14,14 +14,38 @@ const props = defineProps<{
     customerId?: number;
 }>();
 
+console.log('props', props);
+
 // Modal state
 const showSaleModal = ref(false);
-const selectedSaleTransaction = ref<CustomerTransaction | null>(null);
+const selectedSale = ref<Sale | null>(null);
+const selectedTransaction = ref<CustomerTransaction | null>(null);
 const loadingTransactionIds = ref<Set<number>>(new Set());
 
-// Methods
-const formatCurrency = formatPhilippinePeso;
-const formatDate = formatManilaDateTime;
+// Helpers
+const formatDate = (dateStr: string | null | undefined) => {
+    return dateStr ? formatManilaDateTime(dateStr) : '';
+};
+
+const formatAmount = (amount: number | string | null | undefined) => {
+    if (amount === null || amount === undefined || amount === '') {
+        return '';
+    }
+
+    if (typeof amount === 'number') {
+        return formatPhilippinePeso(amount);
+    }
+
+    // amount is a string (e.g. "1234.56" or formatted like "1,234.56")
+    const cleaned = String(amount).replace(/[,₱\s]/g, '');
+    const parsed = parseFloat(cleaned);
+    if (!isNaN(parsed)) {
+        return formatPhilippinePeso(parsed);
+    }
+
+    // Fallback: return the original string if parsing fails
+    return String(amount);
+};
 
 const getTransactionTypeLabel = (type: string) => {
     switch (type) {
@@ -41,17 +65,18 @@ const getTransactionTypeLabel = (type: string) => {
 };
 
 const openSaleDetails = async (transaction: CustomerTransaction) => {
-    if (transaction.type !== 'sale' || !props.customerId) return;
-    
+    // We expect a sale transaction to have `reference_id` pointing to the sale id
+    if (transaction.transaction_type !== 'sale' || !transaction.reference_id) return;
+
     loadingTransactionIds.value.add(transaction.id);
     try {
-        // Get CSRF token from the meta tag
         const token = document
             .querySelector('meta[name="csrf-token"]')
             ?.getAttribute('content');
 
+        // Use the sales API endpoint: GET /api/sales/{sale}
         const response = await fetch(
-            `/api/customers/${props.customerId}/transactions/${transaction.id}`,
+            `/api/sales/${transaction.reference_id}`,
             {
                 method: 'GET',
                 headers: {
@@ -69,10 +94,14 @@ const openSaleDetails = async (transaction: CustomerTransaction) => {
         }
 
         const data = await response.json();
-        selectedSaleTransaction.value = data.transaction;
+
+        console.log('data', data);
+
+        selectedSale.value = data.sale;
+        selectedTransaction.value = transaction;
         showSaleModal.value = true;
     } catch (error) {
-        console.error('Error fetching transaction details:', error);
+        console.error('Error fetching sale details:', error);
     } finally {
         loadingTransactionIds.value.delete(transaction.id);
     }
@@ -174,7 +203,7 @@ const isTransactionLoading = (transactionId: number) => {
         >
             <div
                 v-for="transaction in transactions"
-                :key="`${transaction.type}-${transaction.id}`"
+                :key="`${transaction.transaction_type}-${transaction.id}`"
                 class="rounded-lg border border-gray-200 bg-gray-50 p-3 transition-colors hover:bg-gray-100 sm:p-4 dark:border-gray-600 dark:bg-gray-700/50 dark:hover:bg-gray-700"
             >
                 <div
@@ -187,70 +216,70 @@ const isTransactionLoading = (transactionId: number) => {
                             <span
                                 :class="[
                                     'w-fit rounded-full px-2 py-1 text-xs font-semibold sm:px-3',
-                                    transaction.type === 'utang_payment'
+                                    transaction.transaction_type === 'utang_payment'
                                         ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400'
-                                        : transaction.type === 'monthly_interest'
+                                        : transaction.transaction_type === 'monthly_interest'
                                           ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400'
-                                          : transaction.type === 'starting_balance'
+                                          : transaction.transaction_type === 'starting_balance'
                                             ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400'
-                                            : transaction.type === 'balance_update'
+                                            : transaction.transaction_type === 'balance_update'
                                               ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400'
                                               : 'bg-orange-100 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400',
                                 ]"
                             >
-                                {{ getTransactionTypeLabel(transaction.type) }}
+                                {{ getTransactionTypeLabel(transaction.transaction_type) }}
                             </span>
                             <span
                                 class="text-xs font-medium text-gray-500 dark:text-gray-400"
                             >
-                                {{ formatDate(transaction.date) }}
+                                {{ formatDate(transaction.transaction_date) }}
                             </span>
                         </div>
 
                         <p
                             class="mb-3 text-xs font-semibold break-words text-gray-900 sm:text-sm dark:text-white"
                         >
-                            {{ transaction.description }}
+                            {{ transaction.transaction_desc }}
                         </p>
 
                         <!-- Balance changes -->
                         <div
                             v-if="
-                                (transaction.type === 'utang_payment' ||
-                                    transaction.type === 'sale' ||
-                                    transaction.type === 'monthly_interest' ||
-                                    transaction.type === 'starting_balance' ||
-                                    transaction.type === 'balance_update') &&
+                                (transaction.transaction_type === 'utang_payment' ||
+                                    transaction.transaction_type === 'sale' ||
+                                    transaction.transaction_type === 'monthly_interest' ||
+                                    transaction.transaction_type === 'starting_balance' ||
+                                    transaction.transaction_type === 'balance_update') &&
                                 transaction.previous_balance !== undefined
                             "
                             class="rounded bg-gray-100 p-2 text-xs text-gray-600 dark:bg-gray-600 dark:text-gray-400"
                         >
                             <span
-                                v-if="transaction.type === 'monthly_interest'"
+                                v-if="transaction.transaction_type === 'monthly_interest'"
                                 class="font-medium break-words"
                             >
                                 Previous Month:
-                                {{ transaction.formatted_previous_balance }}
+                                {{ formatAmount(transaction.previous_balance) }}
                                 → Current Month:
-                                {{ transaction.formatted_new_balance }}
+                                {{ formatAmount(transaction.new_balance) }}
                             </span>
                             <span
-                                v-else-if="transaction.type === 'starting_balance'"
+                                v-else-if="transaction.transaction_type === 'starting_balance'"
                                 class="font-medium break-words"
                             >
                                 Initial Balance:
-                                {{ transaction.formatted_previous_balance }}
+                                {{ formatAmount(transaction.previous_balance) }}
                                 → Starting Balance:
-                                {{ transaction.formatted_new_balance }}
+                                {{ formatAmount(transaction.new_balance) }}
                             </span>
                             <span
                                 v-else
                                 class="font-medium break-words"
                             >
                                 Balance:
-                                {{ transaction.formatted_previous_balance }}
+                                {{ formatAmount(transaction.previous_balance) }}
                                 →
-                                {{ transaction.formatted_new_balance }}
+                                {{ formatAmount(transaction.new_balance) }}
                             </span>
                         </div>
                     </div>
@@ -260,7 +289,7 @@ const isTransactionLoading = (transactionId: number) => {
                     >
                         <!-- View Details Button for Sales -->
                         <Button
-                            v-if="transaction.type === 'sale'"
+                            v-if="transaction.transaction_type === 'sale'"
                             variant="ghost"
                             size="sm"
                             @click="openSaleDetails(transaction)"
@@ -278,7 +307,7 @@ const isTransactionLoading = (transactionId: number) => {
                         <span
                             class="w-fit rounded-lg bg-green-50 px-2 py-1 text-sm font-bold text-green-600 sm:px-3 sm:text-lg dark:bg-green-900/20 dark:text-green-400"
                         >
-                            {{ transaction.formatted_amount }}
+                            {{ formatAmount(transaction.transaction_amount) }}
                         </span>
                     </div>
                 </div>
@@ -288,7 +317,8 @@ const isTransactionLoading = (transactionId: number) => {
         <!-- Sale Details Modal -->
         <SaleDetailsModal
             v-model:open="showSaleModal"
-            :transaction="selectedSaleTransaction as any"
+            :transaction="selectedTransaction as any"
+            :sale="selectedSale as any"
         />
     </div>
 </template>

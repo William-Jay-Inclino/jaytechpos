@@ -4,9 +4,65 @@ use App\Models\Activity;
 use App\Models\Customer;
 use App\Models\CustomerTransaction;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Services\CustomerService;
 
-uses(RefreshDatabase::class);
+uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+
+it('skips customers who already have monthly interest this month', function () {
+    // Create a customer with utang
+    $customer = Customer::factory()->create([
+        'has_utang' => true,
+    ]);
+
+    // Create an existing monthly_interest transaction for current month
+    $customer->customerTransactions()->create([
+        'user_id' => $customer->user_id,
+        'transaction_type' => 'monthly_interest',
+        'reference_id' => null,
+        'previous_balance' => 100.00,
+        'new_balance' => 103.00,
+        'transaction_desc' => 'Existing monthly interest',
+        'transaction_date' => now(),
+        'transaction_amount' => 3.00,
+    ]);
+
+    $service = new CustomerService;
+
+    $created = $service->processMonthlyInterest();
+
+    expect($created->count())->toBe(0);
+    expect($customer->customerTransactions()->where('transaction_type', 'monthly_interest')->count())->toBe(1);
+});
+
+it('applies monthly interest when no existing monthly interest and positive balance', function () {
+    // Create a customer with utang and a positive running balance via a prior transaction
+    $customer = Customer::factory()->create([
+        'has_utang' => true,
+        // Try to set an interest rate; service will normalize >1 values as percents
+        'interest_rate' => 0.05,
+    ]);
+
+    // Seed a prior transaction so running_utang_balance is positive.
+    $customer->customerTransactions()->create([
+        'user_id' => $customer->user_id,
+        'transaction_type' => 'starting_balance',
+        'reference_id' => null,
+        'previous_balance' => 0.00,
+        'new_balance' => 1000.00,
+        'transaction_desc' => 'Initial balance',
+        'transaction_date' => now()->subMonth(),
+        'transaction_amount' => 1000.00,
+    ]);
+
+    $service = new CustomerService;
+
+    $created = $service->processMonthlyInterest();
+
+    expect($created->count())->toBe(1);
+    $txn = $created->first();
+    expect($txn->transaction_type)->toBe('monthly_interest');
+    expect($txn->transaction_amount)->toBeGreaterThan(0.0);
+});
 
 it('applies monthly interest to customers with utang and logs an audit activity', function () {
     $user = User::factory()->create();

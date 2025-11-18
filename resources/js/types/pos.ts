@@ -1,4 +1,3 @@
-import { User } from '.';
 
 export interface Customer {
     id: number;
@@ -16,56 +15,43 @@ export interface Customer {
 
 export interface CustomerTransaction {
     id: number;
-    type: 'sale' | 'utang_payment' | 'monthly_interest' | 'starting_balance' | 'balance_update';
-    date: string;
-    amount: number;
-    formatted_amount: string;
-    description: string;
-    notes?: string;
-    interest_rate?: number;
-    invoice_number?: string;
-    payment_type?: 'cash' | 'utang';
-    total_amount?: number;
-    paid_amount?: number;
-    previous_balance?: number;
-    new_balance?: number;
-    formatted_previous_balance?: string;
-    formatted_new_balance?: string;
-    computation_date?: string;
-    sales_items?: Array<{
-        id: number;
-        product_name: string;
-        quantity: number;
-        unit_price: number;
-        total_price: number;
-    }>;
+    customer_id: number;
+    transaction_type: 'sale' | 'utang_payment' | 'monthly_interest' | 'starting_balance' | 'balance_update';
+    reference_id: number | null;
+    previous_balance: string;
+    new_balance: string;
+    transaction_desc: string;
+    transaction_date: string;
+    transaction_amount: string;
 }
 
 export interface Sale {
     id: number;
-    user_id: number;
+    invoice_number: string;
+    transaction_date: string;
     customer_id: number;
     total_amount: number;
     paid_amount: number;
-    previous_balance: number;
-    new_balance: number;
-    invoice_number: string;
+    amount_tendered: number;
+    deduct_from_balance: number;
+    change_amount: number;
+    original_customer_balance: number;
+    new_customer_balance: number;
     payment_type: 'cash' | 'utang';
-    transaction_date: string;
     notes: string | null;
+    customer_name: string 
+    cashier: string
     created_at: string;
-    updated_at: string;
-
-    // relationships
-    customer: Customer;
-    user: User;
+    items: SaleItem[];
 }
 
 export interface SaleItem {
     id: number;
     product_id: number;
+    product_name: string;
     quantity: number;
     unit_price: number;
+    total_amount: number;
 }
 
 export interface CartItem extends Product {
@@ -86,7 +72,6 @@ export interface Unit {
 export interface Product {
     id: number;
     user_id: number;
-    category_id: number;
     unit_id: number;
     product_name: string;
     description: string;

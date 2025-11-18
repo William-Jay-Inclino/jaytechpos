@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Enums\UserRole;
 use App\Models\Customer;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
-use App\Enums\UserRole;
 
 class MonthlyInterestSeeder extends Seeder
 {

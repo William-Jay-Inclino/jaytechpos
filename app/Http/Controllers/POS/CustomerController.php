@@ -202,23 +202,4 @@ class CustomerController extends Controller
         ]);
     }
 
-    /**
-     * Get detailed transaction data for a specific transaction.
-     */
-    public function getTransactionDetails(Customer $customer, int $transactionId): JsonResponse
-    {
-        $this->authorize('view', $customer);
-
-        $transaction = $this->customerService->getTransactionDetails($customer, $transactionId);
-
-        if (! $transaction) {
-            return response()->json([
-                'message' => 'Transaction not found',
-            ], 404);
-        }
-
-        return response()->json([
-            'transaction' => $transaction,
-        ]);
-    }
 }

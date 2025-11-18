@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Route;
 
 // Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
-
 // Profile Management (admin prefix to avoid conflict)
 Route::prefix('admin/profile')->name('admin.profile.')->group(function () {
     Route::get('/', [ProfileController::class, 'show'])->name('show');

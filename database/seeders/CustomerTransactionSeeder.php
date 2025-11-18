@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\UserRole;
 use App\Models\Customer;
 use App\Models\CustomerTransaction;
 use App\Models\Sale;
@@ -9,7 +10,6 @@ use App\Models\User;
 use App\Models\UtangPayment;
 use App\Models\UtangTracking;
 use Illuminate\Database\Seeder;
-use App\Enums\UserRole;
 
 class CustomerTransactionSeeder extends Seeder
 {

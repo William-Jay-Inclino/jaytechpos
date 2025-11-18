@@ -29,7 +29,7 @@ class DashboardController extends Controller
         $dailyStats = $this->getDailyStatistics($userId, $today);
 
         // Utang Statistics
-        $utangStats = $this->getUtangStatistics($userId, $today);
+        // $utangStats = $this->getUtangStatistics($userId, $today);
 
         // Best Selling Products
         $bestSellingProducts = $this->getBestSellingProducts($userId);
@@ -38,14 +38,14 @@ class DashboardController extends Controller
         $cashFlowData = $this->userService->getCashFlow($currentYear, $userId);
 
         // Sales Chart Data (last 30 days)
-        $salesChartData = $this->getSalesChartData($userId);
+        // $salesChartData = $this->getSalesChartData($userId);
 
         return Inertia::render('Dashboard', [
             'dailyStats' => $dailyStats,
-            'utangStats' => $utangStats,
+            // 'utangStats' => $utangStats,
             'bestSellingProducts' => $bestSellingProducts,
             'cashFlowData' => $cashFlowData,
-            'salesChartData' => $salesChartData,
+            // 'salesChartData' => $salesChartData,
             'currentYear' => $currentYear,
         ]);
     }
@@ -56,20 +56,20 @@ class DashboardController extends Controller
         $totalSalesToday = $this->saleService->getTotalSales($today, $today, $userId);
 
         // Total cash received today (cash sales + utang payments via customer transactions)
-        $cashSalesToday = $this->saleService->getTotalSales($today, $today, $userId, 'cash');
+        // $cashSalesToday = $this->saleService->getTotalSales($today, $today, $userId, 'cash');
 
         // Get utang payments from customer transactions
-        $utangPaymentsToday = \App\Models\CustomerTransaction::where('user_id', $userId)
-            ->where('transaction_type', 'utang_payment')
-            ->whereDate('transaction_date', $today)
-            ->sum('transaction_amount');
+        // $utangPaymentsToday = \App\Models\CustomerTransaction::where('user_id', $userId)
+        //     ->where('transaction_type', 'utang_payment')
+        //     ->whereDate('transaction_date', $today)
+        //     ->sum('transaction_amount');
 
-        $totalCashToday = $cashSalesToday + $utangPaymentsToday;
+        // $totalCashToday = $cashSalesToday + $utangPaymentsToday;
 
         return [
             'total_sales_today' => $totalSalesToday,
-            'total_cash_today' => $totalCashToday,
-            'utang_payments_today' => $utangPaymentsToday,
+            // 'total_cash_today' => $totalCashToday,
+            // 'utang_payments_today' => $utangPaymentsToday,
         ];
     }
 

@@ -11,12 +11,12 @@ import { Head } from '@inertiajs/vue3'
 interface DashboardProps {
     dailyStats: {
         total_sales_today: number
-        total_cash_today: number
-        utang_payments_today: number
+        // total_cash_today: number
+        // utang_payments_today: number
     }
-    utangStats: {
-        total_amount_receivable: number
-    }
+    // utangStats: {
+    //     total_amount_receivable: number
+    // }
     bestSellingProducts: {
         today: Array<{ id: number; product_name: string; total_sold: number }>
         week: Array<{ id: number; product_name: string; total_sold: number }>
@@ -29,10 +29,10 @@ interface DashboardProps {
         expense: number
         cash_flow: number
     }>
-    salesChartData: {
-        labels: string[]
-        data: number[]
-    }
+    // salesChartData: {
+    //     labels: string[]
+    //     data: number[]
+    // }
     currentYear: number
 }
 

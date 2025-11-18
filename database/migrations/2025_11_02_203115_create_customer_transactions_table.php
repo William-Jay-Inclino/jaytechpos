@@ -27,6 +27,7 @@ return new class extends Migration
             $table->index(['customer_id', 'transaction_date']);
             $table->index(['user_id', 'transaction_date']);
             $table->index(['transaction_type', 'reference_id']);
+            $table->index('transaction_date', 'customer_transactions_transaction_date_index');
         });
     }
 

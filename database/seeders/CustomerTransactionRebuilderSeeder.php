@@ -2,12 +2,12 @@
 
 namespace Database\Seeders;
 
+use App\Enums\UserRole;
 use App\Models\Customer;
 use App\Models\CustomerTransaction;
 use App\Models\Sale;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use App\Enums\UserRole;
 
 class CustomerTransactionRebuilderSeeder extends Seeder
 {
@@ -22,7 +22,7 @@ class CustomerTransactionRebuilderSeeder extends Seeder
         $users = User::where('role', '!=', UserRole::Admin->value)->get();
 
         foreach ($users as $user) {
-            if($user->role === UserRole::Admin) {
+            if ($user->role === UserRole::Admin) {
                 continue;
             }
             $this->rebuildCustomerTransactionsForUser($user);

@@ -12,10 +12,8 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
-
 class User extends Authenticatable
 {
-
     use HasFactory, LogsActivity, LogsActivityWithRequest, Notifiable, TwoFactorAuthenticatable;
 
     /**

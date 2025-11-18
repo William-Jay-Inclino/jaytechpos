@@ -79,18 +79,14 @@ class FixPostgresSequences extends Command
     {
         $tables = [
             'users',
-            'product_categories',
             'units',
             'products',
             'customers',
             'sales',
             'sales_items',
-            'utang_trackings',
-            'utang_payments',
             'expenses',
             'expense_categories',
-            'settings',
-            'activity_logs',
+            'customer_transactions',
         ];
 
         $this->info('Fixing PostgreSQL sequences for all tables...');

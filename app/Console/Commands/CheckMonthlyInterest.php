@@ -46,10 +46,12 @@ class CheckMonthlyInterest extends Command
 
         if ($count > 0) {
             $this->info("{$count} customers need monthly interest processing this month.");
+
             return 0;
         }
 
         $this->info('No customers require monthly interest processing this month.');
+
         return 0;
     }
 }

@@ -11,6 +11,6 @@ it('contains mobile icons and responsive classes in admin layout', function () {
     expect(str_contains($content, 'hidden sm:inline'))->toBeTrue();
 
     // Check that the navigation contains icon references
-    expect(str_contains($content, 'Users as UsersIcon') || str_contains($content, "icon: UsersIcon"))->toBeTrue();
-    expect(str_contains($content, 'List as ListIcon') || str_contains($content, "icon: ListIcon"))->toBeTrue();
+    expect(str_contains($content, 'Users as UsersIcon') || str_contains($content, 'icon: UsersIcon'))->toBeTrue();
+    expect(str_contains($content, 'List as ListIcon') || str_contains($content, 'icon: ListIcon'))->toBeTrue();
 });

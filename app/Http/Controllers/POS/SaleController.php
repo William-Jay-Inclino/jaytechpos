@@ -11,6 +11,7 @@ use App\Models\CustomerTransaction;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SalesItem;
+use App\Services\CustomerService;
 use App\Services\SaleService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
@@ -23,7 +24,8 @@ class SaleController extends Controller
     use AuthorizesRequests;
 
     public function __construct(
-        protected SaleService $saleService
+        protected SaleService $saleService,
+        protected CustomerService $customerService
     ) {}
 
     public function index(): Response
@@ -47,53 +49,14 @@ class SaleController extends Controller
         ]);
     }
 
-    public function show(Sale $sale)
+    public function getSale(Sale $sale)
     {
         $this->authorize('view', $sale);
 
-        // Load relationships
-        $sale->load(['salesItems.product', 'customer']);
+        // Ensure relationships required by the resource are loaded to avoid runtime errors
+        $sale->load(['user', 'customer', 'salesItems.product']);
 
-        // Get customer transaction for balance information
-        $customerTransaction = null;
-        if ($sale->customer_id) {
-            $customerTransaction = CustomerTransaction::where('reference_id', $sale->id)
-                ->where('transaction_type', 'sale')
-                ->first();
-        }
-
-        // Build response data similar to CustomerService::getTransactionDetails
-        $data = [
-            'id' => $sale->id,
-            'type' => 'sale',
-            'date' => $sale->transaction_date->format('Y-m-d H:i:s'),
-            'amount' => $sale->total_amount,
-            'formatted_amount' => '₱'.number_format($sale->total_amount, 2),
-            'description' => 'Sale to '.($sale->customer?->name ?? 'Walk-in Customer'),
-            'invoice_number' => $sale->invoice_number,
-            'payment_type' => $sale->payment_type,
-            'total_amount' => $sale->total_amount,
-            'paid_amount' => $sale->paid_amount,
-            'amount_tendered' => $sale->amount_tendered,
-            'deduct_from_balance' => $sale->deduct_from_balance,
-            'change_amount' => $sale->payment_type === 'cash' && $sale->amount_tendered
-                ? max(0, $sale->amount_tendered - $sale->total_amount - ($sale->deduct_from_balance ?? 0))
-                : null,
-            'notes' => $sale->notes,
-            'previous_balance' => $customerTransaction?->previous_balance ?? 0,
-            'new_balance' => $customerTransaction?->new_balance ?? 0,
-            'formatted_previous_balance' => '₱'.number_format($customerTransaction?->previous_balance ?? 0, 2),
-            'formatted_new_balance' => '₱'.number_format($customerTransaction?->new_balance ?? 0, 2),
-            'sales_items' => $sale->salesItems->map(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'product_name' => $item->product->product_name ?? 'Unknown Product',
-                    'quantity' => $item->quantity,
-                    'unit_price' => $item->unit_price,
-                    'total_price' => $item->quantity * $item->unit_price,
-                ];
-            })->toArray(),
-        ];
+        $data = (new SaleResource($sale))->resolve();
 
         return response()->json([
             'sale' => $data,

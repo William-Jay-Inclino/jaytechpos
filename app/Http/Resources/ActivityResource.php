@@ -41,6 +41,20 @@ class ActivityResource extends JsonResource
      */
     protected function getDescriptiveMessage(): string
     {
+        $properties = $this->properties ?? collect();
+
+        // Special summary for the monthly-interest processing run (audited as a single activity)
+        if ($properties->has('total_customers') && $properties->has('processed')) {
+            $total = $properties->get('total_customers');
+            $processed = $properties->get('processed');
+
+            return sprintf(
+                'Monthly Interest Processed. Total customers considered is %s and interest transactions created is %s',
+                $total,
+                $processed
+            );
+        }
+
         if (! $this->subject_type) {
             return 'Unknown activity';
         }

@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Enums\UserRole;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use App\Enums\UserRole;
 
 class ProductSeeder extends Seeder
 {

@@ -227,47 +227,6 @@ const isCheckoutValid = computed((): boolean => {
     return false;
 });
 
-// Helper text for disabled checkout button
-const checkoutHelperText = computed((): string | null => {
-    if (isProcessing.value) {
-        return 'Processing transaction...';
-    }
-
-    if (cartItems.value.length === 0) {
-        return 'Add items to your cart to proceed';
-    }
-
-    if (paymentMethod.value === 'cash') {
-        if (amountTendered.value < cartTotalAmount.value) {
-            return `Amount Received (₱${amountTendered.value.toFixed(2)}) must be at least ₱${cartTotalAmount.value.toFixed(2)}`;
-        }
-
-        if (payTowardsBalance.value) {
-            if (selectedCustomerId.value === '0') {
-                return 'Please select a customer to pay towards their balance';
-            }
-
-            const maxDeductible = Math.min(
-                selectedCustomer.value?.running_utang_balance || 0,
-                amountTendered.value - cartTotalAmount.value,
-            );
-
-            if (deductFromBalance.value > maxDeductible) {
-                return `Payment towards balance cannot exceed ₱${maxDeductible.toFixed(2)}`;
-            }
-        }
-    } else if (paymentMethod.value === 'utang') {
-        if (selectedCustomerId.value === '0') {
-            return 'Please select a customer for utang transactions';
-        }
-
-        if (paidAmount.value < 0) {
-            return 'Amount paid cannot be negative';
-        }
-    }
-
-    return null;
-});
 
 // Functions to handle selection
 function selectCustomer(customerId: string) {

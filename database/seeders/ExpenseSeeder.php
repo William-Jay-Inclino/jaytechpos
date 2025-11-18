@@ -2,12 +2,12 @@
 
 namespace Database\Seeders;
 
+use App\Enums\UserRole;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
-use App\Enums\UserRole;
 
 class ExpenseSeeder extends Seeder
 {

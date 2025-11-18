@@ -14,53 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { salesReport } from '@/routes'
-import { type BreadcrumbItem } from '@/types'
-
-interface Sale {
-    id: number
-    invoice_number: string
-    transaction_date: string
-    customer_name?: string
-    total_amount: number
-    paid_amount: number
-    payment_type: 'cash' | 'utang'
-    is_utang: boolean
-    cashier: string
-    notes?: string
-    items?: {
-        id: number
-        product_id: number
-        product_name: string
-        quantity: number
-        unit_price: number
-        total_amount: number
-    }[]
-}
-
-interface SaleTransaction {
-    id: number;
-    type: 'sale';
-    date: string;
-    amount: number;
-    formatted_amount: string;
-    description: string;
-    invoice_number?: string;
-    payment_type?: 'cash' | 'utang';
-    total_amount?: number;
-    paid_amount?: number;
-    notes?: string;
-    previous_balance?: number;
-    new_balance?: number;
-    formatted_previous_balance?: string;
-    formatted_new_balance?: string;
-    sales_items?: {
-        id: number;
-        product_name: string;
-        quantity: number;
-        unit_price: number;
-        total_price: number;
-    }[];
-}
+import { Sale, type BreadcrumbItem } from '@/types'
 
 interface SalesData {
     data: Sale[]
@@ -99,6 +53,8 @@ interface Props {
 
 const props = defineProps<Props>()
 
+console.log('props', props);
+
 const loading = ref(false)
 const salesData = ref<SalesData>(props.sales)
 const chartData = ref<ChartData>(props.chartData)
@@ -120,7 +76,7 @@ const perPage = ref(20)
 
 // Sale details modal state
 const showSaleDetails = ref(false)
-const selectedSale = ref<SaleTransaction | null>(null)
+const selectedSale = ref<Sale | null>(null)
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Sales Report', href: salesReport().url },
@@ -558,9 +514,6 @@ const getVisiblePages = (): (number | string)[] => {
                                                     <div class="font-semibold text-gray-900 dark:text-white">
                                                         {{ formatCurrency(sale.total_amount) }}
                                                     </div>
-                                                    <div v-if="sale.is_utang" class="text-xs text-gray-500 dark:text-gray-400">
-                                                        Paid: {{ formatCurrency(sale.paid_amount) }}
-                                                    </div>
                                                 </td>
                                                 <td class="py-3 px-2 text-center">
                                                     <Badge 
@@ -671,7 +624,8 @@ const getVisiblePages = (): (number | string)[] => {
             <!-- Sale Details Modal -->
             <SaleDetailsModal 
                 :open="showSaleDetails"
-                :transaction="selectedSale"
+                :transaction="null"
+                :sale="selectedSale"
                 @update:open="showSaleDetails = $event"
             />
 

@@ -68,17 +68,9 @@ Route::middleware(['throttle:global'])->group(function () {
 
         // Customer API endpoints
         Route::get('customers/{customer}/transactions', [CustomerController::class, 'getTransactions'])->name('customers.api.transactions');
-        Route::get('customers/{customer}/transactions/{transactionId}', [CustomerController::class, 'getTransactionDetails'])->name('customers.api.transaction-details');
 
         // Sale API endpoints
-        Route::get('sales/{sale}', [SaleController::class, 'show'])->name('sales.api.show');
-
-        // Product Category API endpoints
-        // Route::get('product-categories', [ProductCategoryController::class, 'index'])->name('product-categories.api.index');
-        // Route::get('product-categories/active', [ProductCategoryController::class, 'active'])->name('product-categories.api.active');
-        // Route::post('product-categories', [ProductCategoryController::class, 'store'])->name('product-categories.api.store');
-        // Route::put('product-categories/{productCategory}', [ProductCategoryController::class, 'update'])->name('product-categories.api.update');
-        // Route::delete('product-categories/{productCategory}', [ProductCategoryController::class, 'destroy'])->name('product-categories.api.destroy');
+        Route::get('sales/{sale}', [SaleController::class, 'getSale'])->name('sales.api.show');
 
         // Sales Report API endpoints
         Route::get('sales-report/data', [App\Http\Controllers\SalesReportController::class, 'getSalesData'])->name('sales-report.api.data');
