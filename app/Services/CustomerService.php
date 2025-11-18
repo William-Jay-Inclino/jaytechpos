@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Customer;
 use App\Models\Sale;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class CustomerService
 {
@@ -110,5 +111,105 @@ class CustomerService
     private function mapTransactionType(string $transactionType): string
     {
         return $transactionType; // No mapping needed - use database values directly
+    }
+
+    /**
+     * Process monthly interest for all customers who have utang (debt).
+     *
+     * For each customer with outstanding balance:
+     * - determine the current running balance (last transaction new_balance)
+     * - compute interest = runningBalance * interest_rate
+     * - create a customer transaction of type `monthly_interest` with previous/new balances
+     * - skip creating a transaction when the computed interest amount is zero or negative
+     *
+     * Returns a collection of created CustomerTransaction models.
+     */
+    public function processMonthlyInterest(): Collection
+    {
+        $created = collect();
+
+        $customers = Customer::where('has_utang', true)->get();
+
+        foreach ($customers as $customer) {
+        $totalCustomers = $customers->count();
+        $skippedAlreadyApplied = 0;
+        $skippedZeroInterest = 0;
+
+        foreach ($customers as $customer) {
+            // Skip if monthly interest has already been applied for this customer in the current month
+            $alreadyApplied = $customer->customerTransactions()
+                ->where('transaction_type', 'monthly_interest')
+                ->whereYear('transaction_date', now()->year)
+                ->whereMonth('transaction_date', now()->month)
+                ->exists();
+
+            if ($alreadyApplied) {
+                $skippedAlreadyApplied++;
+                continue;
+            }
+
+            // Use the model's runningUtangBalance accessor to get current running balance
+            // (defined on the Customer model as `runningUtangBalance` -> accessed as `running_utang_balance`).
+            $previousBalance = (float) $customer->running_utang_balance;
+
+            // Wrap each customer's processing in a DB transaction for safety
+            $transaction = DB::transaction(function () use ($customer, $previousBalance, &$skippedZeroInterest) {
+                // Use customer's effective interest rate (falls back to default if null)
+                $interestRate = $customer->getEffectiveInterestRate();
+
+                // Calculate interest amount (rounded to 2 decimals)
+                $interestAmount = (float) round($previousBalance * $interestRate, 2);
+
+                // Skip if there's nothing to apply
+                if ($interestAmount <= 0) {
+                    $skippedZeroInterest++;
+                    return null;
+                }
+
+                $newBalance = (float) round($previousBalance + $interestAmount, 2);
+
+                $percent = $interestRate * 100;
+                $transactionDesc = sprintf('Monthly interest applied. Interest Rate: %s%%', rtrim(rtrim(number_format($percent, 4, '.', ''), '0'), '.'));
+
+                return $customer->customerTransactions()->create([
+                    'user_id' => $customer->user_id ?? auth()->id(),
+                    'transaction_type' => 'monthly_interest',
+                    'reference_id' => null,
+                    'previous_balance' => $previousBalance,
+                    'new_balance' => $newBalance,
+                    'transaction_desc' => $transactionDesc,
+                    'transaction_date' => now(),
+                    'transaction_amount' => $interestAmount,
+                ]);
+            });
+
+            if ($transaction) {
+                $created->push($transaction);
+            }
+        }
+
+        // Write an audit activity summarizing the run
+        try {
+            $properties = [
+                'total_customers' => $totalCustomers,
+                'processed' => $created->count(),
+                'skipped_already_applied' => $skippedAlreadyApplied,
+                'skipped_zero_interest' => $skippedZeroInterest,
+                'created_transaction_ids' => $created->pluck('id')->toArray(),
+            ];
+
+            // Use Spatie activity logger. Causer may be null when run from scheduler.
+            activity()
+                ->causedBy(auth()->user() ?? null)
+                ->withProperties($properties)
+                ->log('Monthly interest processing completed');
+        } catch (\Throwable $e) {
+            // Don't let audit logging break the main flow. If desired, we could report this to an error tracker.
+        }
+
+        return $created;
+        }
+
+        return $created;
     }
 }
