@@ -155,7 +155,13 @@ class CustomerService
             // Wrap each customer's processing in a DB transaction for safety
             $transaction = DB::transaction(function () use ($customer, $previousBalance, &$skippedZeroInterest) {
                 // Use customer's effective interest rate (falls back to default if null)
+                // Normalize stored rate: some installations store percentage values (e.g. 3.00 for 3%),
+                // while tests or other code may use decimal fractions (e.g. 0.03). If the rate is > 1,
+                // treat it as a percent and divide by 100.
                 $interestRate = $customer->getEffectiveInterestRate();
+                if ($interestRate > 1) {
+                    $interestRate = $interestRate / 100.0;
+                }
 
                 // Calculate interest amount (rounded to 2 decimals)
                 $interestAmount = (float) round($previousBalance * $interestRate, 2);

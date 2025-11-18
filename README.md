@@ -16,6 +16,13 @@ Commands:
 
     php artisan utang:check-monthly-tracking
 
+- List the customer NAMES (or details) that require interest processing this month:
+
+  php artisan utang:list-monthly-candidates
+  php artisan utang:list-monthly-candidates --details
+  php artisan utang:list-monthly-candidates --limit=10
+  php artisan utang:list-monthly-candidates --details --limit=5
+
 Scheduler:
 
 - The scheduler is configured to run `utang:process-monthly-tracking` on the 1st day of every month at 00:01 Asia/Manila in `bootstrap/app.php`.
