@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Models\ExpenseCategory;
 
 class RegisteredUserController extends Controller
 {
@@ -45,6 +46,15 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
 
         Auth::login($user);
+
+        // Create default expense categories for the newly registered user.
+        foreach (ExpenseCategory::defaultCategories() as $category) {
+            ExpenseCategory::create([
+                'user_id' => $user->id,
+                'name' => $category['name'],
+                'color' => $category['color'],
+            ]);
+        }
 
         return to_route('dashboard');
     }

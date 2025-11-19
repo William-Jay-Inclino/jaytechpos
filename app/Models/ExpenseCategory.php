@@ -24,6 +24,40 @@ class ExpenseCategory extends Model
         return $query->where('user_id', $userId);
     }
 
+    /**
+     * Default expense categories used for new users and seeding.
+     * Keep this as the single source of truth to avoid duplication.
+     */
+    public static function defaultCategories(): array
+    {
+        // Return an array of ['name' => string, 'color' => string]
+        $names = config('expense_categories.default', [
+            'Rent',
+            'Utilities',
+            'Staff Wages',
+            'Supplies',
+            'Transportation',
+            'Equipment & Maintenance',
+            'Government Fees & Permits',
+            'Insurance',
+            'Marketing & Advertising',
+            'Miscellaneous',
+        ]);
+
+        $colors = config('expense_categories.category_colors', []);
+        $fallback = config('expense_categories.default_color', '#6B7280');
+
+        $result = [];
+        foreach ($names as $name) {
+            $result[] = [
+                'name' => $name,
+                'color' => $colors[$name] ?? $fallback,
+            ];
+        }
+
+        return $result;
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

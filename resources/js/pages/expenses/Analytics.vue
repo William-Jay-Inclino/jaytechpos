@@ -49,10 +49,23 @@ const monthOrder = [
 ];
 
 const sortedMonthlyExpenses = computed(() => {
-    if (!Array.isArray(props.monthlyExpenses)) return [];
-    return [...props.monthlyExpenses].sort((a, b) => {
-        return monthOrder.indexOf(a.month) - monthOrder.indexOf(b.month);
-    });
+    // Ensure all months are present (Jan-Dec). If a month is missing from
+    // props.monthlyExpenses, show it with amount 0 so the table always has
+    // twelve rows.
+    const map = new Map<string, number>();
+
+    if (Array.isArray(props.monthlyExpenses)) {
+        for (const item of props.monthlyExpenses) {
+            if (item && typeof item.month === 'string') {
+                map.set(item.month, Number(item.amount) || 0);
+            }
+        }
+    }
+
+    return monthOrder.map((m) => ({
+        month: m,
+        amount: map.get(m) ?? 0,
+    }));
 });
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -93,6 +106,9 @@ const formatCurrency = (amount: number) => {
 // Generate year options (current year ± 5 years)
 const currentYear = new Date().getFullYear();
 const yearOptions = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i);
+// Current month name (e.g. "November"). Used to highlight the row when
+// the user is viewing the current year.
+const currentMonthName = monthOrder[new Date().getMonth()];
 
 // Update expenses when year changes
 function updateAnalytics() {
@@ -271,9 +287,23 @@ watch(selectedYear, () => {
                                         No monthly expense data available.
                                     </td>
                                 </tr>
-                                <tr v-for="row in sortedMonthlyExpenses" :key="row.month" class="hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors">
-                                    <td class="px-6 py-4 whitespace-nowrap text-base font-medium text-gray-900 dark:text-white">
-                                        {{ row.month }}
+                                <tr
+                                    v-for="row in sortedMonthlyExpenses"
+                                    :key="row.month"
+                                    :class="[
+                                        (selectedYear === currentYear && row.month === currentMonthName) ? 'border-l-4 border-yellow-300 dark:border-yellow-600' : '',
+                                        'hover:bg-gray-50 dark:hover:bg-gray-900',
+                                        'transition-colors'
+                                    ]"
+                                >
+                                    <td
+                                        :class="[
+                                            (selectedYear === currentYear && row.month === currentMonthName) ? 'font-semibold' : '',
+                                            'px-6 py-4 whitespace-nowrap text-base text-gray-900 dark:text-white flex items-center gap-2'
+                                        ]"
+                                    >
+                                        <span v-if="selectedYear === currentYear && row.month === currentMonthName" class="inline-block w-2 h-2 rounded-full bg-yellow-400 dark:bg-yellow-500 mr-2" aria-hidden="true"></span>
+                                        <span>{{ row.month }}</span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-base font-semibold text-primary dark:text-primary">
                                         {{ formatCurrency(row.amount) }}

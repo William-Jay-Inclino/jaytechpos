@@ -16,25 +16,14 @@ class ExpenseCategorySeeder extends Seeder
     {
         $users = User::where('role', '!=', UserRole::Admin->value)->get();
 
-        $categories = [
-            'Rent',
-            'Utilities',
-            'Staff Wages',
-            'Supplies',
-            'Transportation',
-            'Equipment & Maintenance',
-            'Government Fees & Permits',
-            'Insurance',
-            'Marketing & Advertising',
-            'Miscellaneous',
-        ];
+        $categories = ExpenseCategory::defaultCategories();
 
         foreach ($users as $user) {
-            foreach ($categories as $categoryName) {
+            foreach ($categories as $category) {
                 ExpenseCategory::create([
                     'user_id' => $user->id,
-                    'name' => $categoryName,
-                    'color' => '#6B7280', // Default gray, will be updated by UpdateExpenseCategoriesWithColorsSeeder
+                    'name' => $category['name'],
+                    'color' => $category['color'],
                 ]);
             }
 
