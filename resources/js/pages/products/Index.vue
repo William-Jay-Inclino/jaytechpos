@@ -62,6 +62,8 @@ const filteredProducts = computed(() => {
     return filtered;
 });
 
+// Use `product.unit?.abbreviation` directly (see resources/js/types/pos.ts)
+
 // Helper functions
 const formatCurrency = (amount: number) => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(amount);
 
@@ -188,6 +190,7 @@ async function deleteProduct(productId: number) {
                                     <div class="flex-1 min-w-0">
                                         <h3 class="text-base font-semibold text-gray-900 dark:text-white truncate">
                                             {{ product.product_name }}
+                                            <span v-if="product.unit?.abbreviation" class="text-xs text-gray-500 dark:text-gray-400 ml-2">/{{ product.unit?.abbreviation }}</span>
                                         </h3>
                                         <div class="mt-2">
                                             <Badge 
@@ -275,6 +278,7 @@ async function deleteProduct(productId: number) {
                                             <div class="flex items-center gap-3">
                                                 <h4 class="font-semibold text-gray-900 dark:text-white">
                                                     {{ product.product_name }}
+                                                    <span v-if="product.unit?.abbreviation" class="text-xs text-gray-500 dark:text-gray-400 ml-2">/{{ product.unit?.abbreviation }}</span>
                                                 </h4>
                                             </div>
                                         </td>
