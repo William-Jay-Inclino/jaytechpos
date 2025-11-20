@@ -25,7 +25,10 @@ defineProps<{
                 :href="home()"
                 class="relative z-20 flex items-center text-lg font-medium"
             >
-                <AppLogoIcon class="mr-2 size-8 fill-current text-white" />
+                <!-- Slightly bigger logo with padding on split auth layout -->
+                <div class="mr-3 rounded-full bg-white p-2 shadow-sm">
+                    <AppLogoIcon class="w-20 h-20" />
+                </div>
                 {{ name }}
             </Link>
             <div v-if="quote" class="relative z-20 mt-auto">

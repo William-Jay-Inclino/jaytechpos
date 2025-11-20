@@ -25,10 +25,11 @@ defineProps<{
                 :href="home()"
                 class="flex items-center gap-2 self-center font-medium"
             >
-                <div class="flex h-9 w-9 items-center justify-center">
-                    <AppLogoIcon
-                        class="size-9 fill-current text-black dark:text-white"
-                    />
+                <!-- Larger circular logo with padding for card auth layout -->
+                <div class="flex items-center justify-center">
+                    <div class="rounded-full bg-white p-4 shadow-sm">
+                        <AppLogoIcon class="w-28 h-28" />
+                    </div>
                 </div>
             </Link>
 

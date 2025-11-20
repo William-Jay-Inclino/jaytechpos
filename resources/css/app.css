@@ -87,6 +87,16 @@
             'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
             'Noto Color Emoji';
     }
+
+    /* Reusable gradient text that references the project's --primary color */
+    .text-primary-gradient {
+        display: inline-block;
+        background: linear-gradient(90deg, var(--primary), color-mix(in srgb, var(--primary) 40%, black 20%));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: transparent;
+    }
 }
 
 :root {

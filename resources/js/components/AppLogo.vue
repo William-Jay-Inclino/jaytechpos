@@ -1,16 +1,9 @@
-<script setup lang="ts">
-import AppLogoIcon from '@/components/AppLogoIcon.vue';
-</script>
-
 <template>
-    <div
-        class="flex aspect-square size-8 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground"
-    >
-        <AppLogoIcon class="size-5 fill-current text-white dark:text-black" />
-    </div>
-    <div class="ml-1 grid flex-1 text-left text-sm">
-        <span class="mb-0.5 truncate leading-tight font-semibold"
-            >SimplePOS</span
-        >
+    <div class="flex items-center space-x-3">
+        <!-- <img src="/images/simplepos/simplePOS-logo.png" alt="SimplePOS logo" class="w-8 h-8 rounded-md object-cover flex-none" /> -->
+
+        <div class="truncate leading-tight font-semibold text-lg tracking-tight text-primary-gradient">
+            SimplePOS
+        </div>
     </div>
 </template>

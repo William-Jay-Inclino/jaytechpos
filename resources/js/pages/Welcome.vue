@@ -4,26 +4,29 @@ import { Head, Link } from '@inertiajs/vue3';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 
 const screenshots = [
-    { src: '/images/simplepos/home.jpg', caption: 'Home — dashboard overview' },
-    { src: '/images/simplepos/new-sale.jpg', caption: 'New Sale — POS screen' },
-    { src: '/images/simplepos/utang-payment.jpg', caption: 'Utang Payment — record payments' },
-    { src: '/images/simplepos/expenses.jpg', caption: 'Expenses — track costs' },
-    { src: '/images/simplepos/products.jpg', caption: 'Products — product list & stock' },
-    { src: '/images/simplepos/customers.jpg', caption: 'Customers — profiles & balances' },
+    { src: '/images/simplepos/new-sale-1920.jpg', caption: 'POS Screen' },
+    { src: '/images/simplepos/home-1920.jpg', caption: 'Home' },
+    { src: '/images/simplepos/utang-payment-1920.jpg', caption: 'Utang Payment' },
+    { src: '/images/simplepos/expenses-1920.jpg', caption: 'Expenses' },
+    { src: '/images/simplepos/products-1920.jpg', caption: 'Products' },
+    { src: '/images/simplepos/customers-1920.jpg', caption: 'Customers' },
+];
+
+// Mobile-specific screenshot filenames live in /public/images/simplepos-mobile
+const screenshotsMobile = [
+    { src: '/images/simplepos-mobile/new-sale.jpg', caption: 'POS Screen' },
+    { src: '/images/simplepos-mobile/new-sale-checkout.jpg', caption: 'POS Screen 2' },
+    { src: '/images/simplepos-mobile/home.jpg', caption: 'Home' },
+    { src: '/images/simplepos-mobile/cashflow.jpg', caption: 'Cash Flow' },
+    { src: '/images/simplepos-mobile/customers.jpg', caption: 'Customers' },
+    { src: '/images/simplepos-mobile/customer-info.jpg', caption: 'Customer Info' },
 ];
 
 const idx = ref(0);
 const showLightbox = ref(false);
 const direction = ref<'left'|'right'>('right');
 
-function srcsetFor(src: string) {
-    // src is like '/images/simplepos/home.jpg'
-    const m = src.match(/(.+)\/(.+)\.(jpg|png|webp)$/i);
-    if (!m) return src;
-    const dir = m[1];
-    const base = m[2];
-    return `${dir}/${base}-480.jpg 480w, ${dir}/${base}-768.jpg 768w, ${dir}/${base}-1200.jpg 1200w, ${dir}/${base}-1920.jpg 1920w`;
-}
+// Note: mobile screenshots are provided in `screenshotsMobile`. We no longer build srcsets by name.
 
 // touch swipe support
 let touchStartX = 0;
@@ -60,6 +63,7 @@ function select(i: number) {
 }
 
 const current = computed(() => screenshots[idx.value]);
+const currentMobile = computed(() => screenshotsMobile[idx.value]);
 
 function next() {
     direction.value = 'right';
@@ -124,6 +128,12 @@ onUnmounted(() => {
     <Head title="Welcome to SimplePOS">
         <link rel="preconnect" href="https://rsms.me/" />
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+        <!-- App favicon and touch icon using provided logo -->
+        <link rel="icon" type="image/png" sizes="32x32" href="/images/simplepos/simplePOS-logo.png" />
+        <link rel="apple-touch-icon" href="/images/simplepos/simplePOS-logo.png" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+        <meta name="theme-color" content="#0b0b0b" media="(prefers-color-scheme: dark)" />
+        <meta name="theme-color" content="#f5f0eb" media="(prefers-color-scheme: light)" />
     </Head>
 
     <div class="min-h-screen bg-gradient-to-b from-white via-amber-50 to-amber-100 dark:from-[#070707] dark:via-[#0f0f0f] dark:to-[#0a0a0a]">
@@ -131,13 +141,13 @@ onUnmounted(() => {
             <!-- Header / Nav -->
             <!-- Make header stack on small screens and keep nav right-aligned on larger screens -->
             <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div class="flex items-center gap-3">
-                    <div class="rounded-full bg-amber-600 p-2 text-white font-bold">SP</div>
-                    <div>
-                        <h2 class="text-lg font-semibold dark:text-white">SimplePOS</h2>
-                        <p class="text-xs text-neutral-500 dark:text-neutral-400">Made for sari-sari stores and small businesses.</p>
+                    <div class="flex items-center gap-3">
+                        <img src="/images/simplepos/simplePOS-logo.png" alt="SimplePOS logo" class="w-32 h-32 rounded-full object-cover" />
+                        <div>
+                            <h2 class="text-3xl font-semibold text-primary-gradient">SimplePOS</h2>
+                            <p class="text-xs text-neutral-500 dark:text-neutral-400">Made for sari-sari stores and small businesses.</p>
+                        </div>
                     </div>
-                </div>
 
                 <nav class="flex flex-wrap gap-3 text-sm w-full sm:w-auto justify-end">
                     <Link
@@ -167,9 +177,7 @@ onUnmounted(() => {
             <!-- Hero (single-column to avoid empty right gutter) -->
             <section class="mt-10 grid gap-8 lg:grid-cols-1 lg:items-start">
                 <div class="mx-auto lg:mx-0 max-w-2xl">
-                    <h1 class="text-3xl font-extrabold leading-tight text-neutral-900 dark:text-white">
-                        SimplePOS
-                    </h1>
+                    
                     <p class="mt-4 text-neutral-600 dark:text-neutral-300">
                         Magbenta nang mabilis, i-manage ang gastos at kita, at magbigay ng utang na may automatic monthly interest — mas mabilis ang daloy ng negosyo at may dagdag kita pa.
                     </p>
@@ -217,51 +225,46 @@ onUnmounted(() => {
             <!-- Large Carousel (below CTAs) -->
             <section class="mt-10">
                 <div class="mx-auto max-w-6xl">
-                    <div class="rounded-xl bg-white p-6 shadow-lg dark:bg-[#0b0b0b]">
+                    <div class="rounded-xl bg-white p-6 shadow-lg dark:bg-[#0b0b0b] relative">
                         <div class="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                            <h3 class="text-lg font-semibold">App screenshots</h3>
                             <div class="text-sm text-neutral-500 dark:text-neutral-400 text-center sm:text-right">Tap or click any image to enlarge</div>
                             <p class="sr-only">Images open a larger view when clicked. Use left/right arrow keys or swipe to navigate. Press Escape to close.</p>
                         </div>
 
                         <div class="relative" @mouseenter="stopAutoplay" @mouseleave="startAutoplay" @touchstart.passive="onTouchStart" @touchmove.passive="onTouchMove" @touchend.passive="onTouchEnd">
                             <transition :name="`slide-${direction}`" mode="out-in">
-                                <img :key="current.src" :src="current.src" :srcset="srcsetFor(current.src)" sizes="(max-width: 768px) 100vw, 1200px" :alt="current.caption" class="w-full h-[48vh] sm:h-[56vh] md:h-[64vh] object-cover rounded-md" @click="openLightbox(idx)" />
+                                <picture>
+                                    <source media="(max-width: 768px)" :srcset="currentMobile.src" />
+                                    <img :key="current.src" :src="current.src" sizes="(max-width: 768px) 100vw, 1200px" :alt="current.caption" class="w-full h-[48vh] sm:h-[56vh] md:h-[64vh] object-cover rounded-md" @click="openLightbox(idx)" />
+                                </picture>
                             </transition>
 
-                            <!-- Overlay controls -->
-                            <button @click="prev" aria-label="Previous" class="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-3 shadow-lg hidden sm:inline-flex">‹</button>
-                            <button @click="next" aria-label="Next" class="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-3 shadow-lg hidden sm:inline-flex">›</button>
+                            <!-- Inline overlay controls (inside carousel) -->
+                            <button @click="prev" aria-label="Previous" class="absolute left-4 bottom-4 rounded-full lightbox-btn p-4 sm:p-3 shadow-lg inline-flex z-20">‹</button>
+                            <button @click="next" aria-label="Next" class="absolute right-4 bottom-4 rounded-full lightbox-btn p-4 sm:p-3 shadow-lg inline-flex z-20">›</button>
 
                             <!-- Caption -->
                             <div class="mt-3 text-center text-sm text-neutral-600">{{ current.caption }}</div>
-
-                            <!-- Thumbnails (horizontal scroll on small screens) -->
-                            <div class="mt-4 -mx-2 overflow-x-auto py-2">
-                                <div class="inline-flex gap-3 px-2">
-                                    <template v-for="(s, i) in screenshots" :key="s.src">
-                                        <button @click="select(i)" class="rounded-md overflow-hidden border-2 carousel-thumb" :class="{'border-amber-400': idx === i, 'border-transparent': idx !== i}">
-                                            <img :src="s.src" :srcset="srcsetFor(s.src)" sizes="90px" :alt="s.caption" class="h-20 w-36 object-cover" @click.prevent="openLightbox(i)" />
-                                        </button>
-                                    </template>
-                                </div>
-                            </div>
 
                             <!-- Lightbox modal -->
                             <div v-if="showLightbox" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
                                 <div class="max-w-5xl w-full">
                                     <div class="relative bg-white rounded-lg overflow-hidden">
-                                        <button @click="closeLightbox" class="absolute right-2 top-2 z-10 rounded-full bg-white/80 p-2">✕</button>
-                                        <img :src="current.src" :srcset="srcsetFor(current.src)" sizes="(max-width: 768px) 100vw, 1200px" :alt="current.caption" class="w-full lightbox-img bg-black" />
+                                        <button @click="closeLightbox" class="absolute right-2 top-2 z-10 rounded-full lightbox-btn p-2">✕</button>
+                                        <picture>
+                                            <source media="(max-width: 768px)" :srcset="currentMobile.src" />
+                                            <img :src="current.src" sizes="(max-width: 768px) 100vw, 1200px" :alt="current.caption" class="w-full lightbox-img bg-black" />
+                                        </picture>
                                         <div class="p-4 text-center text-sm text-neutral-700">{{ current.caption }}</div>
 
                                         <!-- Lightbox nav -->
-                                        <button @click="prev" aria-label="Previous" class="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2">‹</button>
-                                        <button @click="next" aria-label="Next" class="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2">›</button>
+                                        <button @click="prev" aria-label="Previous" class="absolute left-2 top-1/2 -translate-y-1/2 rounded-full lightbox-btn p-2">‹</button>
+                                        <button @click="next" aria-label="Next" class="absolute right-2 top-1/2 -translate-y-1/2 rounded-full lightbox-btn p-2">›</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </section>
@@ -309,4 +312,17 @@ onUnmounted(() => {
 
 /* Hide outline on buttons inside carousel but keep accessibility focus */
 .carousel-thumb:focus { outline: 2px solid rgba(250,204,21,.6); outline-offset: 2px; }
+
+/* Lightbox primary-styled controls */
+.lightbox-btn {
+    background: var(--primary);
+    color: var(--primary-foreground);
+    box-shadow: 0 6px 14px rgba(16,24,40,0.08);
+}
+.lightbox-btn:hover {
+    filter: brightness(0.95);
+}
+.lightbox-btn:active {
+    transform: translateY(1px);
+}
 </style>

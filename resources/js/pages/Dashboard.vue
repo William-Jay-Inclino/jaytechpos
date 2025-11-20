@@ -64,8 +64,9 @@ const breadcrumbs: BreadcrumbItem[] = [
                 <div class="relative px-4 py-8 sm:px-6 lg:px-8">
                     <!-- Welcome Section -->
                     <div class="mb-8 text-center">
-                        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent mb-3">
-                            Welcome to SimplePOS
+                        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3">
+                            <span>Welcome to</span>
+                            <span class="ml-2 text-primary-gradient">SimplePOS</span>
                         </h1>
                         <p class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
                             Track your business performance
