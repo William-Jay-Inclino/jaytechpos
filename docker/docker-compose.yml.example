@@ -5,8 +5,8 @@ services:
     ports:
       - 5438:5432
     environment:
-      POSTGRES_USER: [USER]
-      POSTGRES_PASSWORD: [PASSWORD]
+      POSTGRES_USER: 
+      POSTGRES_PASSWORD: 
       POSTGRES_HOST_AUTH_METHOD: md5
       TZ: Asia/Manila
     command: postgres -c "listen_addresses=*"
@@ -15,7 +15,39 @@ services:
     restart: always
     volumes:
       - jaytechpos-db-data:/var/lib/postgresql/data
-      - ./init-db:/docker-entrypoint-initdb.d
+
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: jaytechpos-app
+    working_dir: /var/www
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=1
+      - DB_HOST=jaytechpos-db
+      - DB_PORT=5432
+    depends_on:
+      - jaytechpos-db
+    expose:
+      - "9000"
+    volumes:
+      - ..:/var/www:cached
+      - vendor_data:/var/www/vendor
+    networks:
+      - jaytechpos-network
+
+  web:
+    image: nginx:stable-alpine
+    depends_on:
+      - app
+    ports:
+      - "9000:80"
+    volumes:
+      - ..:/var/www:ro
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - jaytechpos-network
 
 networks:
   jaytechpos-network:
@@ -23,3 +55,4 @@ networks:
 
 volumes:
   jaytechpos-db-data:
+  vendor_data:
