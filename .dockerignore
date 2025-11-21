@@ -1,0 +1,13 @@
+vendor
+node_modules
+.env
+.env.*
+.idea
+.vscode
+storage/*.key
+storage/debugbar
+.git
+vendor_data
+/.phpunit.result.cache
+vendor_data
+/.phpunit.result.cache
