@@ -26,9 +26,8 @@ class AppServiceProvider extends ServiceProvider
     {
 
         // URL::forceScheme('https');
-        $appEnv = config('app.env', env('APP_ENV', 'production'));
-
-        if ($appEnv !== 'local') {
+        // Force HTTPS when behind a proxy
+        if (config('app.env') !== 'local') {
             URL::forceScheme('https');
         }
 
