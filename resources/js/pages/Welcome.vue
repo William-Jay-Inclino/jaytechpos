@@ -90,7 +90,7 @@ onMounted(() => {
                 <div class="w-full">
                     <div class="relative w-full">
                         <div class="relative overflow-hidden bg-black">
-                            <video
+                            <!-- <video
                                 ref="videoRef"
                                 :src="videoSrc"
                                 class="w-full h-[85vh] sm:h-[80vh] lg:h-[90vh] object-cover"
@@ -102,7 +102,7 @@ onMounted(() => {
                                 muted
                                 playsinline
                                 controls
-                            ></video>
+                            ></video> -->
 
                             <!-- Play overlay (hidden once playing) -->
                             <button
