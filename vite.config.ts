@@ -29,7 +29,7 @@ export default defineConfig({
         host: 'jaytechsolutions.cloud',
         port: 5173, // default Vite port
         origin: 'https://jaytechsolutions.cloud',
-    }
+    },
     define: {
         __VUE_PROD_DEVTOOLS__: true,
     },
