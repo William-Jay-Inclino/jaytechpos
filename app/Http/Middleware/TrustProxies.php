@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 
 class TrustProxies extends Middleware
 {
-    protected $proxies = '*';
+    protected $proxies = [
+        '120.28.62.118',
+    ];
+
     protected $headers = Request::HEADER_X_FORWARDED_ALL;
 }

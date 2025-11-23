@@ -25,13 +25,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
 
-        if(app()->isProduction()){
+        // Force HTTPS when behind a proxy
+        if ($this->app->environment('production')) {
             URL::forceScheme('https');
         }
-        
-        // if(config('app.env') !== 'local') {
-        //     URL::forceScheme('https');
-        // }
 
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
