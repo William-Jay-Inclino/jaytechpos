@@ -77,9 +77,9 @@ const buttonText = computed(() => {
                 <DialogTitle class="text-xl text-green-700 dark:text-green-400">
                     {{ modalTitle }}
                 </DialogTitle>
-                <!-- <DialogDescription class="text-sm text-muted-foreground">
-                    {{ modalDescription }}
-                </DialogDescription> -->
+                <DialogDescription class="text-sm text-muted-foreground">
+                    <!-- {{ modalDescription }} -->
+                </DialogDescription>
             </DialogHeader>
 
             <div v-if="product" class="space-y-4">
@@ -91,9 +91,9 @@ const buttonText = computed(() => {
                             <Package class="h-5 w-5 text-muted-foreground" />
                             <h3 class="font-semibold">{{ product.product_name }}</h3>
                         </div>
-                        <Badge :variant="statusVariant">
+                        <!-- <Badge :variant="statusVariant">
                             {{ product.status === 'active' ? 'Active' : 'Inactive' }}
-                        </Badge>
+                        </Badge> -->
                     </div>
 
                     <!-- Unit -->

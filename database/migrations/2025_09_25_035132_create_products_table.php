@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('product_name');
             $table->text('description')->nullable();
             $table->decimal('unit_price', 15, 2);
-            $table->decimal('cost_price', 15, 2);
+            $table->decimal('cost_price', 15, 2)->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
 

@@ -180,30 +180,10 @@ onUnmounted(() => {
     
                         <!-- Price Row -->
                         <div class="grid gap-6 md:grid-cols-2">
-                            <!-- Unit Price -->
-                            <div class="grid gap-2">
-                                <Label for="unit_price">Unit Price (₱)</Label>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">
-                                    Selling price na ibebenta mo sa customer
-                                </p>
-                                <Input
-                                    id="unit_price"
-                                    v-model="form.unit_price"
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    required
-                                    class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
-                                />
-                                <InputError
-                                    :message="form.errors.unit_price"
-                                    class="mt-1"
-                                />
-                            </div>
-    
+
                             <!-- Cost Price -->
                             <div class="grid gap-2">
-                                <Label for="cost_price">Cost Price (₱)</Label>
+                                <Label for="cost_price">Cost Price <span class="text-sm text-gray-600 dark:text-gray-400">(optional)</span></Label>
                                 <p class="text-sm text-gray-600 dark:text-gray-400">
                                     Puhunan mo o presyong nabili mo sa supplier
                                 </p>
@@ -221,6 +201,28 @@ onUnmounted(() => {
                                     class="mt-1"
                                 />
                             </div>
+
+                            <!-- Unit Price -->
+                            <div class="grid gap-2">
+                                <Label for="unit_price">Unit Price</Label>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">
+                                    Selling price na ibebenta mo sa customer
+                                </p>
+                                <Input
+                                    id="unit_price"
+                                    v-model="form.unit_price"
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    required
+                                    class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                                />
+                                <InputError
+                                    :message="form.errors.unit_price"
+                                    class="mt-1"
+                                />
+                            </div>
+
                         </div>
                         
                         <div class="grid gap-6 md:grid-cols-2 md:items-end">

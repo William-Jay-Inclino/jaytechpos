@@ -163,7 +163,7 @@ onUnmounted(() => {
                         <div class="grid gap-6 md:grid-cols-2">
                             <!-- Cost Price -->
                             <div class="grid gap-2">
-                                <Label for="cost_price">Cost Price (₱)</Label>
+                                <Label for="cost_price">Cost Price <span class="text-sm text-gray-600 dark:text-gray-400">(optional)</span></Label>
                                 <p class="text-sm text-gray-600 dark:text-gray-400">
                                     Puhunan mo o presyong nabili mo sa supplier
                                 </p>
@@ -173,7 +173,6 @@ onUnmounted(() => {
                                     type="number"
                                     step="0.01"
                                     min="0"
-                                    required
                                     class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                                 />
                                 <InputError
@@ -184,7 +183,7 @@ onUnmounted(() => {
                             
                             <!-- Unit Price -->
                             <div class="grid gap-2">
-                                <Label for="unit_price">Unit Price (₱)</Label>
+                                <Label for="unit_price">Unit Price</Label>
                                 <p class="text-sm text-gray-600 dark:text-gray-400">
                                     Selling price na ibebenta mo sa customer
                                 </p>

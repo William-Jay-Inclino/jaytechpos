@@ -65,8 +65,8 @@ const breadcrumbs: BreadcrumbItem[] = [
                     <!-- Welcome Section -->
                     <div class="mb-8 text-center">
                         <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3">
-                            <span>Welcome to</span>
-                            <span class="ml-2 text-primary-gradient">SimplePOS</span>
+                            <!-- <span>Welcome to</span> -->
+                            <span class="ml-2 text-primary-gradient">JayTech</span>
                         </h1>
                         <p class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
                             Track your business performance

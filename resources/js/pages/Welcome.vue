@@ -53,10 +53,9 @@ onMounted(() => {
             <!-- Make header stack on small screens and keep nav right-aligned on larger screens -->
             <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div class="flex items-center gap-3">
-                        <img src="/images/simplepos/simplePOS-logo.png" alt="SimplePOS logo" class="w-32 h-32 rounded-full object-cover" />
                         <div>
-                            <h2 class="text-3xl font-semibold text-primary-gradient">SimplePOS</h2>
-                            <p class="text-xs text-neutral-500 dark:text-neutral-400">Made for sari-sari stores and small businesses.</p>
+                            <h2 class="text-3xl font-semibold text-primary-gradient">JayTech</h2>
+                            <p class="text-xs text-neutral-500 dark:text-neutral-400">Simple store management app for small businesses.</p>
                         </div>
                     </div>
 

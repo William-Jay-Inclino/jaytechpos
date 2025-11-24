@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Validation\Rule;
 
 class StoreProductRequest extends FormRequest
 {
@@ -37,12 +38,21 @@ class StoreProductRequest extends FormRequest
      */
     public function rules(): array
     {
+        $userId = $this->user()?->id ?? auth()->id();
+
         return [
-            'product_name' => 'required|string|max:255|unique:products,product_name',
+            'product_name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('products', 'product_name')->where(function ($query) use ($userId) {
+                    return $query->where('user_id', $userId);
+                }),
+            ],
             'description' => 'nullable|string|max:1000',
             'unit_id' => 'required|exists:units,id',
             'unit_price' => 'required|numeric|min:0',
-            'cost_price' => 'required|numeric|min:0',
+            'cost_price' => ['nullable', 'numeric', 'min:0'],
             'status' => 'required|in:active,inactive',
         ];
     }

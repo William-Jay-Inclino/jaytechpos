@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Validation\Rule;
 
 class UpdateProductRequest extends FormRequest
 {
@@ -23,14 +24,31 @@ class UpdateProductRequest extends FormRequest
      */
     public function rules(): array
     {
-        $productId = $this->route('product');
+        $userId = $this->user()?->id ?? auth()->id();
+
+        // Determine the current product id from route (can be model instance or id)
+        $productParam = $this->route('product') ?? $this->route('id');
+        if ($productParam instanceof \App\Models\Product) {
+            $productId = $productParam->id;
+        } else {
+            $productId = $productParam;
+        }
 
         return [
-            'product_name' => 'required|string|max:255|unique:products,product_name,'.$productId,
+            'product_name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('products', 'product_name')
+                    ->ignore($productId)
+                    ->where(function ($query) use ($userId) {
+                        return $query->where('user_id', $userId);
+                    }),
+            ],
             'description' => 'nullable|string',
             'unit_id' => 'required|exists:units,id',
             'unit_price' => 'required|numeric|min:0',
-            'cost_price' => 'required|numeric|min:0',
+            'cost_price' => ['nullable', 'numeric', 'min:0'],
             'status' => 'required|in:active,inactive',
         ];
     }
