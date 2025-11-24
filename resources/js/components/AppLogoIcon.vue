@@ -14,7 +14,7 @@ defineProps<Props>();
 
 <template>
     <img
-        src="/jt_logo.png"
+        src="/logo.png"
         alt="JayTech logo"
         :class="className"
         v-bind="$attrs"
