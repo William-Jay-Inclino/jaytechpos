@@ -7,6 +7,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { formatCurrency } from '@/utils/currency';
 import {
     formatManilaDateTime,
     getCurrentManilaDateTime,
@@ -152,13 +153,13 @@ const handleClose = () => {
                                         <div
                                             class="text-xs text-muted-foreground"
                                         >
-                                            {{ item.quantity }} × ₱{{
-                                                item.unit_price.toFixed(2)
+                                            {{ item.quantity }} × {{
+                                                formatCurrency(item.unit_price)
                                             }}
                                         </div>
                                     </div>
                                     <div class="text-sm font-medium">
-                                        ₱{{ item.total_amount.toFixed(2) }}
+                                        {{ formatCurrency(item.total_amount) }}
                                     </div>
                                 </div>
                             </div>
@@ -172,7 +173,7 @@ const handleClose = () => {
                                 Total Amount
                             </div>
                             <div class="text-2xl font-bold">
-                                ₱{{ saleData.total_amount.toFixed(2) }}
+                                {{ formatCurrency(saleData.total_amount) }}
                             </div>
                         </div>
 
@@ -203,10 +204,8 @@ const handleClose = () => {
                                         >Amount Received:</span
                                     >
                                     <span
-                                        >₱{{
-                                            saleData.amount_tendered.toFixed(
-                                                2,
-                                            )
+                                        >{{
+                                            formatCurrency(saleData.amount_tendered)
                                         }}</span
                                     >
                                 </div>
@@ -222,11 +221,7 @@ const handleClose = () => {
                                         >Change:</span
                                     >
                                     <span
-                                        >₱{{
-                                            (
-                                                saleData.change_amount || 0
-                                            ).toFixed(2)
-                                        }}</span
+                                        >{{ formatCurrency(saleData.change_amount || 0) }}</span
                                     >
                                 </div>
                                 <div
@@ -240,12 +235,7 @@ const handleClose = () => {
                                         >Payment Towards Balance:</span
                                     >
                                     <span
-                                        >₱{{
-                                            (
-                                                saleData.balance_payment ||
-                                                0
-                                            ).toFixed(2)
-                                        }}</span
+                                        >{{ formatCurrency(saleData.balance_payment || 0) }}</span
                                     >
                                 </div>
                             </div>
@@ -270,9 +260,7 @@ const handleClose = () => {
                                         >Amount Paid:</span
                                     >
                                     <span
-                                        >₱{{
-                                            saleData.paid_amount.toFixed(2)
-                                        }}</span
+                                        >{{ formatCurrency(saleData.paid_amount) }}</span
                                     >
                                 </div>
                             </div>
@@ -300,12 +288,7 @@ const handleClose = () => {
                                         >Previous:</span
                                     >
                                     <span
-                                        >₱{{
-                                            (
-                                                saleData.original_customer_balance ||
-                                                0
-                                            ).toFixed(2)
-                                        }}</span
+                                        >{{ formatCurrency(saleData.original_customer_balance || 0) }}</span
                                     >
                                 </div>
                                 <div
@@ -320,12 +303,7 @@ const handleClose = () => {
                                                 : ''
                                         "
                                     >
-                                        ₱{{
-                                            (
-                                                saleData.new_customer_balance ||
-                                                0
-                                            ).toFixed(2)
-                                        }}
+                                        {{ formatCurrency(saleData.new_customer_balance || 0) }}
                                     </span>
                                 </div>
                             </div>

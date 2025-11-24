@@ -10,7 +10,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 // UI Components
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
+import { Input, InputCurrency } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 
@@ -181,15 +181,6 @@ const selectedCustomerName = computed(() => {
     return customer ? `${customer.name}${customer.mobile_number ? ` (${customer.mobile_number})` : ''}` : '';
 });
 
-const formattedTime12Hr = computed(() => {
-    if (!transactionTime.value) return '';
-    const [hours, minutes] = transactionTime.value.split(':');
-    const hour = parseInt(hours);
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const hour12 = hour % 12 || 12;
-    return `${hour12}:${minutes} ${ampm}`;
-});
-
 // Customer data for form display - just use current customer since form is reset after checkout
 const displayCustomer = computed((): Customer | null => {
     return selectedCustomer.value;
@@ -218,14 +209,47 @@ const isCheckoutValid = computed((): boolean => {
 
         return hasItems && hasEnoughMoney;
     } else if (paymentMethod.value === 'utang') {
+        // For utang (credit) payments, ensure paidAmount is not negative and
+        // does not exceed the cart total. Partial payments are allowed.
         return (
-            hasItems &&
-            selectedCustomerId.value !== '0' &&
-            paidAmount.value >= 0
-        );
+                hasItems &&
+                selectedCustomerId.value !== '0' &&
+                paidAmount.value >= 0 &&
+                // For utang payments, the paid amount must be strictly less than the total.
+                // If the user intends to pay the full amount, they should use Cash.
+                paidAmount.value < cartTotalAmount.value
+            );
     }
 
     return false;
+});
+
+// Short helper text explaining why checkout is disabled. Keeps messages brief.
+const checkoutDisabledReason = computed<string | null>(() => {
+    const hasItems = cartItems.value.length > 0;
+    if (!hasItems) return 'Add items to cart.';
+
+    if (paymentMethod.value === 'cash') {
+        const hasValidCustomer = !payTowardsBalance.value || selectedCustomerId.value !== '0';
+        const hasEnoughMoney = amountTendered.value >= cartTotalAmount.value;
+
+        if (!hasEnoughMoney) return 'Amount received is less than total.';
+        if (payTowardsBalance.value && !hasValidCustomer) return 'Select a customer to use change for balance.';
+
+        const maxDeductible = Math.min(selectedCustomer.value?.running_utang_balance || 0, Math.max(0, amountTendered.value - cartTotalAmount.value));
+        if (payTowardsBalance.value && deductFromBalance.value > maxDeductible) return 'Deduction exceeds available change or customer balance.';
+
+        return null;
+    }
+
+    if (paymentMethod.value === 'utang') {
+        if (selectedCustomerId.value === '0') return 'Select a customer for Utang.';
+        if (paidAmount.value < 0) return 'Paid amount cannot be negative.';
+        if (paidAmount.value >= cartTotalAmount.value) return 'For full payment, switch to Cash.';
+        return null;
+    }
+
+    return null;
 });
 
 
@@ -407,6 +431,10 @@ watch(amountTendered, () => {
         }
     }
 });
+
+// NOTE: Do NOT clamp `paidAmount` in code. We prefer to keep the user's input intact
+// and rely on validation to disable checkout. The UI will show helper text when
+// the entered paid amount is invalid (e.g., greater than the cart total).
 </script>
 
 <template>
@@ -741,7 +769,7 @@ watch(amountTendered, () => {
                                                         {{ item.product_name }}
                                                     </h3>
                                                     <div class="mt-1 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                                                        <span>₱{{ Number(item.unit_price).toFixed(2) }}/{{ item.unit?.abbreviation || 'unit' }}</span>
+                                                        <span>₱{{ formatCurrency(Number(item.unit_price)) }}/{{ item.unit?.abbreviation || 'unit' }}</span>
                                                     </div>
                                                 </div>
                                                 <div class="text-right ml-4">
@@ -853,7 +881,7 @@ watch(amountTendered, () => {
                                                 </td>
                                                 <td class="px-4 py-3 text-right">
                                                     <span class="text-sm text-gray-500 dark:text-gray-400">
-                                                        ₱{{ Number(item.unit_price).toFixed(2) }} / {{ item.unit?.abbreviation || 'unit' }}
+                                                        {{ formatCurrency(Number(item.unit_price)) }} / {{ item.unit?.abbreviation || 'unit' }}
                                                     </span>
                                                 </td>
                                                 <td class="px-4 py-3 text-right">
@@ -921,13 +949,18 @@ watch(amountTendered, () => {
                                             <div
                                                 class="rounded-lg border border-teal-200 bg-teal-50 p-4 dark:border-teal-800 dark:bg-teal-900/20"
                                             >
-                                                <Input
+                                                <!-- <Input
                                                     id="amountTendered"
                                                     v-model.number="amountTendered"
                                                     type="number"
                                                     min="0"
                                                     step="0.01"
                                                     placeholder="0.00"
+                                                    class="border-0 bg-transparent p-0 text-right text-2xl font-bold text-teal-700 placeholder:text-teal-400 focus:ring-0 dark:text-teal-400 dark:placeholder:text-teal-500"
+                                                /> -->
+                                                <InputCurrency
+                                                    id="amountTendered"
+                                                    v-model="amountTendered"
                                                     class="border-0 bg-transparent p-0 text-right text-2xl font-bold text-teal-700 placeholder:text-teal-400 focus:ring-0 dark:text-teal-400 dark:placeholder:text-teal-500"
                                                 />
                                             </div>
@@ -1017,8 +1050,8 @@ watch(amountTendered, () => {
                                             <p
                                                 class="text-xs text-blue-700 dark:text-blue-300"
                                             >
-                                                Max: ₱{{
-                                                    Math.min(
+                                                Max: {{
+                                                    formatCurrency(Math.min(
                                                         selectedCustomer?.running_utang_balance ||
                                                             0,
                                                         Math.max(
@@ -1026,7 +1059,7 @@ watch(amountTendered, () => {
                                                             amountTendered -
                                                                 cartTotalAmount,
                                                         ),
-                                                    ).toFixed(2)
+                                                    ))
                                                 }}
                                             </p>
                                         </div>
@@ -1041,12 +1074,12 @@ watch(amountTendered, () => {
                                                 <span
                                                     class="text-lg font-bold text-blue-900 dark:text-blue-100"
                                                 >
-                                                    ₱{{
-                                                        (
+                                                    {{
+                                                        formatCurrency(
                                                             (selectedCustomer?.running_utang_balance ||
                                                                 0) -
                                                             deductFromBalance
-                                                        ).toFixed(2)
+                                                        )
                                                     }}
                                                 </span>
                                             </div>
@@ -1073,8 +1106,8 @@ watch(amountTendered, () => {
                                             >
                                                 <span
                                                     class="text-2xl font-bold text-orange-700 dark:text-orange-400"
-                                                    >₱{{
-                                                        cartTotalAmount.toFixed(2)
+                                                    >{{
+                                                        formatCurrency(cartTotalAmount)
                                                     }}</span
                                                 >
                                             </div>
@@ -1090,7 +1123,22 @@ watch(amountTendered, () => {
                                                     >*</span
                                                 ></Label
                                             >
-                                            <Input
+                                            <div
+                                                class="rounded-lg border border-teal-200 bg-teal-50 p-4 dark:border-teal-800 dark:bg-teal-900/20"
+                                            >
+                                                <InputCurrency
+                                                    id="paidAmount"
+                                                    v-model="paidAmount"
+                                                    class="border-0 bg-transparent p-0 text-right text-2xl font-bold text-teal-700 placeholder:text-teal-400 focus:ring-0 dark:text-teal-400 dark:placeholder:text-teal-500"
+                                                />
+                                                <p v-if="paidAmount > cartTotalAmount" class="mt-2 text-xs text-red-600 dark:text-red-400">
+                                                    Please enter an amount less than the total.
+                                                </p>
+                                                <p v-if="paymentMethod === 'utang' && paidAmount === cartTotalAmount" class="mt-2 text-xs text-yellow-700 dark:text-yellow-300">
+                                                    You entered the full amount while using Utang (credit). If you're paying the full amount, please switch the payment type to Cash.
+                                                </p>
+                                            </div>
+                                            <!-- <Input
                                                 id="paidAmount"
                                                 v-model.number="paidAmount"
                                                 type="number"
@@ -1098,7 +1146,8 @@ watch(amountTendered, () => {
                                                 step="0.01"
                                                 placeholder="0.00"
                                                 class="h-12 border-2 text-right text-lg font-semibold focus:ring-2 focus:ring-blue-500"
-                                            />
+                                            /> -->
+                                            
                                         </div>
                                     </div>
 
@@ -1113,13 +1162,13 @@ watch(amountTendered, () => {
                                                 </span>
                                                 <span
                                                     class="text-2xl font-bold text-red-700 dark:text-red-400"
-                                                    >₱{{
-                                                        (
+                                                    >{{
+                                                        formatCurrency(
                                                             (selectedCustomer?.running_utang_balance ||
                                                                 0) +
                                                             (cartTotalAmount -
                                                                 paidAmount)
-                                                        ).toFixed(2)
+                                                        )
                                                     }}</span
                                                 >
                                         </div>
@@ -1151,6 +1200,9 @@ watch(amountTendered, () => {
                                             Complete Checkout
                                         </span>
                                     </Button>
+                                    <p v-if="(!isCheckoutValid && !isProcessing) && checkoutDisabledReason" class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                                        {{ checkoutDisabledReason }}
+                                    </p>
                                 </div>
                             </div>
                         </div>
