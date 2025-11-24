@@ -18,6 +18,7 @@ import { Label } from '@/components/ui/label';
 // Types
 import type { BreadcrumbItem } from '@/types';
 import { CartItem, Customer, Product } from '@/types/pos';
+import { formatCurrency } from '@/utils/currency';
 
 const props = defineProps<{
     products: Product[];
@@ -540,7 +541,7 @@ watch(amountTendered, () => {
                                                             v-if="customer.running_utang_balance && customer.running_utang_balance > 0"
                                                             class="text-xs text-red-600 dark:text-red-400 font-medium"
                                                         >
-                                                            Balance: ₱{{ customer.running_utang_balance.toFixed(2) }}
+                                                            Balance: {{ formatCurrency(customer.running_utang_balance) }}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -573,11 +574,7 @@ watch(amountTendered, () => {
                                         >
                                         <span
                                             class="text-lg font-bold text-amber-900 dark:text-amber-100"
-                                            >₱{{
-                                                displayCustomer.running_utang_balance.toFixed(
-                                                    2,
-                                                )
-                                            }}</span
+                                            >{{ formatCurrency(displayCustomer.running_utang_balance) }}</span
                                         >
                                     </div>
                                 </div>
@@ -696,7 +693,7 @@ watch(amountTendered, () => {
                                         <div class="flex flex-col">
                                             <div class="font-medium">{{ product.product_name }}</div>
                                             <div class="text-xs text-green-600 dark:text-green-400 font-medium">
-                                                ₱{{ Number(product.unit_price).toFixed(2) }}/{{ product.unit?.abbreviation || 'unit' }}
+                                                {{ formatCurrency(product.unit_price) }}/ <span class="text-gray-500 dark:text-gray-400"> {{ product.unit?.abbreviation || 'unit' }} </span>
                                             </div>
                                         </div>
                                     </div>
@@ -749,7 +746,7 @@ watch(amountTendered, () => {
                                                 </div>
                                                 <div class="text-right ml-4">
                                                     <div class="text-lg font-bold text-green-600 dark:text-green-400">
-                                                        ₱{{ calculateItemTotal(item).toFixed(2) }}
+                                                        {{ formatCurrency(calculateItemTotal(item)) }}
                                                     </div>
                                                 </div>
                                             </div>
@@ -861,7 +858,7 @@ watch(amountTendered, () => {
                                                 </td>
                                                 <td class="px-4 py-3 text-right">
                                                     <span class="text-sm font-semibold text-green-600 dark:text-green-400">
-                                                        ₱{{ calculateItemTotal(item).toFixed(2) }}
+                                                        {{ formatCurrency(calculateItemTotal(item)) }}
                                                     </span>
                                                 </td>
                                                 <td class="px-4 py-3">
@@ -909,9 +906,7 @@ watch(amountTendered, () => {
                                             >
                                                 <span
                                                     class="text-2xl font-bold text-orange-700 dark:text-orange-400"
-                                                    >₱{{
-                                                        cartTotalAmount.toFixed(2)
-                                                    }}</span
+                                                    >{{ formatCurrency(cartTotalAmount) }}</span
                                                 >
                                             </div>
                                         </div>
@@ -959,9 +954,7 @@ watch(amountTendered, () => {
                                                             ? 'text-emerald-700 dark:text-emerald-400'
                                                             : 'text-gray-500 dark:text-gray-400'
                                                     "
-                                                    >₱{{
-                                                        changeAmount.toFixed(2)
-                                                    }}</span
+                                                    >{{ formatCurrency(changeAmount) }}</span
                                                 >
                                             </div>
                                         </div>
