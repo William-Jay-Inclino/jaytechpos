@@ -4,13 +4,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { showSuccessToast } from '@/lib/toast';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { showConfirmDelete } from '@/lib/swal';
 import { Customer, type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import EditBalanceModal from '@/components/modals/EditBalanceModal.vue';
 import { Edit3 } from 'lucide-vue-next';
+import axios from 'axios';
 
 const props = defineProps<{
     customer: Customer;
@@ -34,7 +35,7 @@ const showBalanceModal = ref(false);
 const handleDelete = async () => {
     const result = await showConfirmDelete({
         title: 'Delete Customer',
-        text: `Are you sure you want to delete ${props.customer.name}? This action cannot be undone and will remove all associated data.`,
+        text: `Are you sure you want to delete ${props.customer.name}? This action cannot be undone.`,
         confirmButtonText: 'Yes, delete customer!',
         confirmButtonColor: '#dc3545',
         cancelButtonText: 'Cancel',
@@ -42,11 +43,26 @@ const handleDelete = async () => {
     });
 
     if (result.isConfirmed) {
-        router.delete(`/customers/${props.customer.id}`, {
-            onSuccess: () => {
-                showSuccessToast('Customer deleted successfully!');
-            },
-        });
+        try {
+            const res = await axios.delete(`/customers/${props.customer.id}`)
+
+            const data = res?.data || {}
+
+            if (data.success) {
+                showSuccessToast(data.msg || 'Customer deleted successfully!')
+
+                // SPA redirect to customer index
+                router.visit('/customers')
+
+            } else {
+                // backend responded but indicated failure
+                showErrorToast(data.msg || 'Failed to delete customer')
+            }
+        } catch (error: any) {
+            // try to show a useful message from the response when available
+            const message = error?.response?.data?.msg || error?.response?.data?.message || 'Failed to delete customer'
+            showErrorToast(message)
+        }
     }
 };
 

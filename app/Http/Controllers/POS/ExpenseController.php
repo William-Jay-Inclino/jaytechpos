@@ -174,7 +174,9 @@ class ExpenseController extends Controller
 
         $expense->delete();
 
-        return redirect()->route('expenses.index')
-            ->with('message', 'Expense deleted successfully!');
+        return response()->json([
+            'success' => true,
+            'msg' => 'User deleted successfully.'
+        ]);
     }
 }

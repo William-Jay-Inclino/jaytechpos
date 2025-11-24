@@ -70,14 +70,30 @@ async function deleteProduct(productId: number) {
     });
 
     if (result.isConfirmed) {
-        router.delete(`/products/${productId}`, {
-            onSuccess: () => {
-                showSuccessToast('Product deleted successfully!');
-            },
-            onError: (error) => {
-                showErrorToast('Failed to delete product');
-            },
-        });
+        try {
+            const res = await axios.delete(`/products/${productId}`)
+
+            const data = res?.data || {}
+
+            if (data.success) {
+                showSuccessToast(data.msg || 'Product deleted successfully!')
+
+                const indx = props.products.findIndex(product => product.id === productId);
+                if (indx !== -1) {
+                    props.products.splice(indx, 1);
+                    searchQuery.value = ''; // Clear search after deletion
+                }
+
+
+            } else {
+                // backend responded but indicated failure
+                showErrorToast(data.msg || 'Failed to delete product')
+            }
+        } catch (error: any) {
+            // try to show a useful message from the response when available
+            const message = error?.response?.data?.msg || error?.response?.data?.message || 'Failed to delete product'
+            showErrorToast(message)
+        }
     }
 }
 </script>

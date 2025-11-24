@@ -159,21 +159,25 @@ class CustomerController extends Controller
     /**
      * Remove the specified customer from storage.
      */
-    public function destroy(Customer $customer): RedirectResponse
+    public function destroy(Customer $customer)
     {
         $this->authorize('delete', $customer);
 
         // Check if customer has any related records
         if ($customer->sales()->exists() ||
             $customer->customerTransactions()->exists()) {
-            return redirect()->route('customers.index')
-                ->with('error', 'Cannot delete customer with existing sales or transaction history.');
+            return response()->json([
+                'success' => false,
+                'msg' => 'Cannot delete customer with existing sales or transaction history.'
+            ], 409);
         }
 
         $customer->delete();
 
-        return redirect()->route('customers.index')
-            ->with('message', 'Customer deleted successfully!');
+        return response()->json([
+            'success' => true,
+            'msg' => 'Customer deleted successfully.'
+        ]);
     }
 
     /**

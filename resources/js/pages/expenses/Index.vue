@@ -3,6 +3,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { computed, ref, withDefaults, watch } from 'vue';
+import { formatCurrency } from '@/utils/currency';
 import axios from 'axios';
 import { ChevronLeft, ChevronRight, Calendar, Edit, Trash2, BarChart3 } from 'lucide-vue-next';
 
@@ -21,7 +22,6 @@ import {
 } from '@/components/ui/dialog';
 import { showConfirmDelete } from '@/lib/swal';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { showErrorAlert } from '@/lib/swal';
 
 interface ExpenseCategory {
     id: number;
@@ -75,21 +75,6 @@ const filteredExpenses = computed(() => {
 
 // Computed properties
 const totalExpenses = computed(() => Array.isArray(props.expenses) ? props.expenses.length : 0);
-
-const totalAmount = computed(() => {
-    if (!Array.isArray(props.expenses)) return 0;
-    return props.expenses.reduce((sum, expense) => sum + expense.amount, 0);
-});
-
-
-
-// Format currency
-const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-PH', {
-        style: 'currency',
-        currency: 'PHP',
-    }).format(amount);
-};
 
 // Format date
 const formatDate = (dateString: string) => {
@@ -193,14 +178,26 @@ async function deleteExpense(expenseId: number) {
     });
 
     if (result.isConfirmed) {
-        router.delete(`/expenses/${expenseId}`, {
-            onSuccess: () => {
-                showSuccessToast('Expense deleted successfully!');
-            },
-            onError: (error) => {
-                showErrorToast('Failed to delete expense');
-            },
-        });
+        try {
+            const res = await axios.delete(`/expenses/${expenseId}`)
+
+            const data = res?.data || {}
+
+            if (data.success) {
+                showSuccessToast(data.msg || 'Expense deleted successfully!')
+                const indx = props.expenses.findIndex(expense => expense.id === expenseId);
+                if (indx !== -1) {
+                    props.expenses.splice(indx, 1);
+                }
+            } else {
+                // backend responded but indicated failure
+                showErrorToast(data.msg || 'Failed to delete expense')
+            }
+        } catch (error: any) {
+            // try to show a useful message from the response when available
+            const message = error?.response?.data?.msg || error?.response?.data?.message || 'Failed to delete expense'
+            showErrorToast(message)
+        }
     }
 }
 

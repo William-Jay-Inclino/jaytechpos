@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3'
+import axios from 'axios'
 import AdminLayout from '@/layouts/AdminLayout.vue'
 import { computed, ref } from 'vue'
 import { Search, Edit, Trash2, UserPlus, ChevronLeft, ChevronRight } from 'lucide-vue-next'
@@ -8,6 +9,8 @@ import { Search, Edit, Trash2, UserPlus, ChevronLeft, ChevronRight } from 'lucid
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { showConfirmDelete } from '@/lib/swal'
+import { showErrorToast, showSuccessToast } from '@/lib/toast'
 
 interface User {
     id: number
@@ -36,6 +39,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
 
 // const breadcrumbs = [
 //     { title: 'Users', href: '/admin/users' }
@@ -118,11 +122,32 @@ const getVisiblePages = (): (number | string)[] => {
     return pages
 }
 
-const deleteUser = (userId: number) => {
-    if (confirm('Are you sure you want to delete this user?')) {
-        router.delete(`/admin/users/${userId}`, {
-            preserveScroll: true,
-        })
+const deleteUser = async (userId: number) => {
+    const result = await showConfirmDelete({
+        title: 'Are you sure?',
+        text: 'This action cannot be undone. The user will be permanently deleted.',
+        confirmButtonText: 'Yes, delete user!',
+    })
+
+    if (result.isConfirmed) {
+        try {
+            const res = await axios.delete(`/admin/users/${userId}`)
+
+            const data = res?.data || {}
+
+            if (data.success) {
+                showSuccessToast(data.msg || 'User deleted successfully!')
+                // reload the current page so the users list updates
+                router.reload()
+            } else {
+                // backend responded but indicated failure
+                showErrorToast(data.msg || 'Failed to delete user')
+            }
+        } catch (error: any) {
+            // try to show a useful message from the response when available
+            const message = error?.response?.data?.msg || error?.response?.data?.message || 'Failed to delete user'
+            showErrorToast(message)
+        }
     }
 }
 </script>

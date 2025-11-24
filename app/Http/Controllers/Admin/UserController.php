@@ -8,9 +8,19 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class UserController extends Controller
 {
+
+    use AuthorizesRequests;
+
+    public function __construct()
+    {
+        // Wire up policy authorization for resource methods using the UserPolicy
+        $this->authorizeResource(User::class, 'user');
+    }
+
     public function index()
     {
         $users = User::where('role', '!=', UserRole::Admin)
@@ -104,13 +114,21 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
+        // Authorize deletion first (follows ExpenseController pattern)
+        $this->authorize('delete', $user);
         if ($user->id === auth()->id()) {
-            return back()->with('error', 'You cannot delete yourself.');
+            return response()->json([
+                'success' => false,
+                'msg' => 'You cannot delete yourself.'
+            ], 403);
         }
 
         // Check if user is active
         if ($user->status === 'active') {
-            return back()->with('error', 'Cannot delete an active user. Please set the user to inactive first.');
+            return response()->json([
+                'success' => false,
+                'msg' => 'Cannot delete an active user. Please set the user to inactive first.'
+            ], 409);
         }
 
         // Check for associated records
@@ -144,11 +162,17 @@ class UserController extends Controller
 
             $message = 'Cannot delete user. This user has associated '.implode(', ', $associations).'.';
 
-            return back()->with('error', $message);
+            return response()->json([
+                'success' => false,
+                'msg' => $message
+            ], 409);
         }
 
         $user->delete();
 
-        return back()->with('success', 'User deleted successfully.');
+        return response()->json([
+            'success' => true,
+            'msg' => 'User deleted successfully.'
+        ]);
     }
 }
