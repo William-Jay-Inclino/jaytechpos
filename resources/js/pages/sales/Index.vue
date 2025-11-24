@@ -68,6 +68,12 @@ const paidAmount = ref(0);
 const amountTendered = ref(0);
 const payTowardsBalance = ref(false);
 const deductFromBalance = ref(0);
+// Numeric view of deductFromBalance to handle InputCurrency emitting strings
+const numericDeductFromBalance = computed((): number => {
+    const v = deductFromBalance.value as unknown as string | number
+    const n = typeof v === 'number' ? v : parseFloat(String(v || '0'))
+    return Number.isFinite(n) ? n : 0
+})
 const showSuccessModal = ref(false);
 const saleData = ref<SaleResponse | null>(null);
 const isProcessing = ref(false);
@@ -145,7 +151,7 @@ const changeAmount = computed((): number => {
             0,
             amountTendered.value -
                 cartTotalAmount.value -
-                deductFromBalance.value,
+                numericDeductFromBalance.value,
         );
     }
     return Math.max(0, amountTendered.value - cartTotalAmount.value);
@@ -203,7 +209,7 @@ const isCheckoutValid = computed((): boolean => {
                 hasItems &&
                 hasValidCustomer &&
                 hasEnoughMoney &&
-                deductFromBalance.value <= maxDeductible
+                numericDeductFromBalance.value <= maxDeductible
             );
         }
 
@@ -293,7 +299,7 @@ function handleCheckout(): void {
         notes: null,
         transaction_date: `${transactionDate.value} ${transactionTime.value}`,
         deduct_from_balance: payTowardsBalance.value
-            ? deductFromBalance.value
+            ? numericDeductFromBalance.value
             : 0,
     };
 
@@ -1027,26 +1033,25 @@ watch(amountTendered, () => {
                                             >
                                                 Payment towards Utang
                                             </Label>
-                                            <Input
-                                                id="deductFromBalance"
-                                                v-model.number="deductFromBalance"
-                                                type="number"
-                                                min="0"
-                                                :max="
-                                                    Math.min(
-                                                        selectedCustomer?.running_utang_balance ||
-                                                            0,
-                                                        Math.max(
-                                                            0,
-                                                            amountTendered -
-                                                                cartTotalAmount,
-                                                        ),
-                                                    )
-                                                "
-                                                step="0.01"
-                                                placeholder="0.00"
-                                                class="h-12 text-right text-lg font-semibold"
-                                            />
+                                                <InputCurrency
+                                                    id="deductFromBalance"
+                                                    v-model="deductFromBalance"
+                                                    min="0"
+                                                    :max="
+                                                        Math.min(
+                                                            selectedCustomer?.running_utang_balance ||
+                                                                0,
+                                                            Math.max(
+                                                                0,
+                                                                amountTendered -
+                                                                    cartTotalAmount,
+                                                            ),
+                                                        )
+                                                    "
+                                                    step="0.01"
+                                                    placeholder="0.00"
+                                                    class="h-12 text-right text-lg font-semibold"
+                                                />
                                             <p
                                                 class="text-xs text-blue-700 dark:text-blue-300"
                                             >
@@ -1078,7 +1083,7 @@ watch(amountTendered, () => {
                                                         formatCurrency(
                                                             (selectedCustomer?.running_utang_balance ||
                                                                 0) -
-                                                            deductFromBalance
+                                                            numericDeductFromBalance
                                                         )
                                                     }}
                                                 </span>

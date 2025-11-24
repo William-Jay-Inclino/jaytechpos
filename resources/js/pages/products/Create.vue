@@ -2,7 +2,7 @@
 import InputError from '@/components/InputError.vue';
 import ProductSuccessModal from '@/components/modals/ProductSuccessModal.vue';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Input, InputCurrency } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -79,8 +79,9 @@ async function submit() {
             product_name: form.product_name,
             description: form.description,
             unit_id: parseInt(form.unit_id),
-            unit_price: parseFloat(form.unit_price),
-            cost_price: parseFloat(form.cost_price),
+            // InputCurrency may emit a number or a string while typing; coerce safely
+            unit_price: parseFloat(String(form.unit_price || '0')),
+            cost_price: parseFloat(String(form.cost_price || '0')),
             status: form.status,
         };
 
@@ -167,10 +168,10 @@ onUnmounted(() => {
                                 <p class="text-sm text-gray-600 dark:text-gray-400">
                                     Puhunan mo o presyong nabili mo sa supplier
                                 </p>
-                                <Input
+                                <InputCurrency
                                     id="cost_price"
                                     v-model="form.cost_price"
-                                    type="number"
+                                    type="text"
                                     step="0.01"
                                     min="0"
                                     class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
@@ -187,10 +188,10 @@ onUnmounted(() => {
                                 <p class="text-sm text-gray-600 dark:text-gray-400">
                                     Selling price na ibebenta mo sa customer
                                 </p>
-                                <Input
+                                <InputCurrency
                                     id="unit_price"
                                     v-model="form.unit_price"
-                                    type="number"
+                                    type="text"
                                     step="0.01"
                                     min="0"
                                     required

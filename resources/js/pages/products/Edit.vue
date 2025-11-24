@@ -2,7 +2,7 @@
 import InputError from '@/components/InputError.vue';
 import ProductSuccessModal from '@/components/modals/ProductSuccessModal.vue';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Input, InputCurrency } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -93,8 +93,8 @@ async function submit() {
         const formData = {
             product_name: form.product_name,
             unit_id: parseInt(form.unit_id),
-            unit_price: parseFloat(form.unit_price),
-            cost_price: parseFloat(form.cost_price),
+            unit_price: parseFloat(String(form.unit_price || '0')),
+            cost_price: parseFloat(String(form.cost_price || '0')),
             status: form.status,
         };
 
@@ -187,10 +187,9 @@ onUnmounted(() => {
                                 <p class="text-sm text-gray-600 dark:text-gray-400">
                                     Puhunan mo o presyong nabili mo sa supplier
                                 </p>
-                                <Input
+                                <InputCurrency
                                     id="cost_price"
                                     v-model="form.cost_price"
-                                    type="number"
                                     step="0.01"
                                     min="0"
                                     required
@@ -208,10 +207,9 @@ onUnmounted(() => {
                                 <p class="text-sm text-gray-600 dark:text-gray-400">
                                     Selling price na ibebenta mo sa customer
                                 </p>
-                                <Input
+                                <InputCurrency
                                     id="unit_price"
                                     v-model="form.unit_price"
-                                    type="number"
                                     step="0.01"
                                     min="0"
                                     required

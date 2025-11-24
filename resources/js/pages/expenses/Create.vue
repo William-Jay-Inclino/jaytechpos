@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Input, InputCurrency } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { showSuccessToast } from '@/lib/toast';
@@ -69,7 +69,7 @@ async function submit() {
         const formData = {
             name: form.name,
             category_id: parseInt(form.category_id),
-            amount: parseFloat(form.amount),
+            amount: parseFloat(String(form.amount)),
             expense_date: form.expense_date,
         };
 
@@ -188,10 +188,9 @@ onUnmounted(() => {
                         <!-- Amount -->
                         <div class="grid gap-2">
                             <Label for="amount">Amount (₱)</Label>
-                            <Input
+                            <InputCurrency
                                 id="amount"
                                 v-model="form.amount"
-                                type="number"
                                 step="0.01"
                                 min="0"
                                 required

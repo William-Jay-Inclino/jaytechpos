@@ -13,7 +13,7 @@ import { Search } from 'lucide-vue-next';
 // UI Components
 import CustomerTransactionHistory from '@/components/CustomerTransactionHistory.vue';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Input, InputCurrency } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 
@@ -30,7 +30,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 // Form state
 const selectedCustomerId = ref<string>('');
-const paymentAmount = ref<string>('');
+// paymentAmount may be a string while typing or a number when parsed by InputCurrency
+const paymentAmount = ref<string | number>('');
 const paymentDate = ref<string>(getCurrentManilaDateTime()); // Current Manila date and time
 const notes = ref<string>('');
 
@@ -68,18 +69,18 @@ const selectedCustomerName = computed(() => {
 
 const paymentAmountError = computed(() => {
     if (!paymentAmount.value || !selectedCustomer.value) return '';
-    
-    const amount = parseFloat(paymentAmount.value);
+
+    const amount = typeof paymentAmount.value === 'number' ? paymentAmount.value : parseFloat(String(paymentAmount.value));
     const balance = selectedCustomer.value.running_utang_balance || 0;
-    
-    if (amount <= 0) {
+
+    if (Number.isNaN(amount) || amount <= 0) {
         return 'Payment amount must be greater than zero';
     }
-    
+
     if (amount > balance) {
         return `Payment amount cannot exceed current balance of ${formatCurrency(balance)}`;
     }
-    
+
     return '';
 });
 
@@ -87,7 +88,7 @@ const isFormValid = computed(() => {
     return (
         selectedCustomerId.value &&
         paymentAmount.value &&
-        parseFloat(paymentAmount.value) > 0 &&
+        (typeof paymentAmount.value === 'number' ? paymentAmount.value > 0 : parseFloat(String(paymentAmount.value)) > 0) &&
         paymentDate.value &&
         !paymentAmountError.value
     );
@@ -389,15 +390,13 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                         </Label>
                                     </div>
                                     <div class="relative">
-                                        <Input
+                                        <InputCurrency
                                             id="payment_amount"
                                             name="payment_amount"
-                                            type="number"
+                                            v-model="paymentAmount"
                                             step="0.01"
                                             min="0.01"
                                             :max="selectedCustomer?.running_utang_balance || undefined"
-                                            placeholder="0.00"
-                                            v-model="paymentAmount"
                                             class="h-12 border-2 text-right text-lg font-semibold focus:ring-2 focus:ring-blue-500"
                                         />
                                     </div>
@@ -417,7 +416,7 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                         v-if="selectedCustomer && !paymentAmountError && paymentAmount"
                                         class="text-xs text-gray-600 dark:text-gray-400"
                                     >
-                                        Remaining balance: {{ formatCurrency((selectedCustomer.running_utang_balance || 0) - parseFloat(paymentAmount || '0')) }}
+                                        Remaining balance: {{ formatCurrency((selectedCustomer.running_utang_balance || 0) - parseFloat(String(paymentAmount || '0'))) }}
                                     </div>
                                 </div>
 

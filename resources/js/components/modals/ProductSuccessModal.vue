@@ -10,6 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Package } from 'lucide-vue-next';
 import { computed } from 'vue';
+import { formatCurrency } from '@/utils/currency';
 
 interface Product {
     id: number;
@@ -38,26 +39,12 @@ const isOpen = computed({
     set: (value) => emit('update:open', value),
 });
 
-const statusVariant = computed(() => {
-    return props.product?.status === 'active' ? 'default' : 'secondary';
-});
-
-const formatPrice = (price: number): string => {
-    return `₱${price.toFixed(2)}`;
-};
-
 const isEditMode = computed(() => props.mode === 'edit');
 
 const modalTitle = computed(() => {
     return isEditMode.value 
         ? 'Product Updated Successfully!' 
         : 'Product Created Successfully!';
-});
-
-const modalDescription = computed(() => {
-    return isEditMode.value
-        ? 'Your product has been updated successfully'
-        : 'Your new product has been added to inventory';
 });
 
 const buttonText = computed(() => {
@@ -109,13 +96,13 @@ const buttonText = computed(() => {
                         <div class="text-center">
                             <div class="text-sm text-muted-foreground">Selling Price</div>
                             <div class="text-lg font-bold text-green-600 dark:text-green-400">
-                                {{ formatPrice(product.unit_price) }}
+                                {{ formatCurrency(product.unit_price) }}
                             </div>
                         </div>
                         <div class="text-center">
                             <div class="text-sm text-muted-foreground">Cost Price</div>
                             <div class="text-lg font-bold text-orange-600 dark:text-orange-400">
-                                {{ formatPrice(product.cost_price) }}
+                                {{ formatCurrency(product.cost_price) }}
                             </div>
                         </div>
                     </div>
@@ -124,7 +111,7 @@ const buttonText = computed(() => {
                     <div class="rounded-md bg-blue-50 p-3 text-center dark:bg-blue-950/20">
                         <div class="text-sm text-blue-600 dark:text-blue-400">Potential Profit</div>
                         <div class="text-lg font-bold text-blue-700 dark:text-blue-300">
-                            {{ formatPrice(product.unit_price - product.cost_price) }}
+                            {{ formatCurrency(product.unit_price - product.cost_price) }}
                         </div>
                     </div>
                 </div>

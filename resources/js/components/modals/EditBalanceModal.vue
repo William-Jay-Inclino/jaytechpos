@@ -2,10 +2,11 @@
 import { ref, watch, nextTick } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { formatCurrency } from '@/utils/currency';
 
 // UI Components
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Input, InputCurrency } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
     Dialog,
@@ -70,7 +71,7 @@ const handleSubmit = async () => {
 
     // Submit via Inertia
     router.patch(`/customers/${props.customerId}/balance`, {
-        balance: newBalance,
+        balance: parseFloat(String(newBalance)),
         note: note.value || null,
     }, {
         onSuccess: () => {
@@ -93,12 +94,6 @@ const handleSubmit = async () => {
     });
 };
 
-const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-PH', {
-        style: 'currency',
-        currency: 'PHP',
-    }).format(amount);
-};
 </script>
 
 <template>
@@ -127,10 +122,9 @@ const formatCurrency = (amount: number) => {
                         New Balance (₱)
                         <span class="text-red-500">*</span>
                     </Label>
-                    <Input
+                    <InputCurrency
                         id="balance"
                         v-model="balance"
-                        type="number"
                         step="0.01"
                         min="0"
                         placeholder="0.00"
@@ -173,7 +167,7 @@ const formatCurrency = (amount: number) => {
                 <Button
                     type="button"
                     @click="handleSubmit"
-                    :disabled="isLoading || !balance"
+                    :disabled="isLoading || balance === '' || balance === null || typeof balance === 'undefined'"
                     class="flex-1"
                 >
                     <span v-if="isLoading" class="flex items-center gap-2">

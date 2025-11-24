@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Input, InputCurrency } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { showSuccessToast } from '@/lib/toast';
@@ -23,6 +23,22 @@ const form = useForm({
     starting_balance: '',
     interest_rate: props.defaultInterestRate?.toString() || '',
 });
+
+async function submit() {
+    if (form.processing) return;
+
+    form.clearErrors();
+
+    // Coerce starting_balance to a number (InputCurrency may emit string or number)
+    (form as any).starting_balance = parseFloat(String(form.starting_balance || '0'));
+
+    form.post('/customers', {
+        onSuccess: () => {
+            form.reset();
+            showSuccessToast('Customer created successfully!');
+        },
+    });
+}
 </script>
 
 <template>
@@ -34,7 +50,7 @@ const form = useForm({
 
                 <!-- Form Card -->
                 <div class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 sm:p-8 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none">
-                    <form @submit.prevent="form.post('/customers', { onSuccess: () => { form.reset(); showSuccessToast('Customer created successfully!'); } })" class="space-y-6">
+                    <form @submit.prevent="submit" class="space-y-6">
                         <!-- Customer Name -->
                         <div class="grid gap-2">
                             <Label for="name">Customer Name</Label>
@@ -62,14 +78,12 @@ const form = useForm({
 
                         <!-- Starting Balance -->
                         <div class="grid gap-2">
-                            <Label for="starting_balance">Starting Balance (₱)</Label>
-                            <Input
+                            <Label for="starting_balance">Starting Balance</Label>
+                            <InputCurrency
                                 id="starting_balance"
                                 v-model="form.starting_balance"
-                                type="number"
                                 step="0.01"
                                 min="0"
-                                placeholder="0.00"
                                 class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                             />
                             <InputError :message="form.errors.starting_balance" class="mt-1" />
@@ -85,7 +99,6 @@ const form = useForm({
                                 step="0.01"
                                 min="0"
                                 max="100"
-                                :placeholder="`Default: ${defaultInterestRate}%`"
                                 class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                             />
                             <InputError :message="form.errors.interest_rate" class="mt-1" />
