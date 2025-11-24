@@ -52,12 +52,20 @@ onMounted(() => {
             <!-- Header / Nav -->
             <!-- Make header stack on small screens and keep nav right-aligned on larger screens -->
             <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    <div class="flex items-center gap-3">
-                        <div>
-                            <h2 class="text-3xl font-semibold text-primary-gradient">JayTech</h2>
-                            <p class="text-xs text-neutral-500 dark:text-neutral-400">Simple store management app for small businesses.</p>
-                        </div>
+                <div class="flex items-center gap-3">
+                    <!-- Logo: using a public path so you can replace the file at public/images/jaytech-logo.png -->
+                    <img
+                        src="/images/jaytech-logo.png"
+                        alt="JayTech logo"
+                        class="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-amber-600 bg-white/60 dark:bg-black/10"
+                        onerror="this.onerror=null;this.src='/favicon.svg'"
+                    />
+
+                    <div>
+                        <h2 class="text-3xl font-semibold text-primary-gradient">JayTech</h2>
+                        <p class="text-xs text-neutral-500 dark:text-neutral-400">Simple store management app.</p>
                     </div>
+                </div>
 
                 <nav class="flex flex-wrap gap-3 text-sm w-full sm:w-auto justify-end">
                     <Link
