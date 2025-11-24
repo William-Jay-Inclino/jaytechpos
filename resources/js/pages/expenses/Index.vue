@@ -20,7 +20,7 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog';
 import { showConfirmDelete } from '@/lib/swal';
-import { showSuccessToast } from '@/lib/toast';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { showErrorAlert } from '@/lib/swal';
 
 interface ExpenseCategory {
@@ -193,20 +193,14 @@ async function deleteExpense(expenseId: number) {
     });
 
     if (result.isConfirmed) {
-        try {
-            const response = await axios.delete(`/expenses/${expenseId}`);
-            
-            if (response.data.success) {
+        router.delete(`/expenses/${expenseId}`, {
+            onSuccess: () => {
                 showSuccessToast('Expense deleted successfully!');
-                // Refresh the page to update the expense list
-                window.location.reload();
-            }
-        } catch (error: any) {
-            showErrorAlert({
-                title: 'Error',
-                text: 'An error occurred while deleting the expense. Please try again.',
-            });
-        }
+            },
+            onError: (error) => {
+                showErrorToast('Failed to delete expense');
+            },
+        });
     }
 }
 
@@ -221,7 +215,7 @@ async function deleteExpense(expenseId: number) {
             <div class="mx-auto max-w-7xl space-y-8">
                 <!-- Action Buttons -->
                 <div class="flex flex-col gap-3 sm:flex-row">
-                    <Button as-child class="w-full sm:w-auto">
+                    <Button v-if="totalExpenses > 0" as-child class="w-full sm:w-auto">
                         <Link href="/expenses/create">
                             Add Expense
                         </Link>
@@ -315,7 +309,7 @@ async function deleteExpense(expenseId: number) {
                 <!-- Expenses List -->
                 <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
 
-                    <div v-if="!Array.isArray(expenses) || expenses.length === 0" class="px-6 py-16 text-center">
+                    <div v-if="totalExpenses === 0" class="px-6 py-16 text-center">
                         <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
                             <span class="text-3xl">💰</span>
                         </div>
@@ -328,7 +322,7 @@ async function deleteExpense(expenseId: number) {
                         <div class="mt-6">
                             <Button as-child>
                                 <Link href="/expenses/create">
-                                    Add Expense
+                                    Add Your First Expense
                                 </Link>
                             </Button>
                         </div>

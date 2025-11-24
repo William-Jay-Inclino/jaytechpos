@@ -6,7 +6,6 @@ import { computed, ref, withDefaults } from 'vue';
 import { Search, Edit, FileText } from 'lucide-vue-next';
 
 // UI Components
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -53,9 +52,6 @@ const filteredCustomers = computed(() => {
 });
 
 // Computed properties
-const customersWithUtang = computed(() => 
-    Array.isArray(props.customers) ? props.customers.filter(customer => customer.has_utang).length : 0
-);
 
 const totalCustomers = computed(() => Array.isArray(props.customers) ? props.customers.length : 0);
 
@@ -76,7 +72,7 @@ const formatCurrency = (amount: number) => {
             <div class="mx-auto max-w-7xl">
                 <div class="mb-4 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
                     
-                    <Button as-child class="w-full sm:w-auto">
+                    <Button v-if="totalCustomers > 0" as-child class="w-full sm:w-auto">
                         <Link href="/customers/create" class="flex items-center justify-center gap-2">
                             <span>Add Customer</span>
                         </Link>
@@ -102,7 +98,7 @@ const formatCurrency = (amount: number) => {
                 <!-- Customers Display -->
                 <div class="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800 overflow-hidden">
                     <!-- Empty State - No Customers -->
-                    <div v-if="!Array.isArray(customers) || customers.length === 0" class="px-4 py-16 sm:px-6 sm:py-20 text-center">
+                    <div v-if="totalCustomers === 0" class="px-4 py-16 sm:px-6 sm:py-20 text-center">
                         <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
                             <span class="text-3xl">👥</span>
                         </div>
@@ -115,7 +111,6 @@ const formatCurrency = (amount: number) => {
                         <div class="mt-8">
                             <Button as-child size="lg">
                                 <Link href="/customers/create" class="flex items-center gap-2">
-                                    <span class="text-lg">+</span>
                                     Add Your First Customer
                                 </Link>
                             </Button>

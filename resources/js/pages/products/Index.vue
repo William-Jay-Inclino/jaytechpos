@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Product, type BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { computed, ref, withDefaults } from 'vue';
 import axios from 'axios';
 import { Search, Edit, Trash2 } from 'lucide-vue-next';
@@ -10,16 +10,8 @@ import { Search, Edit, Trash2 } from 'lucide-vue-next';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
 import { showConfirmDelete } from '@/lib/swal';
-import { showSuccessToast } from '@/lib/toast';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { showErrorAlert } from '@/lib/swal';
 
 const props = withDefaults(defineProps<{
@@ -38,6 +30,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 // Search and filter state
 const searchQuery = ref('');
 const statusFilter = ref('all'); // 'all', 'active', 'inactive'
+
+const totalProducts = computed(() => Array.isArray(props.products) ? props.products.length : 0);
 
 // Filtered products based on search and filters
 const filteredProducts = computed(() => {
@@ -76,28 +70,14 @@ async function deleteProduct(productId: number) {
     });
 
     if (result.isConfirmed) {
-        try {
-            const response = await axios.delete(`/products/${productId}`);
-            
-            if (response.data.success) {
+        router.delete(`/products/${productId}`, {
+            onSuccess: () => {
                 showSuccessToast('Product deleted successfully!');
-                // Refresh the page to update the product list
-                window.location.reload();
-            }
-        } catch (error: any) {
-            if (error.response?.status === 422) {
-                // Product is referenced in sales items
-                showErrorAlert({
-                    title: 'Cannot Delete Product',
-                    text: error.response.data.message || 'This product cannot be deleted because it has been used in sales transactions.',
-                });
-            } else {
-                showErrorAlert({
-                    title: 'Error',
-                    text: 'An error occurred while deleting the product. Please try again.',
-                });
-            }
-        }
+            },
+            onError: (error) => {
+                showErrorToast('Failed to delete product');
+            },
+        });
     }
 }
 </script>
@@ -111,7 +91,7 @@ async function deleteProduct(productId: number) {
             <div class="mx-auto max-w-7xl">
                 <div class="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
                     
-                    <Button as-child class="w-full sm:w-auto">
+                    <Button v-if="totalProducts > 0" as-child class="w-full sm:w-auto">
                         <Link href="/products/create" class="flex items-center justify-center gap-2">
                             <span>Add Product</span>
                         </Link>
@@ -137,7 +117,7 @@ async function deleteProduct(productId: number) {
                 <!-- Products Display -->
                 <div class="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800 overflow-hidden">
                     <!-- Empty State - No Products -->
-                    <div v-if="!Array.isArray(products) || products.length === 0" class="px-4 py-16 sm:px-6 sm:py-20 text-center">
+                    <div v-if="totalProducts === 0" class="px-4 py-16 sm:px-6 sm:py-20 text-center">
                         <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
                             <span class="text-3xl">📦</span>
                         </div>
@@ -150,7 +130,6 @@ async function deleteProduct(productId: number) {
                         <div class="mt-8">
                             <Button as-child size="lg">
                                 <Link href="/products/create" class="flex items-center gap-2">
-                                    <span class="text-lg">+</span>
                                     Add Your First Product
                                 </Link>
                             </Button>

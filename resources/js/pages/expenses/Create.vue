@@ -79,7 +79,7 @@ async function submit() {
             form.reset();
             showSuccessToast('Expense created successfully!');
             // Redirect to expenses listing
-            window.location.href = '/expenses';
+            // window.location.href = '/expenses';
         }
     } catch (error: any) {
         if (error.response?.status === 422) {
@@ -128,7 +128,7 @@ onUnmounted(() => {
 
                 <!-- Form Card -->
                 <div class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 sm:p-8 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none">
-                    <form @submit.prevent="submit" class="space-y-6">
+                    <form @submit.prevent="form.post('/expenses', { onSuccess: () => { form.reset(); showSuccessToast('Expense created successfully!'); } })" class="space-y-6">
                         <!-- Expense Name -->
                         <div class="grid gap-2">
                             <Label for="name">Expense Name</Label>
@@ -215,8 +215,8 @@ onUnmounted(() => {
     
                         <!-- Actions -->
                         <div class="flex items-center gap-4">
-                            <Button type="submit" :disabled="isSubmitting">
-                                {{ isSubmitting ? 'Saving Expense...' : 'Save Expense' }}
+                            <Button type="submit" :disabled="form.processing">
+                                {{ form.processing ? 'Saving Expense...' : 'Save Expense' }}
                             </Button>
                             <Link href="/expenses">
                                 <Button variant="outline" type="button">

@@ -131,11 +131,8 @@ class ExpenseController extends Controller
         $expense = Expense::create($validated);
         $expense->load(['category']);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Expense created successfully!',
-            'expense' => new ExpenseResource($expense),
-        ]);
+        return redirect()->route('expenses.index')
+            ->with('message', 'Expense created successfully!');
     }
 
     public function edit(string $id)
@@ -171,17 +168,13 @@ class ExpenseController extends Controller
         ]);
     }
 
-    public function destroy(string $id)
+    public function destroy(Expense $expense)
     {
-        $expense = Expense::findOrFail($id);
-
         $this->authorize('delete', $expense);
 
         $expense->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Expense deleted successfully!',
-        ]);
+        return redirect()->route('expenses.index')
+            ->with('message', 'Expense deleted successfully!');
     }
 }

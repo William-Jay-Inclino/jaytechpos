@@ -88,10 +88,8 @@ class ProductController extends Controller
         ]);
     }
 
-    public function destroy(string $id)
+    public function destroy(Product $product)
     {
-        $product = Product::findOrFail($id);
-
         $this->authorize('delete', $product);
 
         // Check if product is referenced in sales items
@@ -104,9 +102,7 @@ class ProductController extends Controller
 
         $product->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Product deleted successfully!',
-        ]);
+        return redirect()->route('products.index')
+            ->with('message', 'Product deleted successfully!');
     }
 }
