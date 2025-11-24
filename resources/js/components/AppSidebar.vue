@@ -68,11 +68,11 @@ const mainNavItems: NavItem[] = [
 ];
 
 const footerNavItems: NavItem[] = [
-    {
-        title: 'Meet the Developer',
-        href: 'https://www.facebook.com/jewell.inclino/',
-        icon: UserCircle,
-    },
+    // {
+    //     title: 'Meet the Developer',
+    //     href: 'https://www.facebook.com/jewell.inclino/',
+    //     icon: UserCircle,
+    // },
     // {
     //     title: 'Read the Documentation',
     //     href: '',

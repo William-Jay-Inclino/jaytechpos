@@ -130,9 +130,11 @@ async function updateYear() {
                             <span
                                 :class="[
                                     'font-bold px-2 sm:px-3 py-1 rounded-full text-xs block truncate max-w-[90px] sm:max-w-none',
-                                    item.cash_flow >= 0
+                                    item.cash_flow > 0
                                         ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                                        : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                                        : item.cash_flow === 0
+                                            ? 'bg-gray-100 text-gray-800 dark:bg-gray-700/30 dark:text-gray-300'
+                                            : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
                                 ]"
                                 :title="formatCurrency(item.cash_flow)"
                             >
@@ -174,9 +176,11 @@ async function updateYear() {
                             <span
                                 :class="[
                                     'font-bold px-2 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm block truncate max-w-[90px] sm:max-w-none',
-                                    totalCashFlow >= 0
+                                    totalCashFlow > 0
                                         ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                                        : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                                        : totalCashFlow === 0
+                                            ? 'bg-gray-100 text-gray-800 dark:bg-gray-700/30 dark:text-gray-300'
+                                            : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
                                 ]"
                                 :title="formatCurrency(totalCashFlow)"
                             >

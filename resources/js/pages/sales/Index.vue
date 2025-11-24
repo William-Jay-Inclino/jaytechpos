@@ -414,7 +414,35 @@ watch(amountTendered, () => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="w-full px-4 py-6 lg:px-8 lg:py-10">
             <!-- Page Header -->
-            <div class="mx-auto max-w-7xl">
+                <div class="mx-auto max-w-7xl">
+                    <!-- Alert: No products available -->
+                    <div v-if="!props.products || props.products.length === 0" class="mb-6">
+                        <div class="alert-primary-subtle">
+                            <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                                <div class="flex items-start gap-4">
+                                    <div class="alert-primary-icon">
+                                        <span class="text-2xl">📦</span>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-sm">No products found</h4>
+                                        <p class="mt-1">You need to add products before you can create a sale. Create a product now to get started.</p>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-3">
+                                    <Button
+                                        type="button"
+                                        size="lg"
+                                        class="rounded-lg shadow-md btn-interactive focus-visible:outline-none"
+                                        title="Add product"
+                                        @click="router.visit('/products/create')"
+                                    >
+                                        Add Product
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                 <!-- Main Layout - 2 Columns on Desktop, 1 Column on Mobile -->
                 <div class="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">

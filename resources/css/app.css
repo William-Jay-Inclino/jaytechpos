@@ -200,3 +200,75 @@
         @apply bg-background text-foreground;
     }
 }
+
+@layer components {
+    /* Subtle, theme-aware alert that uses the project's primary color variables.
+       Designed to be minimal and look good in both light and dark modes. */
+    .alert-primary-subtle {
+        @apply rounded-xl p-4 shadow-sm;
+        /* Light mode: very subtle tint */
+        background-color: color-mix(in srgb, var(--primary) 3%, var(--background) 97%);
+        border: 1px solid color-mix(in srgb, var(--primary) 6%, var(--border) 94%);
+        /* Use foreground (dark text) in light mode for readability */
+        color: var(--foreground);
+    }
+
+    .alert-primary-subtle h4 {
+        margin: 0;
+        font-weight: 600;
+        color: var(--foreground);
+    }
+
+    .alert-primary-subtle p {
+        margin: 0.25rem 0 0;
+        color: color-mix(in srgb, var(--foreground) 92%, var(--primary) 8%);
+        font-size: 0.9375rem; /* 15px */
+    }
+
+    .alert-primary-icon {
+        @apply flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg;
+        /* Light mode icon tint uses primary color for contrast */
+        background-color: color-mix(in srgb, var(--primary) 8%, var(--background) 92%);
+        color: var(--primary);
+    }
+
+    /* Dark mode adjustments: slightly stronger tint for visibility */
+    :root .dark .alert-primary-subtle,
+    .dark .alert-primary-subtle {
+        background-color: color-mix(in srgb, var(--primary) 10%, var(--background) 90%);
+        border: 1px solid color-mix(in srgb, var(--primary) 18%, var(--border) 82%);
+        /* In dark mode use primary-foreground (light text) for contrast */
+        color: var(--primary-foreground);
+    }
+
+    :root .dark .alert-primary-icon,
+    .dark .alert-primary-icon {
+        background-color: color-mix(in srgb, var(--primary) 20%, var(--background) 80%);
+        color: var(--primary-foreground);
+    }
+}
+
+@layer components {
+    /* Interactive button affordances for CTAs that use project variables.
+       Provides subtle lift, shadow, and focus ring to indicate clickability. */
+    .btn-interactive {
+        cursor: pointer;
+        transition: transform 160ms ease, box-shadow 160ms ease, filter 160ms ease;
+        will-change: transform, box-shadow;
+    }
+
+    .btn-interactive:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px color-mix(in srgb, var(--primary) 12%, black 6%);
+        filter: brightness(0.995);
+    }
+
+    .btn-interactive:active {
+        transform: translateY(-1px) scale(0.998);
+    }
+
+    .btn-interactive:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 18%, transparent 82%);
+    }
+}
