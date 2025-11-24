@@ -159,8 +159,8 @@ async function updateYear() {
                         </td>
                     </tr>
                 </tbody>
-                <tfoot class="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700/50 dark:to-gray-800/50 border-t border-gray-200/50 dark:border-gray-600/50">
-                    <tr class="font-bold text-sm">
+                <tfoot class="bg-gradient-to-r from-yellow-50 to-yellow-100 dark:from-yellow-900/30 dark:to-yellow-800/30 border-t-2 border-yellow-300/40 shadow-inner">
+                    <tr class="font-bold text-sm text-[0.95rem]">
                         <td class="p-2 sm:p-4 text-gray-900 dark:text-white">Total</td>
                         <td class="p-2 sm:p-4 text-right text-gray-900 dark:text-white text-xs sm:text-sm">
                             <span class="block truncate max-w-[80px] sm:max-w-none" :title="formatCurrency(totalIncome)">

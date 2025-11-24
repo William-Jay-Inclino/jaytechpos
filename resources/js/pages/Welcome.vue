@@ -55,11 +55,10 @@ onMounted(() => {
                 <div class="flex items-center gap-3">
                     <!-- Logo: using a public path so you can replace the file at public/images/jaytech-logo.png -->
                     <img
-                        src="/images/jaytech-logo.png"
+                        src="/logo.png"
                         alt="JayTech logo"
                         class="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-amber-600 bg-white/60 dark:bg-black/10"
-                        onerror="this.onerror=null;this.src='/favicon.svg'"
-                    />
+z                    />
 
                     <div>
                         <h2 class="text-3xl font-semibold text-primary-gradient">JayTech</h2>

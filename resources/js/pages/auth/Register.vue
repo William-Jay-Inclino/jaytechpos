@@ -35,7 +35,6 @@ import { LoaderCircle } from 'lucide-vue-next';
                         :tabindex="1"
                         autocomplete="name"
                         name="name"
-                        placeholder="Full name"
                     />
                     <InputError :message="errors.name" />
                 </div>
@@ -49,7 +48,6 @@ import { LoaderCircle } from 'lucide-vue-next';
                         :tabindex="2"
                         autocomplete="email"
                         name="email"
-                        placeholder="email@example.com"
                     />
                     <InputError :message="errors.email" />
                 </div>
@@ -63,7 +61,6 @@ import { LoaderCircle } from 'lucide-vue-next';
                         :tabindex="3"
                         autocomplete="new-password"
                         name="password"
-                        placeholder="Password"
                     />
                     <InputError :message="errors.password" />
                 </div>
@@ -77,7 +74,6 @@ import { LoaderCircle } from 'lucide-vue-next';
                         :tabindex="4"
                         autocomplete="new-password"
                         name="password_confirmation"
-                        placeholder="Confirm password"
                     />
                     <InputError :message="errors.password_confirmation" />
                 </div>

@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { showErrorToast, showSuccessToast, showInfoToast } from '@/lib/toast';
 import { Customer, CustomerTransaction, type BreadcrumbItem } from '@/types';
 import {
     formatPhilippinePeso,
     getCurrentManilaDateTime,
 } from '@/utils/timezone';
 import { Form, Head } from '@inertiajs/vue3';
-import { computed, ref, watch, onMounted, onUnmounted } from 'vue';
+import { computed, ref, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { Search } from 'lucide-vue-next';
 
 // UI Components
@@ -169,10 +169,37 @@ const handleFormError = () => {
     showErrorToast('Failed to record payment. Please try again.');
 };
 
-const showTransactionHistoryView = () => {
+const showTransactionHistoryView = async () => {
     if (selectedCustomerId.value) {
+        // Show the history view and inform the user
         showTransactionHistory.value = true;
-        fetchCustomerTransactions(parseInt(selectedCustomerId.value));
+        showInfoToast('Showing transaction history');
+
+        // Wait for DOM to update so the component shell exists
+        await nextTick();
+
+        // Fetch transactions and wait for the data to be set so the
+        // component can render its final height.
+        await fetchCustomerTransactions(parseInt(selectedCustomerId.value));
+
+        // Wait again for DOM to reflect the loaded transactions
+        await nextTick();
+
+        // If on a mobile viewport, scroll smoothly to the transaction history
+        // using the component's root element id
+        try {
+            if (window.innerWidth < 1024) {
+                const el = document.getElementById('customer-transaction-history');
+                if (el) {
+                    // Align the bottom of the element into view so the latest
+                    // entries (usually at the bottom) are visible on mobile.
+                    el.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                }
+            }
+        } catch (e) {
+            // ignore any scrolling errors
+            console.warn('Scrolling to transaction history failed', e);
+        }
     }
 };
 
@@ -471,6 +498,7 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                     <!-- Right Column - Transaction History (8 columns on desktop) -->
                     <div class="flex h-full flex-col lg:col-span-8">
                         <CustomerTransactionHistory
+                            id="customer-transaction-history"
                             v-if="showTransactionHistory"
                             :transactions="transactions"
                             :loading="loadingTransactions"
