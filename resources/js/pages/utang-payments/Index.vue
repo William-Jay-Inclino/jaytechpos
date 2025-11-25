@@ -3,11 +3,11 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { showErrorToast, showSuccessToast, showInfoToast } from '@/lib/toast';
 import { Customer, CustomerTransaction, type BreadcrumbItem } from '@/types';
 import {
-    formatPhilippinePeso,
     getCurrentManilaDateTime,
 } from '@/utils/timezone';
-import { Form, Head } from '@inertiajs/vue3';
+import { Head, router, useForm } from '@inertiajs/vue3';
 import { computed, ref, watch, onMounted, onUnmounted, nextTick } from 'vue';
+import axios from 'axios';
 import { Search } from 'lucide-vue-next';
 
 // UI Components
@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Input, InputCurrency } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { formatCurrency } from '@/utils/currency';
 
 const props = defineProps<{
     customers: Array<Customer>;
@@ -43,6 +44,14 @@ const showCustomerDropdown = ref(false);
 const transactions = ref<CustomerTransaction[]>([]);
 const loadingTransactions = ref(false);
 const showTransactionHistory = ref(false);
+
+// Inertia form for submission (provides `processing` and `errors`)
+const form = useForm({
+    customer_id: '',
+    payment_amount: '',
+    payment_date: paymentDate.value,
+    notes: '',
+});
 
 // Computed properties
 const selectedCustomer = computed(() => {
@@ -103,31 +112,14 @@ const fetchCustomerTransactions = async (customerId: number) => {
 
     loadingTransactions.value = true;
     try {
-        // Get CSRF token from the meta tag
-        const token = document
-            .querySelector('meta[name="csrf-token"]')
-            ?.getAttribute('content');
-
-        const response = await fetch(
-            `/api/customers/${customerId}/transactions`,
-            {
-                method: 'GET',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': token || '',
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-                credentials: 'same-origin', // Include cookies for authentication
+        const response = await axios.get(`/api/customers/${customerId}/transactions`, {
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
             },
-        );
-
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        transactions.value = data.transactions || [];
+            withCredentials: true,
+        });
+        transactions.value = response.data.transactions || [];
     } catch (error) {
         console.error('Error fetching transactions:', error);
         showErrorToast('Failed to load transaction history');
@@ -166,10 +158,6 @@ const handleFormSuccess = () => {
     }
 };
 
-const handleFormError = () => {
-    showErrorToast('Failed to record payment. Please try again.');
-};
-
 const showTransactionHistoryView = async () => {
     if (selectedCustomerId.value) {
         // Show the history view and inform the user
@@ -204,7 +192,27 @@ const showTransactionHistoryView = async () => {
     }
 };
 
-const formatCurrency = formatPhilippinePeso;
+async function handleSubmit(): Promise<void> {
+    if (form.processing) return;
+
+    form.clearErrors();
+
+    const data = {
+        customer_id: selectedCustomerId.value,
+        payment_amount: typeof paymentAmount.value === 'number' ? paymentAmount.value : parseFloat(String(paymentAmount.value)),
+        payment_date: paymentDate.value,
+        notes: notes.value,
+    }
+
+    router.post('/utang-payments', data, {
+        onSuccess: () => {
+            handleFormSuccess();
+        },
+        onError: () => {
+           showErrorToast('Failed to record payment. Please try again.');
+        },
+    });
+}
 
 // Handle click outside to close dropdowns
 function handleClickOutside(event: MouseEvent) {
@@ -258,15 +266,7 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                         <div
                             class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none"
                         >
-                            <Form
-                                action="/utang-payments"
-                                method="post"
-                                :reset-on-success="true"
-                                v-slot="{ errors, processing }"
-                                @success="handleFormSuccess"
-                                @error="handleFormError"
-                                class="space-y-6"
-                            >
+                            <form @submit.prevent="handleSubmit" class="space-y-6">
                                 <!-- Customer Selection -->
                                 <div class="space-y-3">
                                     <Label
@@ -340,10 +340,10 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                         </div>
                                     </div>
                                     <div
-                                        v-if="errors.customer_id"
+                                        v-if="form.errors.customer_id"
                                         class="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400"
                                     >
-                                        {{ errors.customer_id }}
+                                        {{ form.errors.customer_id }}
                                     </div>
 
                                     <!-- Customer Info Below Selection -->
@@ -407,10 +407,10 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                         {{ paymentAmountError }}
                                     </div>
                                     <div
-                                        v-else-if="errors.payment_amount"
+                                        v-else-if="form.errors.payment_amount"
                                         class="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400"
                                     >
-                                        {{ errors.payment_amount }}
+                                        {{ form.errors.payment_amount }}
                                     </div>
                                     <div
                                         v-if="selectedCustomer && !paymentAmountError && paymentAmount"
@@ -437,10 +437,10 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                         class="h-12 border-2 focus:ring-2 focus:ring-blue-500"
                                     />
                                     <div
-                                        v-if="errors.payment_date"
+                                        v-if="form.errors.payment_date"
                                         class="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400"
                                     >
-                                        {{ errors.payment_date }}
+                                        {{ form.errors.payment_date }}
                                     </div>
                                 </div>
 
@@ -461,21 +461,21 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                         class="border-2 focus:ring-2 focus:ring-blue-500"
                                     />
                                     <div
-                                        v-if="errors.notes"
+                                        v-if="form.errors.notes"
                                         class="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400"
                                     >
-                                        {{ errors.notes }}
+                                        {{ form.errors.notes }}
                                     </div>
                                 </div>
 
                                 <!-- Submit Button -->
                                 <Button
                                     type="submit"
-                                    :disabled="processing || !isFormValid"
+                                    :disabled="form.processing || !isFormValid"
                                     class="h-12 w-full bg-green-600 text-lg font-semibold text-white shadow-lg hover:bg-green-700"
                                 >
                                     <span
-                                        v-if="processing"
+                                        v-if="form.processing"
                                         class="flex items-center gap-2"
                                     >
                                         <div
@@ -490,7 +490,7 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                         💰 Record Payment
                                     </span>
                                 </Button>
-                            </Form>
+                            </form>
                         </div>
                     </div>
 
