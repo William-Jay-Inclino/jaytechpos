@@ -40,10 +40,6 @@
         <link rel="manifest" href="/site.webmanifest" />
         <meta name="application-name" content="{{ config('app.name', 'JayTech') }}" />
         <meta name="apple-mobile-web-app-title" content="{{ config('app.name', 'JayTech') }}" />
-        <!-- Startup / splash screen image for iOS. iOS requires specific-sized images for each device — this is a simple generic fallback. -->
-        <link rel="apple-touch-startup-image" href="/jt_logo.png">
-        <!-- Windows tile image -->
-        <meta name="msapplication-TileImage" content="/jt_logo.png">
         
 
         <link rel="preconnect" href="https://fonts.bunny.net">
