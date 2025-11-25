@@ -116,7 +116,7 @@ z                    />
                                 ref="videoRef"
                                 :src="videoSrc"
                                 class="w-full h-[85vh] sm:h-[80vh] lg:h-[90vh] object-cover"
-                                poster="https://via.placeholder.com/1280x720.png?text=SimplePOS+Preview"
+                                poster="https://via.placeholder.com/1280x720.png?text=JayTech+Preview"
                                 @ended="onVideoEnded"
                                 @play="isPlaying = true"
                                 @pause="isPlaying = false"

@@ -35,6 +35,10 @@
 
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any">
         <link rel="apple-touch-icon" sizes="120x120" href="/jt_logo.png">
+        <!-- PWA manifest and app name for add-to-home-screen -->
+        <link rel="manifest" href="/site.webmanifest" />
+        <meta name="application-name" content="{{ config('app.name', 'JayTech') }}" />
+        <meta name="apple-mobile-web-app-title" content="{{ config('app.name', 'JayTech') }}" />
 
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
