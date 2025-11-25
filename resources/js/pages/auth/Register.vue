@@ -12,9 +12,7 @@ import { LoaderCircle } from 'lucide-vue-next';
 import { onMounted } from 'vue';
 import axios from 'axios';
 import { getBrowser, getDeviceType, getOS, getSessionId, isBot } from '@/utils/analytics';
-</script>
 
-<script setup lang="ts">
 onMounted(() => {
     try {
         const ua = navigator.userAgent;
