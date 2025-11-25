@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Product, type BreadcrumbItem } from '@/types';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import { computed, ref, withDefaults } from 'vue';
 import axios from 'axios';
 import { Search, Edit, Trash2 } from 'lucide-vue-next';
+import { formatCurrency } from '@/utils/currency';
 
 // UI Components
 import { Badge } from '@/components/ui/badge';
@@ -12,7 +13,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { showConfirmDelete } from '@/lib/swal';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { showErrorAlert } from '@/lib/swal';
 
 const props = withDefaults(defineProps<{
     products: Array<Product>;
@@ -57,9 +57,6 @@ const filteredProducts = computed(() => {
 });
 
 // Use `product.unit?.abbreviation` directly (see resources/js/types/pos.ts)
-
-// Helper functions
-const formatCurrency = (amount: number) => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(amount);
 
 // Action handlers
 async function deleteProduct(productId: number) {
@@ -115,7 +112,7 @@ async function deleteProduct(productId: number) {
                 </div>
 
                 <!-- Search and Filters -->
-                <div class="mb-6 rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                <div v-if="totalProducts > 0" class="mb-6 rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                     <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
                         <!-- Search -->
                         <div class="relative flex-1">

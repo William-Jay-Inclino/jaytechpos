@@ -386,7 +386,7 @@ async function deleteExpense(expenseId: number) {
                     </div>
 
                     <!-- Desktop Table -->
-                    <div class="hidden lg:block">
+                    <div v-if="totalExpenses > 0" class="hidden lg:block">
                         <table class="w-full">
                             <thead class="bg-gray-50 dark:bg-gray-700/50">
                                 <tr class="border-b border-gray-200 dark:border-gray-700">

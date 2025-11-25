@@ -4,6 +4,7 @@ import { Customer, type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
 import { computed, ref, withDefaults } from 'vue';
 import { Search, Edit, FileText } from 'lucide-vue-next';
+import { formatCurrency } from '@/utils/currency';
 
 // UI Components
 import { Button } from '@/components/ui/button';
@@ -55,12 +56,6 @@ const filteredCustomers = computed(() => {
 
 const totalCustomers = computed(() => Array.isArray(props.customers) ? props.customers.length : 0);
 
-const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-PH', {
-        style: 'currency',
-        currency: 'PHP',
-    }).format(amount);
-};
 </script>
 
 <template>
@@ -80,7 +75,7 @@ const formatCurrency = (amount: number) => {
                 </div>
 
                 <!-- Search and Filters -->
-                <div class="mb-4 rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                <div v-if="totalCustomers > 0" class="mb-4 rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                     <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
                         <!-- Search -->
                         <div class="relative flex-1">

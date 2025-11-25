@@ -42,7 +42,7 @@ console.log('props', props);
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Home',
+        title: 'Dashboard',
         href: dashboard().url,
     },
 ]
