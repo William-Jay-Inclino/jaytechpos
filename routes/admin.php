@@ -26,16 +26,14 @@ Route::prefix('users')->name('users.')->group(function () {
     Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
 });
 
-// Analytics
-// Route::prefix('analytics')->name('analytics.')->group(function () {
-//     Route::get('/', [AnalyticsController::class, 'index'])->name('index');
-//     Route::get('/sales', [AnalyticsController::class, 'sales'])->name('sales');
-//     Route::get('/products', [AnalyticsController::class, 'products'])->name('products');
-//     Route::get('/customers', [AnalyticsController::class, 'customers'])->name('customers');
-// });
-
 // Activity Logs
 Route::prefix('activity-logs')->name('activity-logs.')->group(function () {
     Route::get('/', [ActivityLogController::class, 'index'])->name('index');
     Route::get('/{log}', [ActivityLogController::class, 'show'])->name('show');
+});
+
+// Analytics
+Route::prefix('admin/analytics')->name('admin.analytics.')->group(function () {
+    Route::get('/', [AnalyticsController::class, 'index'])->name('index');
+    Route::get('/{x}', [AnalyticsController::class, 'show'])->name('show');
 });
