@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Icon from './Icon.vue'
 import { ref, onMounted, watch } from 'vue'
+import { formatCurrency } from '@/utils/currency'
 
 interface Props {
     title: string
@@ -16,14 +17,6 @@ const props = defineProps<Props>()
 
 const animatedValue = ref(0)
 const isAnimating = ref(false)
-
-function formatCurrency(value: string | number): string {
-    const num = typeof value === 'string' ? parseFloat(value) : value
-    return new Intl.NumberFormat('en-PH', {
-        style: 'currency',
-        currency: 'PHP',
-    }).format(num)
-}
 
 // Helper function to determine if value should show celebration
 function shouldShowCelebration(value: string | number): boolean {

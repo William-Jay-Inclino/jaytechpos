@@ -84,6 +84,7 @@ async function submit() {
                                 v-model="form.starting_balance"
                                 step="0.01"
                                 min="0"
+                                placeholder="0.00`"
                                 class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                             />
                             <InputError :message="form.errors.starting_balance" class="mt-1" />
@@ -102,6 +103,9 @@ async function submit() {
                                 class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                             />
                             <InputError :message="form.errors.interest_rate" class="mt-1" />
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                Ginagamit ito para sa automatic calculation sa interest every 1st of the month if a customer has outstanding balance.
+                            </p>
                         </div>
 
                         <!-- Actions -->
