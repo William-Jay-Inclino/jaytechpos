@@ -176,7 +176,7 @@ class ExpenseController extends Controller
 
         return response()->json([
             'success' => true,
-            'msg' => 'User deleted successfully.'
+            'msg' => 'User deleted successfully.',
         ]);
     }
 }

@@ -7,7 +7,6 @@ use App\Http\Controllers\POS\ExpenseController;
 // use App\Http\Controllers\POS\ProductCategoryController;
 use App\Http\Controllers\POS\ProductController;
 use App\Http\Controllers\POS\SaleController;
-use App\Http\Controllers\SiteVisitController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 

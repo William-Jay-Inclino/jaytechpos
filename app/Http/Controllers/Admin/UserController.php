@@ -5,14 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class UserController extends Controller
 {
-
     use AuthorizesRequests;
 
     public function __construct()
@@ -119,7 +118,7 @@ class UserController extends Controller
         if ($user->id === auth()->id()) {
             return response()->json([
                 'success' => false,
-                'msg' => 'You cannot delete yourself.'
+                'msg' => 'You cannot delete yourself.',
             ], 403);
         }
 
@@ -127,7 +126,7 @@ class UserController extends Controller
         if ($user->status === 'active') {
             return response()->json([
                 'success' => false,
-                'msg' => 'Cannot delete an active user. Please set the user to inactive first.'
+                'msg' => 'Cannot delete an active user. Please set the user to inactive first.',
             ], 409);
         }
 
@@ -164,7 +163,7 @@ class UserController extends Controller
 
             return response()->json([
                 'success' => false,
-                'msg' => $message
+                'msg' => $message,
             ], 409);
         }
 
@@ -172,7 +171,7 @@ class UserController extends Controller
 
         return response()->json([
             'success' => true,
-            'msg' => 'User deleted successfully.'
+            'msg' => 'User deleted successfully.',
         ]);
     }
 }

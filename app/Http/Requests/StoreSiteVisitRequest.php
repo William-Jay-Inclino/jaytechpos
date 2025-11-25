@@ -20,10 +20,10 @@ class StoreSiteVisitRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'session_id'    => ['required', 'string', 'max:255'],
-            'user_agent'    => ['required', 'string', 'max:255'],
-            'referer'       => ['nullable', 'string', 'max:255'],
-            'page_url'      => ['required', 'string', 'max:255'],
+            'session_id' => ['required', 'string', 'max:255'],
+            'user_agent' => ['required', 'string', 'max:255'],
+            'referer' => ['nullable', 'string', 'max:255'],
+            'page_url' => ['required', 'string', 'max:255'],
         ];
     }
 
@@ -34,9 +34,8 @@ class StoreSiteVisitRequest extends FormRequest
     {
         return [
             'session_id.required' => 'Session ID is required.',
-            'ip_address.required' => 'IP address is required.',
             'user_agent.required' => 'User agent is required.',
-            'page_url.required'   => 'Page URL is required.',
+            'page_url.required' => 'Page URL is required.',
         ];
     }
 }

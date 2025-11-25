@@ -3,18 +3,16 @@
 namespace App\Services;
 
 use App\Models\Customer;
-use App\Models\Sale;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class CustomerService
 {
-    
     public function getCustomerTransactions(Customer $customer)
     {
         return $customer->customerTransactions()
             ->orderBy('created_at', 'desc')
-            ->orderBy('id', 'desc') 
+            ->orderBy('id', 'desc')
             ->limit(30)
             ->get();
     }

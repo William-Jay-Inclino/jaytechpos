@@ -168,7 +168,7 @@ class CustomerController extends Controller
             $customer->customerTransactions()->exists()) {
             return response()->json([
                 'success' => false,
-                'msg' => 'Cannot delete customer with existing sales or transaction history.'
+                'msg' => 'Cannot delete customer with existing sales or transaction history.',
             ], 409);
         }
 
@@ -176,7 +176,7 @@ class CustomerController extends Controller
 
         return response()->json([
             'success' => true,
-            'msg' => 'Customer deleted successfully.'
+            'msg' => 'Customer deleted successfully.',
         ]);
     }
 
@@ -205,5 +205,4 @@ class CustomerController extends Controller
             'transactions' => $transactions,
         ]);
     }
-
 }
