@@ -27,7 +27,7 @@ class SaleService
 
         $nextNumber = $existingNumbers ? $existingNumbers + 1 : 1;
 
-        return $prefix.str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+        return $prefix.str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
     }
 
     /**

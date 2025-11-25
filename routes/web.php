@@ -7,6 +7,7 @@ use App\Http\Controllers\POS\ExpenseController;
 // use App\Http\Controllers\POS\ProductCategoryController;
 use App\Http\Controllers\POS\ProductController;
 use App\Http\Controllers\POS\SaleController;
+use App\Http\Controllers\SiteVisitController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -76,6 +77,10 @@ Route::middleware(['throttle:global'])->group(function () {
         Route::get('sales-report/data', [App\Http\Controllers\SalesReportController::class, 'getSalesData'])->name('sales-report.api.data');
         Route::get('sales-report/chart', [App\Http\Controllers\SalesReportController::class, 'getChartData'])->name('sales-report.api.chart');
         Route::get('sales-report/payment-types', [App\Http\Controllers\SalesReportController::class, 'getPaymentTypeData'])->name('sales-report.api.payment-types');
+    });
+
+    Route::prefix('analytics')->group(function () {
+        require __DIR__.'/analytics.php';
     });
 
 });

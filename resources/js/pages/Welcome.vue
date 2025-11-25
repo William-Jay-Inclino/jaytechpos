@@ -2,18 +2,16 @@
 import { dashboard, login, register } from '@/routes';
 import { Head, Link } from '@inertiajs/vue3';
 import { ref, onMounted } from 'vue';
+import axios from 'axios';
 import { CreditCard, Percent, Package, BarChart3 } from 'lucide-vue-next';
 
-// Temporary video src — replace with production asset later
+// --- Video Demo Logic ---
 const videoSrc = 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4';
 const videoRef = ref<HTMLVideoElement | null>(null);
 const isPlaying = ref(false);
 
 function togglePlay() {
-    if (!videoRef.value) {
-        return;
-    }
-
+    if (!videoRef.value) return;
     if (videoRef.value.paused) {
         videoRef.value.play();
         isPlaying.value = true;
@@ -27,22 +25,69 @@ function onVideoEnded() {
     isPlaying.value = false;
 }
 
+// --- Analytics Logic ---
+function getDeviceType(ua: string): string {
+    if (/mobile|android|touch|webos|hpwos/i.test(ua)) return 'mobile';
+    if (/tablet|ipad/i.test(ua)) return 'tablet';
+    return 'desktop';
+}
+
+function getBrowser(ua: string): string {
+    if (ua.includes('Chrome')) return 'Chrome';
+    if (ua.includes('Firefox')) return 'Firefox';
+    if (ua.includes('Safari') && !ua.includes('Chrome')) return 'Safari';
+    if (ua.includes('Edge')) return 'Edge';
+    if (ua.includes('Opera') || ua.includes('OPR')) return 'Opera';
+    return 'Other';
+}
+
+function getOS(ua: string): string {
+    if (/Windows/i.test(ua)) return 'Windows';
+    if (/Macintosh|Mac OS/i.test(ua)) return 'macOS';
+    if (/Linux/i.test(ua)) return 'Linux';
+    if (/Android/i.test(ua)) return 'Android';
+    if (/iPhone|iPad|iPod/i.test(ua)) return 'iOS';
+    return 'Other';
+}
+
+function isBot(ua: string): boolean {
+    return /bot|crawl|spider|slurp|bingpreview/i.test(ua);
+}
+
+function getSessionId(): string {
+    return window.localStorage.getItem('site_session_id') || Math.random().toString(36).substring(2);
+}
+
 onMounted(() => {
-    // Try to autoplay on mount (will only succeed if the browser allows it — muted helps)
-    if (!videoRef.value) {
-        return;
+    // Video autoplay
+    if (videoRef.value) {
+        videoRef.value.play().then(() => {
+            isPlaying.value = !videoRef.value!.paused;
+        }).catch(() => {});
     }
 
-    const tryPlay = videoRef.value.play();
-    if (tryPlay && typeof tryPlay.then === 'function') {
-        tryPlay
-            .then(() => {
-                isPlaying.value = !videoRef.value!.paused;
-            })
-            .catch(() => {
-                // Autoplay prevented — video remains paused until user interaction
-            });
-    }
+    // --- Analytics ---
+    const ua = navigator.userAgent;
+    const sessionId = getSessionId();
+
+    const payload = {
+        session_id: sessionId,
+        user_agent: ua,
+        referer: document.referrer || null,
+        page_url: window.location.href,
+        device_type: getDeviceType(ua),
+        browser: getBrowser(ua),
+        os: getOS(ua),
+        is_bot: isBot(ua),
+        is_unique: false,
+        page_views: 1,
+        visited_at: new Date().toISOString(),
+    };
+
+    window.localStorage.setItem('site_session_id', sessionId);
+
+    axios.post('/analytics/site-visit', payload)
+
 });
 </script>
 
