@@ -165,6 +165,7 @@ function formatStatsDate(dateStr: string): string {
                                     <tr>
                                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-900 dark:text-white">IP Address</th>
                                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-900 dark:text-white">Country</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-900 dark:text-white">Region</th>
                                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-900 dark:text-white">City</th>
                                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-900 dark:text-white">Device</th>
                                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-900 dark:text-white">Browser</th>
@@ -179,6 +180,7 @@ function formatStatsDate(dateStr: string): string {
                                     <tr v-for="visit in site_visits.data" :key="visit.session_id" class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
                                         <td class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400">{{ visit.ip_address }}</td>
                                         <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ visit.country }}</td>
+                                        <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ visit.region }}</td>
                                         <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ visit.city }}</td>
                                         <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ visit.device_type }}</td>
                                         <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ visit.browser }}</td>
