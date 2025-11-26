@@ -33,55 +33,37 @@
   ],
   "screenshots": [
     {
-      "src": "/Login.jpg",
+      "src": "/screenshots_mobile/Login.jpg",
       "sizes": "1080x2400",
       "type": "image/png",
       "label": "Login Screen"
     },
     {
-      "src": "/Dashboard.jpg",
+      "src": "/screenshots_mobile/Dashboard.jpg",
       "sizes": "1080x2400",
       "type": "image/png",
       "label": "Dashboard"
     },
     {
-      "src": "/Cash_Flow.jpg",
-      "sizes": "1080x2400",
-      "type": "image/png",
-      "label": "Cash Flow"
-    },
-    {
-      "src": "/Sale_Transaction.jpg",
+      "src": "/screenshots_mobile/Sale_Transaction.jpg",
       "sizes": "1080x2400",
       "type": "image/png",
       "label": "Sale Transaction"
     },
     {
-      "src": "/Product_Listings.jpg",
-      "sizes": "1080x2400",
-      "type": "image/png",
-      "label": "Product Listings"
-    },
-    {
-      "src": "/Customer_Listings.jpg",
+      "src": "/screenshots_mobile/Customer_Listings.jpg",
       "sizes": "1080x2400",
       "type": "image/png",
       "label": "Customer Listings"
     },
     {
-      "src": "/Utang_Payment.jpg",
+      "src": "/screenshots_mobile/Product_Listings.jpg",
       "sizes": "1080x2400",
       "type": "image/png",
-      "label": "Utang Payment"
+      "label": "Product Listings"
     },
     {
-      "src": "/Expense_Breakdown.jpg",
-      "sizes": "1080x2400",
-      "type": "image/png",
-      "label": "Expense Breakdown"
-    },
-    {
-      "src": "/Sales_Report.jpg",
+      "src": "/screenshots_mobile/Sales_Report.jpg",
       "sizes": "1080x2400",
       "type": "image/png",
       "label": "Sales Report"

@@ -103,7 +103,7 @@ onBeforeUnmount(() => {
         <div class="mx-auto max-w-6xl px-6 py-10">
             <!-- Header / Nav -->
             <!-- Make header stack on small screens and keep nav right-aligned on larger screens -->
-            <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <header class="flex flex-row items-center justify-between gap-3">
                 <div class="flex items-center gap-3">
                     <!-- Logo: using a public path so you can replace the file at public/images/jaytech-logo.png -->
                     <img
@@ -118,7 +118,7 @@ z                    />
                     </div>
                 </div>
 
-                <nav class="flex flex-wrap gap-3 text-sm w-full sm:w-auto justify-end">
+                <nav class="flex gap-3 text-sm w-full sm:w-auto justify-end">
                     <Link
                         v-if="$page.props.auth.user"
                         :href="dashboard()"
