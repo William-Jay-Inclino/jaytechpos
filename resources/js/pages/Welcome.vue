@@ -151,11 +151,11 @@ z                    />
             </header>
 
             <!-- Full-bleed video section placed immediately after header -->
-            <section class="mt-6">
+            <!-- <section class="mt-6">
                 <div class="w-full">
                     <div class="relative w-full">
                         <div class="relative overflow-hidden bg-black">
-                            <!-- <video
+                            <video
                                 ref="videoRef"
                                 :src="videoSrc"
                                 class="w-full h-[85vh] sm:h-[80vh] lg:h-[90vh] object-cover"
@@ -167,9 +167,8 @@ z                    />
                                 muted
                                 playsinline
                                 controls
-                            ></video> -->
+                            ></video>
 
-                            <!-- Play overlay (hidden once playing) -->
                             <button
                                 v-show="!isPlaying"
                                 @click.stop="togglePlay"
@@ -183,20 +182,20 @@ z                    />
                         </div>
                     </div>
                 </div>
-            </section>
+            </section> -->
 
             <!-- Hero (centered, modern) -->
             <section class="mt-10 flex flex-col items-center text-center">
                 <div class="w-full max-w-3xl">
                     <!-- Primary CTAs -->
-                    <div class="mt-6 flex flex-wrap justify-center gap-3">
+                    <!-- <div class="mt-6 flex flex-wrap justify-center gap-3">
                         <Link
                             :href="register()"
                             class="inline-flex items-center gap-2 rounded-md bg-amber-600 px-5 py-3 text-white shadow-lg hover:bg-amber-700"
                         >
-                            Get started — Create account
+                            Get started — Sign up
                         </Link>
-                    </div>
+                    </div> -->
 
                     <!-- Key selling points (icons + text) -->
                     <div class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
