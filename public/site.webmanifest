@@ -4,7 +4,7 @@
   "short_name": "JayTech",
   "description": "Simple store management app.",
   "lang": "en-US",
-  "start_url": "/?source=pwa",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
