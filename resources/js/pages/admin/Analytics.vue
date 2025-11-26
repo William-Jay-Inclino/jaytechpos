@@ -12,33 +12,35 @@ interface PaginationMeta {
 }
 
 interface SiteVisit {
-    session_id: string
-    ip_address: string
-    user_agent: string
-    referer: string
-    page_url: string
-    country: string
-    region: string
-    city: string
-    device_type: string
-    browser: string
-    os: string
-    is_bot: boolean
-    is_unique: boolean
-    page_views: number
+    id: number
+    session_id?: string
+    ip_address?: string | null
+    user_agent?: string | null
+    referer?: string | null
+    page_url?: string | null
+    country?: string | null
+    region?: string | null
+    city?: string | null
+    device_type?: string | null
+    browser?: string | null
+    os?: string | null
+    is_bot?: boolean
+    is_unique?: boolean
+    page_views?: number
     visited_at: string
 }
 
 interface DailyVisitStat {
+    id: number
     date: string
     total_visits: number
     unique_visits: number
     page_views: number
-    top_page: string
-    top_referer: string
-    mobile_visits: number
-    desktop_visits: number
-    tablet_visits: number
+    top_page?: string | null
+    top_referer?: string | null
+    mobile_visits?: number
+    desktop_visits?: number
+    tablet_visits?: number
 }
 
 interface Props {
@@ -119,6 +121,28 @@ function extractSubdirectory(urlStr: string | null | undefined): string {
     }
 }
 
+// Helpers for mobile-friendly pagination: extract previous/next links
+function stripHtmlLabel(label: string | null | undefined): string {
+    if (!label) return ''
+    return label.replace(/<[^>]*>/g, '').trim()
+}
+
+function findPrevNext(links: any[]): { prev?: string | null; next?: string | null } {
+    let prev: string | null = null
+    let next: string | null = null
+    for (const link of links) {
+        const plain = stripHtmlLabel(link.label).toLowerCase()
+        if (!prev && /previous|prev|«|‹/.test(plain) && link.url) {
+            prev = link.url
+        }
+        if (!next && /next|›|»/.test(plain) && link.url) {
+            next = link.url
+        }
+        if (prev && next) break
+    }
+    return { prev, next }
+}
+
 
 </script>
 
@@ -170,38 +194,39 @@ function extractSubdirectory(urlStr: string | null | undefined): string {
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white dark:bg-gray-800">
-                                    <tr v-for="stat in daily_visit_stats.data" :key="stat.date" class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                        <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ formatStatsDate(stat.date) }}</td>
-                                        <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ stat.total_visits }}</td>
-                                        <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ stat.unique_visits }}</td>
-                                        <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ stat.page_views }}</td>
-                                        <td class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400" :title="stat.top_page">{{ stat.top_page }}</td>
-                                        <td class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400" :title="stat.top_referer">{{ stat.top_referer }}</td>
-                                        <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ stat.mobile_visits }}</td>
-                                        <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ stat.desktop_visits }}</td>
-                                        <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ stat.tablet_visits }}</td>
-                                    </tr>
+                                        <tr v-for="stat in daily_visit_stats.data" :key="stat.id" class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ formatStatsDate(stat.date) }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ stat.total_visits ?? '—' }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ stat.unique_visits ?? '—' }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ stat.page_views ?? '—' }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400" :title="stat.top_page ?? ''">{{ stat.top_page || '—' }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400" :title="stat.top_referer ?? ''">{{ stat.top_referer || '—' }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ stat.mobile_visits ?? '—' }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ stat.desktop_visits ?? '—' }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ stat.tablet_visits ?? '—' }}</td>
+                                        </tr>
                                 </tbody>
                                 </table>
                             </div>
 
                             <!-- Mobile / Card view -->
                             <div class="md:hidden grid gap-3">
-                                <div v-for="stat in daily_visit_stats.data" :key="stat.date" class="rounded-lg border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                                <div v-for="stat in daily_visit_stats.data" :key="stat.id" class="rounded-lg border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                                     <div class="flex items-start justify-between">
                                         <div>
                                             <div class="text-sm font-medium text-gray-900 dark:text-white">{{ formatStatsDate(stat.date) }}</div>
-                                            <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">Top: <span class="text-gray-700 dark:text-gray-200">{{ stat.top_page || '—' }}</span></div>
+                                            <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">Total: <span class="text-gray-700 dark:text-gray-200">{{ stat.total_visits ?? '—' }}</span></div>
+                                            <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">Unique: <span class="text-gray-700 dark:text-gray-200">{{ stat.unique_visits ?? '—' }}</span></div>
                                         </div>
                                         <div class="text-right text-sm text-gray-600 dark:text-gray-300">
-                                            <div class="font-semibold text-gray-900 dark:text-white">{{ stat.total_visits }}</div>
+                                            <div class="font-semibold text-gray-900 dark:text-white">{{ stat.total_visits ?? '—' }}</div>
                                             <div class="text-xs">visits</div>
                                         </div>
                                     </div>
                                     <div class="mt-3 grid grid-cols-3 gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                        <div class="text-center">Unique<br/><span class="font-semibold text-gray-900 dark:text-white">{{ stat.unique_visits }}</span></div>
-                                        <div class="text-center">Page Views<br/><span class="font-semibold text-gray-900 dark:text-white">{{ stat.page_views }}</span></div>
-                                        <div class="text-center">Mobile<br/><span class="font-semibold text-gray-900 dark:text-white">{{ stat.mobile_visits }}</span></div>
+                                        <div class="text-center">Visits<br/><span class="font-semibold text-gray-900 dark:text-white">{{ stat.total_visits ?? '—' }}</span></div>
+                                        <div class="text-center">Page Views<br/><span class="font-semibold text-gray-900 dark:text-white">{{ stat.page_views ?? '—' }}</span></div>
+                                        <div class="text-center">Mobile<br/><span class="font-semibold text-gray-900 dark:text-white">{{ stat.mobile_visits ?? '—' }}</span></div>
                                     </div>
                                 </div>
                             </div>
@@ -210,13 +235,42 @@ function extractSubdirectory(urlStr: string | null | undefined): string {
                         <!-- Pagination -->
                         <div v-if="daily_visit_stats.links && daily_visit_stats.links.length" class="px-4 py-3 sm:px-6">
                             <nav class="flex items-center justify-between">
-                                <div class="flex -space-x-px">
+                                <div class="hidden md:flex -space-x-px">
                                     <template v-for="(link, idx) in daily_visit_stats.links" :key="idx">
                                         <Link v-if="link.url" :href="link.url" class="px-3 py-1 border border-gray-200 bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50" :class="{'bg-gray-100 dark:bg-gray-600 font-semibold': link.active}">
                                             <span v-html="link.label"></span>
                                         </Link>
                                         <span v-else class="px-3 py-1 border border-gray-200 bg-gray-100 text-sm text-gray-500" v-html="link.label"></span>
                                     </template>
+                                </div>
+
+                                <!-- Mobile simplified prev/next -->
+                                <div class="flex w-full items-center justify-between md:hidden">
+                                    <div class="flex w-full items-center justify-between">
+                                        <div>
+                                            <Link
+                                                v-if="findPrevNext(daily_visit_stats.links).prev"
+                                                :href="findPrevNext(daily_visit_stats.links).prev!"
+                                                class="px-4 py-2 rounded-md border bg-white text-sm font-medium dark:bg-gray-700"
+                                                aria-label="Previous page"
+                                            >
+                                                ← Previous
+                                            </Link>
+                                            <span v-else class="px-4 py-2 rounded-md text-sm text-gray-500">← Previous</span>
+                                        </div>
+
+                                        <div>
+                                            <Link
+                                                v-if="findPrevNext(daily_visit_stats.links).next"
+                                                :href="findPrevNext(daily_visit_stats.links).next!"
+                                                class="px-4 py-2 rounded-md border bg-white text-sm font-medium dark:bg-gray-700"
+                                                aria-label="Next page"
+                                            >
+                                                Next →
+                                            </Link>
+                                            <span v-else class="px-4 py-2 rounded-md text-sm text-gray-500">Next →</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </nav>
                         </div>
@@ -246,48 +300,52 @@ function extractSubdirectory(urlStr: string | null | undefined): string {
                                 <thead class="bg-gray-50 dark:bg-gray-700/50">
                                     <tr>
                                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-900 dark:text-white">Visited At</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-900 dark:text-white">Page URL</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-900 dark:text-white">Page</th>
                                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-900 dark:text-white">Location</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-900 dark:text-white">IP Address</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-900 dark:text-white">IP</th>
                                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-900 dark:text-white">Device</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-900 dark:text-white">Referer</th>
                                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-900 dark:text-white">Page Views</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-900 dark:text-white">Referer</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-900 dark:text-white">Flags</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white dark:bg-gray-800">
-                                        <tr v-for="visit in site_visits.data" :key="visit.session_id" class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">
-                                                {{ formatVisitDate(visit.visited_at) }}
-                                            </td>
+                                        <tr v-for="visit in site_visits.data" :key="visit.session_id || visit.id" class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ formatVisitDate(visit.visited_at) }}</td>
                                             <td class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400">{{ extractSubdirectory(visit.page_url) }}</td>
                                             <td class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400">{{ formatLocation(visit.city, visit.region, visit.country) }}</td>
-                                            <td class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400">{{ visit.ip_address }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400">{{ visit.ip_address || '—' }}</td>
                                             <td class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400">{{ formatDevice(visit.device_type, visit.browser, visit.os) }}</td>
-                                            <td class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400">{{ visit.referer }}</td>
-                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ visit.page_views }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ visit.page_views ?? '—' }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400 truncate" :title="visit.referer ?? ''">{{ visit.referer || '—' }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400">
+                                                <span class="mr-2">{{ visit.is_bot ? 'Bot' : '' }}</span>
+                                                <span>{{ visit.is_unique ? 'Unique' : '' }}</span>
+                                            </td>
                                         </tr>
                                 </tbody>
                                 </table>
                             </div>
 
                             <!-- Mobile / Card view for site visits -->
-                            <div class="md:hidden grid gap-3">
-                                <div v-for="visit in site_visits.data" :key="visit.session_id" class="rounded-lg border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                                <div class="md:hidden grid gap-3">
+                                <div v-for="visit in site_visits.data" :key="visit.session_id || visit.id" class="rounded-lg border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                                     <div class="flex items-start justify-between">
                                         <div class="flex-1 min-w-0">
                                             <div class="flex items-center gap-3">
                                                 <div class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ extractSubdirectory(visit.page_url) || 'Unknown page' }}</div>
                                             </div>
-                                            <div class="mt-1 text-xs text-gray-500 dark:text-gray-400 truncate">{{ formatLocation(visit.city, visit.region, visit.country) }}</div>
+                                            <div class="mt-1 text-xs text-gray-500 dark:text-gray-400 truncate">Location: {{ formatLocation(visit.city, visit.region, visit.country) }}</div>
                                             <div class="mt-2 text-xs text-gray-600 dark:text-gray-300">Referer: <span class="text-gray-800 dark:text-gray-200">{{ visit.referer || '—' }}</span></div>
+                                            <div class="mt-2 text-xs text-gray-600 dark:text-gray-300">Flags: <span class="text-gray-800 dark:text-gray-200">{{ visit.is_bot ? 'Bot' : visit.is_unique ? 'Unique' : '—' }}</span></div>
                                         </div>
                                         <div class="ml-3 text-right text-sm">
-                                            <div class="font-semibold text-gray-900 dark:text-white">{{ visit.page_views }}</div>
+                                            <div class="font-semibold text-gray-900 dark:text-white">{{ visit.page_views ?? '—' }}</div>
                                             <div class="text-xs text-gray-500 dark:text-gray-400">{{ formatVisitDate(visit.visited_at) }}</div>
                                         </div>
                                     </div>
                                     <div class="mt-3 flex flex-wrap gap-2 text-xs text-gray-600 dark:text-gray-300">
-                                        <span class="inline-flex items-center gap-2 rounded-full bg-gray-100 px-2 py-1 dark:bg-gray-700">IP: {{ visit.ip_address }}</span>
+                                        <span class="inline-flex items-center gap-2 rounded-full bg-gray-100 px-2 py-1 dark:bg-gray-700">IP: {{ visit.ip_address || '—' }}</span>
                                         <span class="inline-flex items-center gap-2 rounded-full bg-gray-100 px-2 py-1 dark:bg-gray-700">Device: {{ formatDevice(visit.device_type, visit.browser, visit.os) }}</span>
                                     </div>
                                 </div>
@@ -296,13 +354,42 @@ function extractSubdirectory(urlStr: string | null | undefined): string {
                         <!-- Site visits pagination (moved here so it appears under the Site Visits table) -->
                         <div v-if="site_visits.links && site_visits.links.length" class="px-4 py-3 sm:px-6">
                             <nav class="flex items-center justify-between">
-                                <div class="flex -space-x-px">
+                                <div class="hidden md:flex -space-x-px">
                                     <template v-for="(link, idx) in site_visits.links" :key="idx">
                                         <Link v-if="link.url" :href="link.url" class="px-3 py-1 border border-gray-200 bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50" :class="{'bg-gray-100 dark:bg-gray-600 font-semibold': link.active}">
                                             <span v-html="link.label"></span>
                                         </Link>
                                         <span v-else class="px-3 py-1 border border-gray-200 bg-gray-100 text-sm text-gray-500" v-html="link.label"></span>
                                     </template>
+                                </div>
+
+                                <!-- Mobile simplified prev/next -->
+                                <div class="flex w-full items-center justify-between md:hidden">
+                                    <div class="flex w-full items-center justify-between">
+                                        <div>
+                                            <Link
+                                                v-if="findPrevNext(site_visits.links).prev"
+                                                :href="findPrevNext(site_visits.links).prev!"
+                                                class="px-4 py-2 rounded-md border bg-white text-sm font-medium dark:bg-gray-700"
+                                                aria-label="Previous page"
+                                            >
+                                                ← Previous
+                                            </Link>
+                                            <span v-else class="px-4 py-2 rounded-md text-sm text-gray-500">← Previous</span>
+                                        </div>
+
+                                        <div>
+                                            <Link
+                                                v-if="findPrevNext(site_visits.links).next"
+                                                :href="findPrevNext(site_visits.links).next!"
+                                                class="px-4 py-2 rounded-md border bg-white text-sm font-medium dark:bg-gray-700"
+                                                aria-label="Next page"
+                                            >
+                                                Next →
+                                            </Link>
+                                            <span v-else class="px-4 py-2 rounded-md text-sm text-gray-500">Next →</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </nav>
                         </div>
