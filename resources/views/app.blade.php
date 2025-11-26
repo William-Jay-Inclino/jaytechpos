@@ -34,10 +34,13 @@
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any">
-        <!-- Home-screen icon (used by iOS / older browsers) -->
-        <link rel="apple-touch-icon" sizes="180x180" href="/logo.png">
-        <!-- PWA manifest and app name for add-to-home-screen -->
         <link rel="manifest" href="/site.webmanifest" />
+        <meta name="theme-color" content="#FEFEF4">
+        <!-- Home-screen icon (used by iOS / older browsers) -->
+        <link rel="apple-touch-icon" href="/logo-192.png">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="default">
+        <!-- PWA manifest and app name for add-to-home-screen -->
         <meta name="application-name" content="{{ config('app.name', 'JayTech') }}" />
         <meta name="apple-mobile-web-app-title" content="{{ config('app.name', 'JayTech') }}" />
         

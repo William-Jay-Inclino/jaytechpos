@@ -50,3 +50,60 @@ createInertiaApp({
 
 // This will set light / dark mode on page load...
 initializeTheme();
+
+
+// Added: Service Worker registration + PWA install handling
+declare global {
+    interface Window {
+        promptPWAInstall?: () => Promise<'accepted' | 'dismissed' | null>;
+    }
+}
+
+interface BeforeInstallPromptEvent extends Event {
+    prompt(): Promise<void>;
+    userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform?: string }>;
+}
+
+let deferredPrompt: BeforeInstallPromptEvent | null = null;
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker
+            .register('/service-worker.js')
+            .then((reg) => {
+                // eslint-disable-next-line no-console
+                console.log('ServiceWorker registered:', reg.scope);
+            })
+            .catch((err) => {
+                // eslint-disable-next-line no-console
+                console.error('ServiceWorker registration failed:', err);
+            });
+    });
+}
+
+window.addEventListener('beforeinstallprompt', (e: Event) => {
+    e.preventDefault();
+    deferredPrompt = e as BeforeInstallPromptEvent;
+    // notify the app UI to show an "Install" action (listen to 'pwa:beforeinstallprompt')
+    window.dispatchEvent(new CustomEvent('pwa:beforeinstallprompt'));
+});
+
+window.promptPWAInstall = async (): Promise<'accepted' | 'dismissed' | null> => {
+    if (!deferredPrompt) {
+        return null;
+    }
+    try {
+        await deferredPrompt.prompt();
+        const choice = await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        return choice.outcome as 'accepted' | 'dismissed';
+    } catch {
+        deferredPrompt = null;
+        return null;
+    }
+};
+
+window.addEventListener('appinstalled', () => {
+    deferredPrompt = null;
+    window.dispatchEvent(new CustomEvent('pwa:installed'));
+});

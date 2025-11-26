@@ -1,13 +1,16 @@
 {
+  "id": "/",
   "name": "JayTech",
   "short_name": "JayTech",
   "description": "Simple store management app.",
-  "start_url": "/",
+  "lang": "en-US",
+  "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#FEFEF4",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/logo-192.png",
@@ -19,7 +22,13 @@
       "src": "/logo-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/logo-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
