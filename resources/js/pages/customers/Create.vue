@@ -84,7 +84,7 @@ async function submit() {
                                 v-model="form.starting_balance"
                                 step="0.01"
                                 min="0"
-                                placeholder="0.00`"
+                                placeholder="0.00"
                                 class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                             />
                             <InputError :message="form.errors.starting_balance" class="mt-1" />
