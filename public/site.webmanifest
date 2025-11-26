@@ -30,5 +30,13 @@
       "type": "image/png",
       "purpose": "maskable"
     }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot.png",
+      "sizes": "393x852",
+      "type": "image/png",
+      "label": "JayTech — mobile"
+    }
   ]
 }

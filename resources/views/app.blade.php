@@ -38,11 +38,12 @@
         <meta name="theme-color" content="#FEFEF4">
         <!-- Home-screen icon (used by iOS / older browsers) -->
         <link rel="apple-touch-icon" href="/logo-192.png">
+        <!-- Add non-deprecated tag for Android/modern browsers -->
+        <meta name="mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="default">
         <!-- PWA manifest and app name for add-to-home-screen -->
         <meta name="application-name" content="{{ config('app.name', 'JayTech') }}" />
-        <meta name="apple-mobile-web-app-title" content="{{ config('app.name', 'JayTech') }}" />
         
 
         <link rel="preconnect" href="https://fonts.bunny.net">
