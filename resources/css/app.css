@@ -248,6 +248,12 @@
     }
 }
 
+/* Lean PWA install button class that uses the project's primary color variable */
+.pwa-install-btn {
+    @apply inline-flex items-center gap-2 rounded-md px-3 py-2 bg-white shadow-sm hover:bg-gray-50 focus:outline-none transition;
+    color: var(--primary);
+}
+
 @layer components {
     /* Interactive button affordances for CTAs that use project variables.
        Provides subtle lift, shadow, and focus ring to indicate clickability. */

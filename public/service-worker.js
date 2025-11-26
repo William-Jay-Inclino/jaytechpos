@@ -2,7 +2,6 @@
 const CACHE_NAME = 'jaytech-static-v1';
 const ASSETS = [
   '/',
-  '/index.html',
   '/logo-192.png',
   '/logo-512.png',
   '/site.webmanifest'

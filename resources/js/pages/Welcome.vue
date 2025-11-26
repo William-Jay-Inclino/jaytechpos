@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { dashboard, login, register } from '@/routes';
 import { Head, Link } from '@inertiajs/vue3';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import axios from 'axios';
 import { CreditCard, Percent, Package, BarChart3 } from 'lucide-vue-next';
 import { getBrowser, getDeviceType, getOS, getSessionId, isBot } from '@/utils/analytics';
@@ -60,6 +60,42 @@ onMounted(() => {
     axios.post('/analytics/site-visit', payload)
 
 });
+
+// PWA install button (mobile only)
+const showInstall = ref(false);
+
+function onBeforeInstallPrompt() {
+    const ua = navigator.userAgent;
+    const deviceType = getDeviceType(ua);
+    // show only for mobile devices
+    if (deviceType === 'mobile') {
+        showInstall.value = true;
+    }
+}
+
+function onInstalled() {
+    showInstall.value = false;
+}
+
+async function handleInstallClick() {
+    try {
+        const result = await window.promptPWAInstall?.();
+        // Optionally track the result
+        // console.log('PWA install result', result);
+    } finally {
+        showInstall.value = false;
+    }
+}
+
+onMounted(() => {
+    window.addEventListener('pwa:beforeinstallprompt', onBeforeInstallPrompt as EventListener);
+    window.addEventListener('pwa:installed', onInstalled as EventListener);
+});
+
+onBeforeUnmount(() => {
+    window.removeEventListener('pwa:beforeinstallprompt', onBeforeInstallPrompt as EventListener);
+    window.removeEventListener('pwa:installed', onInstalled as EventListener);
+});
 </script>
 
 <template>
@@ -104,6 +140,21 @@ z                    />
                             Create account
                         </Link>
                     </template>
+                    <button
+                        v-if="showInstall"
+                        @click.prevent="handleInstallClick"
+                        aria-label="Install App"
+                        title="Install JayTech"
+                        class="pwa-install-btn"
+                    >
+                        <!-- Install / Download icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v10m0 0l-4-4m4 4 4-4" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 15v4a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-4" />
+                        </svg>
+                        <span class="text-sm font-medium">Install</span>
+                        <span class="sr-only">Install JayTech app</span>
+                    </button>
                 </nav>
             </header>
 
