@@ -21,8 +21,7 @@ defineProps<{
                         class="flex flex-col items-center gap-2 font-medium"
                     >
                         <div class="mb-1 flex items-center justify-center">
-                            <!-- Bigger circular logo with padding for auth pages -->
-                            <div class="rounded-full bg-white p-4 shadow-sm dark:bg-neutral-900">
+                            <div class="shadow-sm dark:bg-neutral-900">
                                 <AppLogoIcon class="w-28 h-28" />
                             </div>
                         </div>

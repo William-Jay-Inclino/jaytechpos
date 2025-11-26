@@ -1,23 +1,39 @@
 <script setup lang="ts">
 import type { HTMLAttributes } from 'vue';
 
-// Allow standard attributes (class, style, width, height) to be passed through to the root <img>
-// and ensure the image preserves its aspect ratio when consumers set both width and height.
-defineOptions({});
-
 interface Props {
     className?: HTMLAttributes['class'];
+    /** size in px (applies to both width and height) */
+    size?: number | string;
+    /** image source, defaults to project logo */
+    src?: string;
+    /** alt text for accessibility */
+    alt?: string;
 }
 
-defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+    size: 56,
+    src: '/logo.png',
+    alt: 'JayTech logo',
+});
 </script>
 
 <template>
-    <img
-        src="/logo.png"
-        alt="JayTech logo"
-        :class="className"
-        v-bind="$attrs"
-        style="object-fit:contain;"
-    />
+    <div
+        :class="[
+            'inline-block rounded-xl overflow-hidden p-1 bg-gradient-to-br from-indigo-50 to-white shadow-lg transition-transform duration-200 hover:scale-105',
+            props.className
+        ]"
+        role="img"
+        :aria-label="props.alt"
+    >
+        <img
+            :src="props.src"
+            :alt="props.alt"
+            :width="props.size"
+            :height="props.size"
+            v-bind="$attrs"
+            style="object-fit:contain; display:block;"
+        />
+    </div>
 </template>
