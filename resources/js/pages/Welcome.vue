@@ -103,7 +103,7 @@ onBeforeUnmount(() => {
         <div class="mx-auto max-w-6xl px-6 py-10">
             <!-- Header / Nav -->
             <!-- Make header stack on small screens and keep nav right-aligned on larger screens -->
-            <header class="flex flex-row items-center justify-between gap-3">
+            <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div class="flex items-center gap-3">
                     <!-- Logo: using a public path so you can replace the file at public/images/jaytech-logo.png -->
                     <img
@@ -118,7 +118,7 @@ z                    />
                     </div>
                 </div>
 
-                <nav class="flex gap-3 text-sm w-full sm:w-auto justify-end">
+                <nav class="flex flex-wrap gap-3 text-sm w-full sm:w-auto justify-end">
                     <Link
                         v-if="$page.props.auth.user"
                         :href="dashboard()"
@@ -137,23 +137,15 @@ z                    />
                             :href="register()"
                             class="rounded-md bg-amber-600 px-4 py-2 text-white shadow hover:bg-amber-700 dark:shadow-lg"
                         >
-                            Create account
+                            Sign up
                         </Link>
                     </template>
                     <button
                         v-if="showInstall"
                         @click.prevent="handleInstallClick"
-                        aria-label="Install App"
-                        title="Install JayTech"
-                        class="pwa-install-btn"
+                        class="rounded-md bg-amber-500 px-3 py-2 text-white shadow hover:bg-amber-600"
                     >
-                        <!-- Install / Download icon -->
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v10m0 0l-4-4m4 4 4-4" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 15v4a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-4" />
-                        </svg>
-                        <span class="text-sm font-medium">Install</span>
-                        <span class="sr-only">Install JayTech app</span>
+                        Install
                     </button>
                 </nav>
             </header>
