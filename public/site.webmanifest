@@ -57,12 +57,6 @@
       "label": "Customer Listings"
     },
     {
-      "src": "/screenshots_mobile/Product_Listings.jpg",
-      "sizes": "1080x2400",
-      "type": "image/png",
-      "label": "Product Listings"
-    },
-    {
       "src": "/screenshots_mobile/Sales_Report.jpg",
       "sizes": "1080x2400",
       "type": "image/png",
