@@ -75,7 +75,7 @@ const totalCustomers = computed(() => Array.isArray(props.customers) ? props.cus
                 </div>
 
                 <!-- Search and Filters -->
-                <div v-if="totalCustomers > 0" class="mb-4 rounded-xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                <div v-if="totalCustomers > 0" class="mb-6">
                     <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
                         <!-- Search -->
                         <div class="relative flex-1">

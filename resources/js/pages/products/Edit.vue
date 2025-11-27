@@ -183,7 +183,7 @@ onUnmounted(() => {
 
                             <!-- Cost Price -->
                             <div class="grid gap-2">
-                                <Label for="cost_price">Cost Price <span class="text-sm text-gray-600 dark:text-gray-400">(optional)</span></Label>
+                                <Label for="cost_price">Cost Price <span class="text-sm text-gray-400 dark:text-gray-400">(Optional)</span></Label>
                                 <p class="text-sm text-gray-600 dark:text-gray-400">
                                     Puhunan mo o presyong nabili mo sa supplier
                                 </p>

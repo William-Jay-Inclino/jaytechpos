@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3';
-import { X, Search, UserPlus, Plus, Minus } from 'lucide-vue-next';
+import { X, Search, UserPlus, Plus, Minus} from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 
 // Layout & Components
@@ -169,8 +169,7 @@ const selectedCustomer = computed((): Customer | null => {
 const filteredCustomers = computed(() => {
     if (!customerSearch.value) return props.customers;
     return props.customers.filter(customer =>
-        customer.name.toLowerCase().includes(customerSearch.value.toLowerCase()) ||
-        (customer.mobile_number && customer.mobile_number.toLowerCase().includes(customerSearch.value.toLowerCase()))
+        customer.name.toLowerCase().includes(customerSearch.value.toLowerCase())
     );
 });
 
@@ -239,7 +238,7 @@ const checkoutDisabledReason = computed<string | null>(() => {
         const hasValidCustomer = !payTowardsBalance.value || selectedCustomerId.value !== '0';
         const hasEnoughMoney = amountTendered.value >= cartTotalAmount.value;
 
-        if (!hasEnoughMoney) return 'Amount received is less than total.';
+        if (!hasEnoughMoney) return 'Amount tendered is less than total.';
         if (payTowardsBalance.value && !hasValidCustomer) return 'Select a customer to use change for balance.';
 
         const maxDeductible = Math.min(selectedCustomer.value?.running_utang_balance || 0, Math.max(0, amountTendered.value - cartTotalAmount.value));
@@ -537,7 +536,7 @@ watch(amountTendered, () => {
                                                     <Search class="mr-2 h-4 w-4 shrink-0 opacity-50" />
                                                     <input
                                                         v-model="customerSearch"
-                                                        placeholder="Search customers by name or mobile number..."
+                                                        placeholder="Enter name of customer..."
                                                         class="flex h-8 w-full rounded-md bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 dark:text-white"
                                                         @click.stop
                                                     />
@@ -565,12 +564,12 @@ watch(amountTendered, () => {
                                                     >
                                                         <div class="flex flex-col">
                                                             <div class="font-medium">{{ customer.name }}</div>
-                                                            <div 
+                                                            <!-- <div 
                                                                 v-if="customer.mobile_number"
                                                                 class="text-xs text-gray-500 dark:text-gray-400"
                                                             >
                                                                 {{ customer.mobile_number }}
-                                                            </div>
+                                                            </div> -->
                                                             <div
                                                                 v-if="customer.running_utang_balance && customer.running_utang_balance > 0"
                                                                 class="text-xs text-red-600 dark:text-red-400 font-medium"
@@ -693,25 +692,21 @@ watch(amountTendered, () => {
                             <div class="relative product-dropdown">
                                 <div
                                     @click="showProductDropdown = !showProductDropdown"
-                                    class="flex h-12 w-full cursor-pointer items-center justify-between rounded-md border border-input bg-background px-4 py-3 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                    class="flex h-12 w-full cursor-pointer items-center justify-center rounded-md border border-input px-4 py-3 text-medium text-primary dark:hover:bg-white/10 hover:bg-gray-100"
                                 >
-                                    <span class="truncate text-left font-medium">
-                                        {{ productSearch || 'Add item to cart' }}
-                                    </span>
-                                    <svg class="h-4 w-4 opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="m6 9 6 6 6-6"/>
-                                    </svg>
+                                    <Plus class="mr-2 h-4 w-4"/>
+                                    Add item to cart
                                 </div>
                                 
                                 <div
                                     v-if="showProductDropdown"
-                                    class="absolute z-50 mt-1 max-h-[60vh] w-full overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-lg dark:border-gray-700 dark:bg-gray-800"
+                                    class="absolute z-50 mt-1 max-h-[60vh] w-full overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-lg dark:border-gray-700"
                                 >
                                     <div class="flex items-center border-b px-3 pb-2 mb-2 dark:border-gray-700">
                                         <Search class="mr-2 h-4 w-4 shrink-0 opacity-50" />
                                         <input
                                             v-model="productSearch"
-                                            placeholder="Search products by name..."
+                                            placeholder="Enter name of product..."
                                             class="flex h-8 w-full rounded-md bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 dark:text-white"
                                             @click.stop
                                         />
@@ -936,7 +931,7 @@ watch(amountTendered, () => {
                                                     >Total Amount</Label
                                                 >
                                                 <div
-                                                    class="rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-orange-800 dark:bg-orange-900/20"
+                                                    class="rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-orange-800 dark:bg-orange-900/20 text-right"
                                                 >
                                                     <span
                                                         class="text-2xl font-bold text-orange-700 dark:text-orange-400"
@@ -950,7 +945,7 @@ watch(amountTendered, () => {
                                                 <Label
                                                     for="amountTendered"
                                                     class="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                                    >Amount Received</Label
+                                                    >Amount Tendered</Label
                                                 >
                                                 <div
                                                     class="rounded-lg border border-teal-200 bg-teal-50 p-4 dark:border-teal-800 dark:bg-teal-900/20"
@@ -979,7 +974,7 @@ watch(amountTendered, () => {
                                                     >Change</Label
                                                 >
                                                 <div
-                                                    class="rounded-lg border p-4"
+                                                    class="rounded-lg border p-4 text-right"
                                                     :class="
                                                         changeAmount > 0
                                                             ? 'border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-900/20'
@@ -1205,7 +1200,7 @@ watch(amountTendered, () => {
                                                 Complete Checkout
                                             </span>
                                         </Button>
-                                        <p v-if="(!isCheckoutValid && !isProcessing) && checkoutDisabledReason" class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                                        <p v-if="(!isCheckoutValid && !isProcessing) && checkoutDisabledReason" class="mt-2 text-sm text-center text-gray-600 dark:text-gray-400">
                                             {{ checkoutDisabledReason }}
                                         </p>
                                     </div>

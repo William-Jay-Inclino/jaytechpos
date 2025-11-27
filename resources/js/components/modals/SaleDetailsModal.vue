@@ -128,16 +128,16 @@ const changeAmountComputed = computed<number | null>(() => {
                             <span class="font-medium">💵 Cash</span>
                         </div>
                         <div v-if="sale.amount_tendered" class="flex justify-between">
-                            <span class="text-muted-foreground">Amount Received:</span>
+                            <span class="text-muted-foreground">Amount Tendered:</span>
                             <span class="font-medium">{{ formatPhilippinePeso(sale.amount_tendered) }}</span>
+                        </div>
+                        <div v-if="sale.deduct_from_balance && sale.deduct_from_balance > 0" class="flex justify-between">
+                            <span class="text-muted-foreground">Deduct to Balance:</span>
+                            <span class="font-medium">{{ formatPhilippinePeso(sale.deduct_from_balance) }}</span>
                         </div>
                         <div v-if="sale.payment_type === 'cash' && changeAmountComputed !== null" class="flex justify-between">
                             <span class="text-muted-foreground">Change:</span>
                             <span class="font-medium">{{ formatPhilippinePeso(changeAmountComputed || 0) }}</span>
-                        </div>
-                        <div v-if="sale.deduct_from_balance && sale.deduct_from_balance > 0" class="flex justify-between">
-                            <span class="text-muted-foreground">Used from Balance:</span>
-                            <span class="font-medium">{{ formatPhilippinePeso(sale.deduct_from_balance) }}</span>
                         </div>
                     </div>
 

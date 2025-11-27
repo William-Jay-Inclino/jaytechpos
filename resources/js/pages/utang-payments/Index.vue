@@ -66,8 +66,8 @@ const selectedCustomer = computed(() => {
 const filteredCustomers = computed(() => {
     if (!customerSearch.value) return props.customers;
     return props.customers.filter(customer =>
-        customer.name.toLowerCase().includes(customerSearch.value.toLowerCase()) ||
-        (customer.mobile_number && customer.mobile_number.toLowerCase().includes(customerSearch.value.toLowerCase()))
+        customer.name.toLowerCase().includes(customerSearch.value.toLowerCase())
+        // (customer.mobile_number && customer.mobile_number.toLowerCase().includes(customerSearch.value.toLowerCase()))
     );
 });
 
@@ -274,7 +274,6 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                         class="text-sm font-medium text-gray-700 dark:text-gray-300"
                                     >
                                         Customer
-                                        <span class="text-red-500">*</span>
                                     </Label>
                                     <div class="relative customer-dropdown">
                                         <input
@@ -302,7 +301,7 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                                 <Search class="mr-2 h-4 w-4 shrink-0 opacity-50" />
                                                 <input
                                                     v-model="customerSearch"
-                                                    placeholder="Search customers by name or mobile number..."
+                                                    placeholder="Search customers by name..."
                                                     class="flex h-8 w-full rounded-md bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 dark:text-white"
                                                     @click.stop
                                                 />
@@ -316,12 +315,12 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                                 >
                                                     <div class="flex flex-col">
                                                         <div class="font-medium">{{ customer.name }}</div>
-                                                        <div 
+                                                        <!-- <div 
                                                             v-if="customer.mobile_number"
                                                             class="text-xs text-gray-500 dark:text-gray-400"
                                                         >
                                                             {{ customer.mobile_number }}
-                                                        </div>
+                                                        </div> -->
                                                         <div 
                                                             v-if="customer.running_utang_balance"
                                                             class="text-xs text-red-600 dark:text-red-400 font-medium"
@@ -386,7 +385,6 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                             class="text-sm font-medium text-gray-700 dark:text-gray-300"
                                         >
                                             Payment Amount
-                                            <span class="text-red-500">*</span>
                                         </Label>
                                     </div>
                                     <div class="relative">
@@ -427,7 +425,6 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                         class="text-sm font-medium text-gray-700 dark:text-gray-300"
                                     >
                                         Payment Date & Time
-                                        <span class="text-red-500">*</span>
                                     </Label>
                                     <Input
                                         id="payment_date"
@@ -450,7 +447,7 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                         for="notes"
                                         class="text-sm font-medium text-gray-700 dark:text-gray-300"
                                     >
-                                        Notes
+                                        Notes  <span class="text-gray-400 dark:text-gray-400">(Optional)</span>
                                     </Label>
                                     <Textarea
                                         id="notes"

@@ -57,18 +57,6 @@ function getNumericValue(value: string | number): number {
     return typeof value === 'string' ? parseFloat(value) || 0 : value
 }
 
-// Function to determine if value should be formatted as currency
-function shouldFormatAsCurrency(title: string): boolean {
-    return title.toLowerCase().includes('amount') || 
-           title.toLowerCase().includes('sales') || 
-           title.toLowerCase().includes('cash') || 
-           title.toLowerCase().includes('benta') || 
-           title.toLowerCase().includes('utang') || 
-           title.toLowerCase().includes('natanggap') || 
-           title.toLowerCase().includes('makolekta') || 
-           title.toLowerCase().includes('kumikita')
-}
-
 // Start animation when component mounts or value changes
 onMounted(() => {
     if (!props.loading && typeof props.value === 'number') {
@@ -123,12 +111,7 @@ watch(() => props.loading, (isLoading) => {
                     <div class="relative">
                         <!-- Main value with animation -->
                         <p class="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 dark:from-green-400 dark:via-emerald-400 dark:to-teal-400 bg-clip-text text-transparent leading-none transform group-hover:scale-105 transition-transform duration-500">
-                            <template v-if="typeof value === 'number'">
-                                {{ shouldFormatAsCurrency(title) ? formatCurrency(animatedValue) : animatedValue }}
-                            </template>
-                            <template v-else>
-                                {{ value }}
-                            </template>
+                            {{ formatCurrency(animatedValue) }}
                         </p>
                         
                         <!-- Celebration icons with animation -->
@@ -139,24 +122,6 @@ watch(() => props.loading, (isLoading) => {
                         </div>
                     </div>
                 </div>
-            </div>
-            
-            <!-- Enhanced trend indicator if exists -->
-            <div v-if="trend" class="mt-8 flex justify-center">
-                <span
-                    :class="[
-                        'flex items-center px-6 py-3 rounded-2xl text-base font-semibold shadow-lg',
-                        trend.isPositive 
-                            ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 dark:from-green-900/30 dark:to-emerald-900/30 dark:text-green-300 border border-green-200 dark:border-green-700' 
-                            : 'bg-gradient-to-r from-red-100 to-rose-100 text-red-800 dark:from-red-900/30 dark:to-rose-900/30 dark:text-red-300 border border-red-200 dark:border-red-700'
-                    ]"
-                >
-                    <Icon 
-                        :name="trend.isPositive ? 'trending-up' : 'trending-down'" 
-                        class="mr-2 h-5 w-5" 
-                    />
-                    {{ trend.value }}
-                </span>
             </div>
         </div>
     </div>

@@ -66,7 +66,9 @@ async function submit() {
 
                         <!-- Mobile Number -->
                         <div class="grid gap-2">
-                            <Label for="mobile_number">Mobile Number (Optional)</Label>
+                            <Label for="mobile_number">
+                                Mobile Number <span class="text-sm text-gray-400 dark:text-gray-400">(Optional)</span>
+                            </Label>
                             <Input
                                 id="mobile_number"
                                 v-model="form.mobile_number"

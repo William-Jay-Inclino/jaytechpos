@@ -12,39 +12,22 @@ import { request } from '@/routes/password';
 import { Form, Head } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
 import { onMounted } from 'vue';
-import axios from 'axios';
-import { getBrowser, getDeviceType, getOS, getSessionId, isBot } from '@/utils/analytics';
+import { sendAnalytics } from '@/utils/analytics';
 
 defineProps<{
     status?: string;
     canResetPassword: boolean;
 }>();
 
-onMounted(() => {
-    try {
-        const ua = navigator.userAgent;
-        const sessionId = getSessionId();
-
-        const payload = {
-            session_id: sessionId,
-            user_agent: ua,
-            referer: document.referrer || null,
-            page_url: window.location.href,
-            device_type: getDeviceType(ua),
-            browser: getBrowser(ua),
-            os: getOS(ua),
-            is_bot: isBot(ua),
-            is_unique: false,
-            page_views: 1,
-            visited_at: new Date().toISOString(),
-        };
-
-        window.localStorage.setItem('site_session_id', sessionId);
-        axios.post('/analytics/site-visit', payload).catch(() => {});
-    } catch (e) {
-        // silent
-    }
+onMounted( async() => {
+    // await sendAnalytics({ 
+    //     referer: document.referrer || null, 
+    //     page_url: window.location.href, 
+    //     ua: navigator.userAgent 
+    // })
 });
+
+
 </script>
 
 <template>

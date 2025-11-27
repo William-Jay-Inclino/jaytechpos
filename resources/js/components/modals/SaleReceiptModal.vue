@@ -201,7 +201,7 @@ const handleClose = () => {
                                     class="flex justify-between"
                                 >
                                     <span class="text-muted-foreground"
-                                        >Amount Received:</span
+                                        >Amount Tendered:</span
                                     >
                                     <span
                                         >{{

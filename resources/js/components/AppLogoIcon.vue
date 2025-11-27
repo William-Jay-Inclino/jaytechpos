@@ -21,7 +21,7 @@ const props = withDefaults(defineProps<Props>(), {
 <template>
     <div
         :class="[
-            'inline-block rounded-xl overflow-hidden p-1 bg-gradient-to-br from-indigo-50 to-white shadow-lg transition-transform duration-200 hover:scale-105',
+            'inline-block rounded-xl overflow-hidden bg-gradient-to-br from-indigo-50 to-white shadow-lg transition-transform duration-200 hover:scale-105',
             props.className
         ]"
         role="img"

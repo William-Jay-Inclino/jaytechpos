@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { dashboard, login, register } from '@/routes';
-import { Head, Link } from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3';
 import { ref, onMounted, onBeforeUnmount } from 'vue';
-import axios from 'axios';
 import { CreditCard, Percent, Package, BarChart3 } from 'lucide-vue-next';
-import { getBrowser, getDeviceType, getOS, getSessionId, isBot } from '@/utils/analytics';
+import { getDeviceType, sendAnalytics } from '@/utils/analytics';
 
 // --- Video Demo Logic ---
 const videoSrc = 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4';
@@ -37,27 +36,11 @@ onMounted(() => {
         }).catch(() => {});
     }
 
-    // --- Analytics ---
-    const ua = navigator.userAgent;
-    const sessionId = getSessionId();
-
-    const payload = {
-        session_id: sessionId,
-        user_agent: ua,
-        referer: document.referrer || null,
-        page_url: window.location.href,
-        device_type: getDeviceType(ua),
-        browser: getBrowser(ua),
-        os: getOS(ua),
-        is_bot: isBot(ua),
-        is_unique: false,
-        page_views: 1,
-        visited_at: new Date().toISOString(),
-    };
-
-    window.localStorage.setItem('site_session_id', sessionId);
-
-    axios.post('/analytics/site-visit', payload)
+    // await sendAnalytics({ 
+    //     referer: document.referrer || null, 
+    //     page_url: window.location.href, 
+    //     ua: navigator.userAgent 
+    // })
 
 });
 
@@ -129,7 +112,7 @@ z                    />
                     <template v-else>
                         <Link
                             :href="login()"
-                            class="rounded-md px-4 py-2 text-neutral-800 dark:text-neutral-200 hover:underline"
+                            class="rounded-md bg-white px-4 py-2 text-primary shadow hover:bg-gray-100 dark:shadow-lg"
                         >
                             Log in
                         </Link>
@@ -205,7 +188,7 @@ z                    />
                             </div>
                             <div class="text-left">
                                 <h4 class="font-semibold">Sales & Payments</h4>
-                                <p class="text-sm text-neutral-500 dark:text-neutral-400">Mabilis na checkout at malinaw na cash tracking para sa mga busy na counter.</p>
+                                <p class="text-sm text-neutral-500 dark:text-neutral-400">Faster checkout & accurate cash tracking para sa mga busy na counter.</p>
                             </div>
                         </div>
 
@@ -215,7 +198,7 @@ z                    />
                             </div>
                             <div class="text-left">
                                 <h4 class="font-semibold">Utang & Interest</h4>
-                                <p class="text-sm text-neutral-500 dark:text-neutral-400">Pahintulutan ang customers na bumili nang pa-utang. Automatic monthly interest calculation.</p>
+                                <p class="text-sm text-neutral-500 dark:text-neutral-400">Allow customers na bumili nang pa-utang. Automatic monthly interest calculation.</p>
                             </div>
                         </div>
 
@@ -225,7 +208,7 @@ z                    />
                             </div>
                             <div class="text-left">
                                 <h4 class="font-semibold">Products & Customers</h4>
-                                <p class="text-sm text-neutral-500 dark:text-neutral-400">Madaling product management at customer profiles na may kasamang balance tracking.</p>
+                                <p class="text-sm text-neutral-500 dark:text-neutral-400">Simple product management & customer profiles na may kasamang balance tracking.</p>
                             </div>
                         </div>
 
