@@ -105,7 +105,7 @@ z                    />
                     <Link
                         v-if="$page.props.auth.user"
                         :href="dashboard()"
-                        class="rounded-md bg-white/60 dark:bg-white/5 px-4 py-2 text-neutral-800 dark:text-neutral-200 shadow-sm hover:bg-white dark:hover:bg-white/10"
+                        class="rounded-md bg-amber-600 px-4 py-2 text-white shadow hover:bg-amber-700 dark:shadow-lg"
                     >
                         Dashboard
                     </Link>
@@ -227,10 +227,25 @@ z                    />
 
 
             <!-- Footer / small note -->
-            <footer class="mt-8 text-center text-sm text-neutral-500">
-                For inquiries, please call or text 0910-602-4370 / 0927-465-4155, or reach out via Facebook. 
-                <a href="https://www.facebook.com/jayinclino" target="_blank" class="text-amber-600 hover:underline">Click here </a>    
+            <footer class="mt-8 text-center text-sm text-neutral-500 space-y-1">
+                <p>
+                    For inquiries, please call or text 
+                    <span class="font-medium">0910-602-4370 / 0927-465-4155</span>,  
+                    or reach out via Facebook:
+                    <a 
+                        href="https://www.facebook.com/jayinclino" 
+                        target="_blank" 
+                        class="text-amber-600 hover:underline"
+                    >
+                        Click here
+                    </a>
+                </p>
+
+                <p class="pt-2 text-neutral-600 text-xs">
+                    Developed by <span class="font-semibold">William Jay Inclino</span> • © {{ new Date().getFullYear() }}
+                </p>
             </footer>
+
 
         </div>
     </div>

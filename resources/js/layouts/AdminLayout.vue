@@ -9,7 +9,8 @@ import {
     DropdownMenuItem,
 } from '@/components/ui/dropdown-menu'
 import { Sun, Moon, ChevronDown, User, LogOut, BarChart2, Users, List } from 'lucide-vue-next'
-import { useTheme } from '@/composables/useTheme'
+// import { useTheme } from '@/composables/useTheme'
+import { useAppearance } from '@/composables/useAppearance';
 
 type BreadcrumbItemType = { title: string; href?: string }
 
@@ -17,7 +18,9 @@ withDefaults(defineProps<{ breadcrumbs?: BreadcrumbItemType[] }>(), { breadcrumb
 
 const page = usePage()
 const user = computed(() => page.props.auth?.user)
-const { isDark, toggleTheme } = useTheme()
+// const { isDark, toggleTheme } = useTheme()
+const { appearance, updateAppearance } = useAppearance();
+
 
 const navigation = [
     { name: 'Analytics', href: '/admin/analytics', icon: BarChart2 },
@@ -59,12 +62,12 @@ function goToProfile(): void {
 
                     <div class="flex items-center gap-3">
                         <button
-                            @click="toggleTheme"
+                            @click="updateAppearance(appearance === 'dark' ? 'light' : 'dark')"
                             type="button"
                             class="p-1 rounded border border-transparent hover:bg-gray-100 dark:hover:bg-gray-700"
                             aria-label="Toggle theme"
                         >
-                            <Sun v-if="isDark" class="h-4 w-4" />
+                            <Sun v-if="appearance === 'dark'" class="h-4 w-4" />
                             <Moon v-else class="h-4 w-4" />
                         </button>
 

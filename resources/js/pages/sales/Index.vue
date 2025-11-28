@@ -181,7 +181,7 @@ const filteredProducts = computed(() => {
 });
 
 const selectedCustomerName = computed(() => {
-    if (selectedCustomerId.value === '0') return 'Walk-in Customer';
+    if (selectedCustomerId.value === '0') return '---';
     const customer = props.customers.find(c => c.id.toString() === selectedCustomerId.value);
     return customer ? `${customer.name}${customer.mobile_number ? ` (${customer.mobile_number})` : ''}` : '';
 });
@@ -504,16 +504,6 @@ watch(amountTendered, () => {
                                                     >*</span
                                                 >
                                             </Label>
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="sm"
-                                                @click="router.visit('/customers/create')"
-                                                title="Add Customer"
-                                                class="h-8 w-8 p-0 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:text-gray-500 dark:hover:text-blue-400 dark:hover:bg-blue-950/50"
-                                            >
-                                                <UserPlus class="h-4 w-4" />
-                                            </Button>
                                         </div>
                                         <div class="relative customer-dropdown">
                                             <div
@@ -543,7 +533,7 @@ watch(amountTendered, () => {
                                                 </div>
                                                 <div class="max-h-[52vh] overflow-auto">
                                                     <!-- Walk-in Customer Option -->
-                                                    <div
+                                                    <!-- <div
                                                         @click="selectCustomer('0')"
                                                         class="relative flex cursor-default select-none items-center rounded-sm px-2 py-2.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground cursor-pointer"
                                                     >
@@ -553,7 +543,7 @@ watch(amountTendered, () => {
                                                                 No customer information required
                                                             </div>
                                                         </div>
-                                                    </div>
+                                                    </div> -->
                                                     
                                                     <!-- Customer Options -->
                                                     <div
@@ -582,7 +572,17 @@ watch(amountTendered, () => {
                                                         v-if="filteredCustomers.length === 0"
                                                         class="py-6 text-center text-sm text-muted-foreground"
                                                     >
-                                                        No customers found.
+                                                        <p>No customer found.</p>
+
+                                                        <button
+                                                            type="button"
+                                                            @click="router.visit('/customers/create')"
+                                                            class="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-3 py-1.5 text-xs font-medium shadow-sm hover:opacity-90 transition btn-interactive"
+                                                        >
+                                                            <UserPlus class="h-4 w-4" />
+                                                            Add Customer
+                                                        </button>
+
                                                     </div>
                                                 </div>
                                             </div>
