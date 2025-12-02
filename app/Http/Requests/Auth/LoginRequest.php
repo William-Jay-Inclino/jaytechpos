@@ -51,7 +51,7 @@ class LoginRequest extends FormRequest
                 'email' => $user && $user->status !== 'active'
                     ? __('Your account is not active.')
                     : trans('auth.failed'),
-            ]);
+            ])->redirectTo(route('login'));
         }
 
         RateLimiter::clear($this->throttleKey());
@@ -79,7 +79,7 @@ class LoginRequest extends FormRequest
                 'seconds' => $seconds,
                 'minutes' => ceil($seconds / 60),
             ]),
-        ]);
+        ])->redirectTo(route('login'));
     }
 
     /**
