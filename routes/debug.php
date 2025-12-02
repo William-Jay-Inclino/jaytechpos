@@ -31,3 +31,13 @@ Route::get('/debug-proxy', function () {
         'client_ip' => request()->ip(),
     ]);
 })->middleware('web');
+
+// Debug login errors
+Route::get('/debug-session', function () {
+    return response()->json([
+        'session_id' => session()->getId(),
+        'errors' => session()->get('errors')?->getBag('default')?->toArray(),
+        'old_input' => session()->getOldInput(),
+        'flash_data' => session()->all(),
+    ]);
+})->middleware('web');
