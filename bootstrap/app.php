@@ -21,6 +21,11 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->prefix('admin')
                 ->name('admin.')
                 ->group(base_path('routes/admin.php'));
+            
+            // Temporary debug route - REMOVE AFTER DEBUGGING
+            if (file_exists(base_path('routes/debug.php'))) {
+                require base_path('routes/debug.php');
+            }
         },
     )
     ->withMiddleware(function (Middleware $middleware) {

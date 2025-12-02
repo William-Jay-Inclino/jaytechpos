@@ -28,7 +28,7 @@ function onVideoEnded() {
 // --- Analytics Logic ---
 
 
-onMounted(() => {
+onMounted( async() => {
     // Video autoplay
     if (videoRef.value) {
         videoRef.value.play().then(() => {
@@ -36,11 +36,11 @@ onMounted(() => {
         }).catch(() => {});
     }
 
-    // await sendAnalytics({ 
-    //     referer: document.referrer || null, 
-    //     page_url: window.location.href, 
-    //     ua: navigator.userAgent 
-    // })
+    await sendAnalytics({ 
+        referer: document.referrer || null, 
+        page_url: window.location.href, 
+        ua: navigator.userAgent 
+    })
 
 });
 

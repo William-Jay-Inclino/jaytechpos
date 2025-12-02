@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthBase from '@/layouts/AuthLayout.vue';
 import { login } from '@/routes';
+import { sendAnalytics } from '@/utils/analytics';
 import { Form, Head } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
 import { onMounted } from 'vue';
@@ -14,11 +15,11 @@ import { onMounted } from 'vue';
 // import { getBrowser, getDeviceType, getOS, getSessionId, isBot, sendAnalytics } from '@/utils/analytics';
 
 onMounted( async() => {
-    // await sendAnalytics({ 
-    //     referer: document.referrer || null, 
-    //     page_url: window.location.href, 
-    //     ua: navigator.userAgent 
-    // })
+    await sendAnalytics({ 
+        referer: document.referrer || null, 
+        page_url: window.location.href, 
+        ua: navigator.userAgent 
+    })
 });
 </script>
 

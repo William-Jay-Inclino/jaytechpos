@@ -20,11 +20,11 @@ defineProps<{
 }>();
 
 onMounted( async() => {
-    // await sendAnalytics({ 
-    //     referer: document.referrer || null, 
-    //     page_url: window.location.href, 
-    //     ua: navigator.userAgent 
-    // })
+    await sendAnalytics({ 
+        referer: document.referrer || null, 
+        page_url: window.location.href, 
+        ua: navigator.userAgent 
+    })
 });
 
 
