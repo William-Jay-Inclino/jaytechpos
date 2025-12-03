@@ -36,7 +36,7 @@ class ExpenseController extends Controller
             ->orderBy('name')
             ->get(['id', 'name', 'color']);
 
-        return Inertia::render('expenses/IndexSimple', [
+        return Inertia::render('expenses/Index', [
             'expenses' => ExpenseResource::collection($expenses)->resolve(),
             'categories' => $categories,
             'selectedMonth' => (int) $month,

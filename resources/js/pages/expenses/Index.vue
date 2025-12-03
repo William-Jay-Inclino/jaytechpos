@@ -2,24 +2,15 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { computed, ref, withDefaults, watch } from 'vue';
+import { computed, ref, withDefaults } from 'vue';
 import { formatCurrency } from '@/utils/currency';
 import axios from 'axios';
-import { ChevronLeft, ChevronRight, Calendar, Edit, Trash2, BarChart3 } from 'lucide-vue-next';
+import { Edit, Trash2, BarChart3 } from 'lucide-vue-next';
+import MonthYearPicker from '@/components/MonthYearPicker.vue';
 
 // UI Components
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-
-
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from '@/components/ui/dialog';
 import { showConfirmDelete } from '@/lib/swal';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
@@ -63,18 +54,14 @@ const breadcrumbs: BreadcrumbItem[] = [
 // Date filter state
 const selectedMonth = ref(props.selectedMonth);
 const selectedYear = ref(props.selectedYear);
-const showDateDialog = ref(false);
 
+// Computed properties
+const totalExpenses = computed(() => Array.isArray(props.expenses) ? props.expenses.length : 0);
 
-
-// All expenses without filtering since we removed search/filter
 const filteredExpenses = computed(() => {
     if (!Array.isArray(props.expenses)) return [];
     return props.expenses;
 });
-
-// Computed properties
-const totalExpenses = computed(() => Array.isArray(props.expenses) ? props.expenses.length : 0);
 
 // Format date
 const formatDate = (dateString: string) => {
@@ -86,13 +73,11 @@ const formatDate = (dateString: string) => {
 
 // Generate badge style based on category color
 const getCategoryBadgeStyle = (color: string) => {
-    // Convert hex to RGB
     const hex = color.replace('#', '');
     const r = parseInt(hex.substring(0, 2), 16);
     const g = parseInt(hex.substring(2, 4), 16);
     const b = parseInt(hex.substring(4, 6), 16);
     
-    // Create lighter background and border colors
     const lightBg = `rgba(${r}, ${g}, ${b}, 0.1)`;
     const lightBorder = `rgba(${r}, ${g}, ${b}, 0.3)`;
     
@@ -103,36 +88,8 @@ const getCategoryBadgeStyle = (color: string) => {
     };
 };
 
-// Generate month options
-const monthOptions = [
-    { value: 1, label: 'January' },
-    { value: 2, label: 'February' },
-    { value: 3, label: 'March' },
-    { value: 4, label: 'April' },
-    { value: 5, label: 'May' },
-    { value: 6, label: 'June' },
-    { value: 7, label: 'July' },
-    { value: 8, label: 'August' },
-    { value: 9, label: 'September' },
-    { value: 10, label: 'October' },
-    { value: 11, label: 'November' },
-    { value: 12, label: 'December' },
-];
-
-// Generate year options (current year ± 5 years)
-const currentYear = new Date().getFullYear();
-const yearOptions = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i);
-
-// Get current month name
-const getCurrentMonthYear = computed(() => {
-    const month = monthOptions.find(m => m.value === selectedMonth.value);
-    return `${month?.label} ${selectedYear.value}`;
-});
-
-
-
-// Update expenses when month/year changes
-function updateExpenses() {
+// Handle month/year changes
+function handleMonthYearChange() {
     router.get('/expenses', {
         month: selectedMonth.value,
         year: selectedYear.value,
@@ -141,31 +98,6 @@ function updateExpenses() {
         preserveScroll: true,
     });
 }
-
-// Navigate to previous month
-function goToPreviousMonth() {
-    if (selectedMonth.value === 1) {
-        selectedMonth.value = 12;
-        selectedYear.value--;
-    } else {
-        selectedMonth.value--;
-    }
-}
-
-// Navigate to next month
-function goToNextMonth() {
-    if (selectedMonth.value === 12) {
-        selectedMonth.value = 1;
-        selectedYear.value++;
-    } else {
-        selectedMonth.value++;
-    }
-}
-
-// Watch for month/year changes
-watch([selectedMonth, selectedYear], () => {
-    updateExpenses();
-});
 
 
 
@@ -227,80 +159,12 @@ async function deleteExpense(expenseId: number) {
 
                 <!-- Period Selection -->
                 <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                    <div class="flex items-center justify-center">
-                        <div class="flex items-center gap-2">
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                @click="goToPreviousMonth"
-                                class="h-8 w-8 p-0"
-                            >
-                                <ChevronLeft class="h-4 w-4" />
-                            </Button>
-                            
-                            <Dialog v-model:open="showDateDialog">
-                                <DialogTrigger as-child>
-                                    <Button
-                                        variant="ghost"
-                                        class="min-w-[140px] font-medium text-gray-900 hover:text-gray-700 dark:text-white dark:hover:text-gray-300"
-                                    >
-                                        <Calendar class="mr-2 h-4 w-4" />
-                                        {{ getCurrentMonthYear }}
-                                    </Button>
-                                </DialogTrigger>
-                                <DialogContent class="sm:max-w-md">
-                                    <DialogHeader>
-                                        <DialogTitle>Select Period</DialogTitle>
-                                        <DialogDescription>
-                                            Choose the month and year to view expenses for.
-                                        </DialogDescription>
-                                    </DialogHeader>
-                                    <div class="grid gap-4 py-4">
-                                        <div class="grid grid-cols-4 items-center gap-4">
-                                            <label class="text-right font-medium">
-                                                Month:
-                                            </label>
-                                            <select
-                                                v-model="selectedMonth"
-                                                class="col-span-3 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                            >
-                                                <option v-for="month in monthOptions" :key="month.value" :value="month.value">
-                                                    {{ month.label }}
-                                                </option>
-                                            </select>
-                                        </div>
-                                        <div class="grid grid-cols-4 items-center gap-4">
-                                            <label class="text-right font-medium">
-                                                Year:
-                                            </label>
-                                            <select
-                                                v-model="selectedYear"
-                                                class="col-span-3 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                            >
-                                                <option v-for="year in yearOptions" :key="year" :value="year">
-                                                    {{ year }}
-                                                </option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="flex justify-end">
-                                        <Button @click="showDateDialog = false">
-                                            Apply
-                                        </Button>
-                                    </div>
-                                </DialogContent>
-                            </Dialog>
-                            
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                @click="goToNextMonth"
-                                class="h-8 w-8 p-0"
-                            >
-                                <ChevronRight class="h-4 w-4" />
-                            </Button>
-                        </div>
-                    </div>
+                    <MonthYearPicker
+                        v-model:model-month="selectedMonth"
+                        v-model:model-year="selectedYear"
+                        @update:model-month="handleMonthYearChange"
+                        @update:model-year="handleMonthYearChange"
+                    />
                 </div>
 
                 <!-- Expenses List -->
