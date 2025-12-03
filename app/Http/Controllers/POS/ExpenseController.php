@@ -24,10 +24,13 @@ class ExpenseController extends Controller
         $month = $request->get('month', now()->format('m'));
         $year = $request->get('year', now()->format('Y'));
 
+        // Use date range instead of whereYear/whereMonth for better performance
+        $startDate = "{$year}-{$month}-01";
+        $endDate = date('Y-m-t', strtotime($startDate)); // Last day of month
+
         $expenses = Expense::ownedBy()
             ->with(['category'])
-            ->whereYear('expense_date', $year)
-            ->whereMonth('expense_date', $month)
+            ->whereBetween('expense_date', [$startDate, $endDate])
             ->orderBy('expense_date', 'desc')
             ->orderBy('created_at', 'desc')
             ->get();
