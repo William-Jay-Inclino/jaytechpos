@@ -20,18 +20,13 @@ class ExpenseController extends Controller
     {
         $this->authorize('viewAny', Expense::class);
 
-        // Get month and year from request, default to current month/year
+        // TEMPORARY: Simplified version to debug 502 error
         $month = $request->get('month', now()->format('m'));
         $year = $request->get('year', now()->format('Y'));
 
-        // Use date range instead of whereYear/whereMonth for better performance
-        $startDate = "{$year}-{$month}-01";
-        $endDate = date('Y-m-t', strtotime($startDate)); // Last day of month
-
+        // Just get all expenses without filtering
         $expenses = Expense::ownedBy()
             ->with(['category'])
-            ->whereBetween('expense_date', [$startDate, $endDate])
-            ->orderBy('expense_date', 'desc')
             ->orderBy('created_at', 'desc')
             ->get();
 
