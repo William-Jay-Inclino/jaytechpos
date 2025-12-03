@@ -18,9 +18,9 @@ class ExpenseController extends Controller
 
     public function index(Request $request)
     {
-        // TEMPORARY: Test with minimal Inertia page
-        return Inertia::render('TempExpenses', [
-            'message' => 'If you see this, Inertia works! The issue is with expenses/Index.vue specifically.',
+        // TEMPORARY: Test with minimal page in expenses folder
+        return Inertia::render('expenses/Temp', [
+            'message' => 'Expenses route is working! The problem is with Index.vue component.',
         ]);
     }
 
