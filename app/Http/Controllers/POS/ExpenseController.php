@@ -18,13 +18,9 @@ class ExpenseController extends Controller
 
     public function index(Request $request)
     {
-        // TEMPORARY: No DB queries, no authorization - just render empty page to debug
-        return Inertia::render('expenses/Index', [
-            'expenses' => [],
-            'categories' => [],
-            'selectedMonth' => 12,
-            'selectedYear' => 2025,
-        ]);
+        // TEMPORARY: Just return plain text to test if route even works
+        return response('Expenses route is working! The issue is with Inertia/Vue rendering.', 200)
+            ->header('Content-Type', 'text/plain');
     }
 
     public function analytics(Request $request)
