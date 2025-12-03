@@ -18,9 +18,10 @@ class ExpenseController extends Controller
 
     public function index(Request $request)
     {
-        // TEMPORARY: Just return plain text to test if route even works
-        return response('Expenses route is working! The issue is with Inertia/Vue rendering.', 200)
-            ->header('Content-Type', 'text/plain');
+        // TEMPORARY: Test with minimal Inertia page
+        return Inertia::render('TempExpenses', [
+            'message' => 'If you see this, Inertia works! The issue is with expenses/Index.vue specifically.',
+        ]);
     }
 
     public function analytics(Request $request)
