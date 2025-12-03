@@ -36,7 +36,7 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: 'New Sale',
+        title: 'Transact a Sale',
         href: '/sales',
         icon: ShoppingCart,
     },

@@ -839,7 +839,7 @@ watch(amountTendered, () => {
                                                         Price
                                                     </th>
                                                     <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                                        Total
+                                                        Amount
                                                     </th>
                                                     <th class="px-4 py-3 w-12"></th>
                                                 </tr>

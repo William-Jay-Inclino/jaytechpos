@@ -73,7 +73,7 @@ const handleClose = () => {
                     Sale Completed!
                 </DialogTitle>
                 <DialogDescription class="text-sm text-muted-foreground">
-                    Transaction processed successfully
+                    <!-- Transaction processed successfully -->
                 </DialogDescription>
             </DialogHeader>
 
@@ -93,7 +93,7 @@ const handleClose = () => {
                     <!-- Receipt Details -->
                     <div v-if="saleData" class="space-y-4">
                         <!-- Basic Info -->
-                        <div
+                        <!-- <div
                             class="space-y-2 rounded-lg bg-muted/20 p-3 text-sm"
                         >
                             <div class="flex justify-between">
@@ -131,7 +131,7 @@ const handleClose = () => {
                                     saleData.cashier
                                 }}</span>
                             </div>
-                        </div>
+                        </div> -->
 
                         <!-- Items -->
                         <div class="space-y-3">
