@@ -18,27 +18,12 @@ class ExpenseController extends Controller
 
     public function index(Request $request)
     {
-        $this->authorize('viewAny', Expense::class);
-
-        // TEMPORARY: Simplified version to debug 502 error
-        $month = $request->get('month', now()->format('m'));
-        $year = $request->get('year', now()->format('Y'));
-
-        // Just get all expenses without filtering
-        $expenses = Expense::ownedBy()
-            ->with(['category'])
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        $categories = ExpenseCategory::ownedBy()
-            ->orderBy('name')
-            ->get(['id', 'name', 'color']);
-
+        // TEMPORARY: No DB queries, no authorization - just render empty page to debug
         return Inertia::render('expenses/Index', [
-            'expenses' => ExpenseResource::collection($expenses)->resolve(),
-            'categories' => $categories,
-            'selectedMonth' => (int) $month,
-            'selectedYear' => (int) $year,
+            'expenses' => [],
+            'categories' => [],
+            'selectedMonth' => 12,
+            'selectedYear' => 2025,
         ]);
     }
 
