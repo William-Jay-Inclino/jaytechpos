@@ -18,9 +18,29 @@ class ExpenseController extends Controller
 
     public function index(Request $request)
     {
-        // TEMPORARY: Test with minimal page in expenses folder
-        return Inertia::render('expenses/Temp', [
-            'message' => 'Expenses route is working! The problem is with Index.vue component.',
+        $this->authorize('viewAny', Expense::class);
+
+        // Get month and year from request, default to current month/year
+        $month = $request->get('month', now()->format('m'));
+        $year = $request->get('year', now()->format('Y'));
+
+        $expenses = Expense::ownedBy()
+            ->with(['category'])
+            ->whereYear('expense_date', $year)
+            ->whereMonth('expense_date', $month)
+            ->orderBy('expense_date', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $categories = ExpenseCategory::ownedBy()
+            ->orderBy('name')
+            ->get(['id', 'name', 'color']);
+
+        return Inertia::render('expenses/IndexSimple', [
+            'expenses' => ExpenseResource::collection($expenses)->resolve(),
+            'categories' => $categories,
+            'selectedMonth' => (int) $month,
+            'selectedYear' => (int) $year,
         ]);
     }
 
