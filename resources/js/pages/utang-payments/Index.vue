@@ -8,7 +8,7 @@ import {
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { computed, ref, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import axios from 'axios';
-import { Search } from 'lucide-vue-next';
+import { Search, UserPlus } from 'lucide-vue-next';
 
 // UI Components
 import CustomerTransactionHistory from '@/components/CustomerTransactionHistory.vue';

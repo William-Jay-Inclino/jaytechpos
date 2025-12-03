@@ -231,18 +231,16 @@ z                    />
                 <p>
                     For inquiries, please call or text 
                     <span class="font-medium">0910-602-4370 / 0927-465-4155</span>,  
-                    or reach out via Facebook:
-                    <a 
-                        href="https://www.facebook.com/jayinclino" 
-                        target="_blank" 
+                    or reach out via Messenger:
+                    <span 
                         class="text-amber-600 hover:underline"
                     >
-                        Click here
-                    </a>
+                        Jay Inclino
+                    </span>
                 </p>
 
                 <p class="pt-2 text-neutral-600 text-xs">
-                    Developed by <span class="font-semibold">William Jay Inclino</span> • © {{ new Date().getFullYear() }}
+                    Developed by <span class="font-semibold">William Jay Inclino</span> © {{ new Date().getFullYear() }}
                 </p>
             </footer>
 
