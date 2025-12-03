@@ -16,7 +16,7 @@ return [
     */
 
     'ssr' => [
-        'enabled' => true,
+        'enabled' => false, // Temporarily disabled to test if SSR is causing 502 errors
         'url' => 'http://127.0.0.1:13714',
         // 'bundle' => base_path('bootstrap/ssr/ssr.mjs'),
     ],
