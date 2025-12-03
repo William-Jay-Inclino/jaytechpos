@@ -30,10 +30,19 @@ Route::prefix('users')->name('users.')->group(function () {
 Route::prefix('activity-logs')->name('activity-logs.')->group(function () {
     Route::get('/', [ActivityLogController::class, 'index'])->name('index');
     Route::get('/{log}', [ActivityLogController::class, 'show'])->name('show');
+    Route::delete('/{log}', [ActivityLogController::class, 'destroy'])->name('destroy');
+    Route::post('/bulk-delete', [ActivityLogController::class, 'bulkDelete'])->name('bulk-delete');
 });
 
 // Analytics
 Route::prefix('admin/analytics')->name('admin.analytics.')->group(function () {
     Route::get('/', [AnalyticsController::class, 'index'])->name('index');
-    Route::get('/{x}', [AnalyticsController::class, 'show'])->name('show');
+
+    // Daily Stats Management
+    Route::delete('/daily-stats/{dailyVisitStat}', [AnalyticsController::class, 'destroyDailyStat'])->name('daily-stats.destroy');
+    Route::post('/daily-stats/bulk-delete', [AnalyticsController::class, 'bulkDeleteDailyStats'])->name('daily-stats.bulk-delete');
+
+    // Site Visits Management
+    Route::delete('/site-visits/{siteVisit}', [AnalyticsController::class, 'destroySiteVisit'])->name('site-visits.destroy');
+    Route::post('/site-visits/bulk-delete', [AnalyticsController::class, 'bulkDeleteSiteVisits'])->name('site-visits.bulk-delete');
 });

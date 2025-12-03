@@ -1,6 +1,11 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3'
+import { Head, router } from '@inertiajs/vue3'
 import AdminLayout from '@/layouts/AdminLayout.vue'
+import { Button } from '@/components/ui/button'
+import { Trash2 } from 'lucide-vue-next'
+import { ref } from 'vue'
+import DeleteAnalyticsModal from '@/components/modals/DeleteAnalyticsModal.vue'
+import { showConfirmDelete, showSuccessAlert } from '@/lib/swal'
 
 interface PaginationMeta {
     current_page: number
@@ -57,6 +62,45 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+const showDailyStatsBulkDeleteModal = ref(false)
+const showSiteVisitsBulkDeleteModal = ref(false)
+
+const handleDeleteDailyStat = async (id: number) => {
+    const result = await showConfirmDelete({
+        title: 'Delete Daily Visit Stat?',
+        text: 'This action cannot be undone.',
+    })
+
+    if (result.isConfirmed) {
+        router.delete(`/admin/analytics/daily-stats/${id}`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                showSuccessAlert({
+                    text: 'Daily visit stat deleted successfully.'
+                })
+            }
+        })
+    }
+}
+
+const handleDeleteSiteVisit = async (id: number) => {
+    const result = await showConfirmDelete({
+        title: 'Delete Site Visit?',
+        text: 'This action cannot be undone.',
+    })
+
+    if (result.isConfirmed) {
+        router.delete(`/admin/analytics/site-visits/${id}`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                showSuccessAlert({
+                    text: 'Site visit deleted successfully.'
+                })
+            }
+        })
+    }
+}
 
 function formatVisitDate(dateStr: string): string {
     // Format as 'Nov 4, 1:30 PM'
@@ -120,30 +164,6 @@ function extractSubdirectory(urlStr: string | null | undefined): string {
         return urlStr
     }
 }
-
-// Helpers for mobile-friendly pagination: extract previous/next links
-function stripHtmlLabel(label: string | null | undefined): string {
-    if (!label) return ''
-    return label.replace(/<[^>]*>/g, '').trim()
-}
-
-function findPrevNext(links: any[]): { prev?: string | null; next?: string | null } {
-    let prev: string | null = null
-    let next: string | null = null
-    for (const link of links) {
-        const plain = stripHtmlLabel(link.label).toLowerCase()
-        if (!prev && /previous|prev|«|‹/.test(plain) && link.url) {
-            prev = link.url
-        }
-        if (!next && /next|›|»/.test(plain) && link.url) {
-            next = link.url
-        }
-        if (prev && next) break
-    }
-    return { prev, next }
-}
-
-
 </script>
 
 <template>
@@ -163,7 +183,17 @@ function findPrevNext(links: any[]): { prev?: string | null; next?: string | nul
                 <!-- Daily Visit Stats Table -->
                 <div class="mb-8 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
                     <div class="px-4 py-4 sm:px-6">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Daily Visit Stats</h3>
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Daily Visit Stats</h3>
+                            <Button 
+                                variant="destructive" 
+                                size="sm"
+                                @click="showDailyStatsBulkDeleteModal = true"
+                            >
+                                <Trash2 class="h-4 w-4 mr-2" />
+                                Bulk Delete
+                            </Button>
+                        </div>
                         <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Summary of daily visits and top pages.</p>
                         <div v-if="!daily_visit_stats.data.length" class="py-12 text-center">
                             <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
@@ -191,6 +221,7 @@ function findPrevNext(links: any[]): { prev?: string | null; next?: string | nul
                                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-900 dark:text-white">Mobile</th>
                                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-900 dark:text-white">Desktop</th>
                                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-900 dark:text-white">Tablet</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-900 dark:text-white">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white dark:bg-gray-800">
@@ -204,6 +235,16 @@ function findPrevNext(links: any[]): { prev?: string | null; next?: string | nul
                                             <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ stat.mobile_visits ?? '—' }}</td>
                                             <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ stat.desktop_visits ?? '—' }}</td>
                                             <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ stat.tablet_visits ?? '—' }}</td>
+                                            <td class="px-3 py-2 text-sm">
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="sm"
+                                                    @click="handleDeleteDailyStat(stat.id)"
+                                                    class="h-8 w-8 p-0"
+                                                >
+                                                    <Trash2 class="h-4 w-4 text-red-600 dark:text-red-400" />
+                                                </Button>
+                                            </td>
                                         </tr>
                                 </tbody>
                                 </table>
@@ -218,9 +259,19 @@ function findPrevNext(links: any[]): { prev?: string | null; next?: string | nul
                                             <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">Total: <span class="text-gray-700 dark:text-gray-200">{{ stat.total_visits ?? '—' }}</span></div>
                                             <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">Unique: <span class="text-gray-700 dark:text-gray-200">{{ stat.unique_visits ?? '—' }}</span></div>
                                         </div>
-                                        <div class="text-right text-sm text-gray-600 dark:text-gray-300">
-                                            <div class="font-semibold text-gray-900 dark:text-white">{{ stat.total_visits ?? '—' }}</div>
-                                            <div class="text-xs">visits</div>
+                                        <div class="flex items-center gap-2">
+                                            <div class="text-right text-sm text-gray-600 dark:text-gray-300">
+                                                <div class="font-semibold text-gray-900 dark:text-white">{{ stat.total_visits ?? '—' }}</div>
+                                                <div class="text-xs">visits</div>
+                                            </div>
+                                            <Button 
+                                                variant="ghost" 
+                                                size="sm"
+                                                @click="handleDeleteDailyStat(stat.id)"
+                                                class="h-8 w-8 p-0"
+                                            >
+                                                <Trash2 class="h-4 w-4 text-red-600 dark:text-red-400" />
+                                            </Button>
                                         </div>
                                     </div>
                                     <div class="mt-3 grid grid-cols-3 gap-3 text-sm text-gray-600 dark:text-gray-300">
@@ -233,46 +284,28 @@ function findPrevNext(links: any[]): { prev?: string | null; next?: string | nul
                         </div>
 
                         <!-- Pagination -->
-                        <div v-if="daily_visit_stats.links && daily_visit_stats.links.length" class="px-4 py-3 sm:px-6">
-                            <nav class="flex items-center justify-between">
-                                <div class="hidden md:flex -space-x-px">
-                                    <template v-for="(link, idx) in daily_visit_stats.links" :key="idx">
-                                        <Link v-if="link.url" :href="link.url" class="px-3 py-1 border border-gray-200 bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50" :class="{'bg-gray-100 dark:bg-gray-600 font-semibold': link.active}">
-                                            <span v-html="link.label"></span>
-                                        </Link>
-                                        <span v-else class="px-3 py-1 border border-gray-200 bg-gray-100 text-sm text-gray-500" v-html="link.label"></span>
-                                    </template>
-                                </div>
-
-                                <!-- Mobile simplified prev/next -->
-                                <div class="flex w-full items-center justify-between md:hidden">
-                                    <div class="flex w-full items-center justify-between">
-                                        <div>
-                                            <Link
-                                                v-if="findPrevNext(daily_visit_stats.links).prev"
-                                                :href="findPrevNext(daily_visit_stats.links).prev!"
-                                                class="px-4 py-2 rounded-md border bg-white text-sm font-medium dark:bg-gray-700"
-                                                aria-label="Previous page"
-                                            >
-                                                ← Previous
-                                            </Link>
-                                            <span v-else class="px-4 py-2 rounded-md text-sm text-gray-500">← Previous</span>
-                                        </div>
-
-                                        <div>
-                                            <Link
-                                                v-if="findPrevNext(daily_visit_stats.links).next"
-                                                :href="findPrevNext(daily_visit_stats.links).next!"
-                                                class="px-4 py-2 rounded-md border bg-white text-sm font-medium dark:bg-gray-700"
-                                                aria-label="Next page"
-                                            >
-                                                Next →
-                                            </Link>
-                                            <span v-else class="px-4 py-2 rounded-md text-sm text-gray-500">Next →</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </nav>
+                        <div class="flex items-center justify-between border-t border-gray-200 px-6 py-4 dark:border-gray-700" v-if="daily_visit_stats.data.length">
+                            <div class="text-sm text-gray-500 dark:text-gray-400">
+                                Showing {{ daily_visit_stats.meta.from }} to {{ daily_visit_stats.meta.to }} of {{ daily_visit_stats.meta.total }} results
+                            </div>
+                            <div class="flex gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    :disabled="daily_visit_stats.meta.current_page === 1"
+                                    @click="router.visit('/admin/analytics', { data: { daily_page: daily_visit_stats.meta.current_page - 1, site_page: site_visits.meta?.current_page || 1 }, preserveState: true, preserveScroll: true })"
+                                >
+                                    Previous
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    :disabled="daily_visit_stats.meta.current_page === daily_visit_stats.meta.last_page"
+                                    @click="router.visit('/admin/analytics', { data: { daily_page: daily_visit_stats.meta.current_page + 1, site_page: site_visits.meta?.current_page || 1 }, preserveState: true, preserveScroll: true })"
+                                >
+                                    Next
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -280,7 +313,17 @@ function findPrevNext(links: any[]): { prev?: string | null; next?: string | nul
                 <!-- Site Visits Table -->
                 <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
                     <div class="px-4 py-4 sm:px-6">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Site Visits</h3>
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Site Visits</h3>
+                            <Button 
+                                variant="destructive" 
+                                size="sm"
+                                @click="showSiteVisitsBulkDeleteModal = true"
+                            >
+                                <Trash2 class="h-4 w-4 mr-2" />
+                                Bulk Delete
+                            </Button>
+                        </div>
                         <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Detailed list of site visits.</p>
                         <div v-if="!site_visits.data.length" class="py-12 text-center">
                             <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
@@ -307,10 +350,11 @@ function findPrevNext(links: any[]): { prev?: string | null; next?: string | nul
                                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-900 dark:text-white">Page Views</th>
                                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-900 dark:text-white">Referer</th>
                                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-900 dark:text-white">Flags</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-900 dark:text-white">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white dark:bg-gray-800">
-                                        <tr v-for="visit in site_visits.data" :key="visit.session_id || visit.id" class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                        <tr v-for="visit in site_visits.data" :key="visit.id" class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
                                             <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ formatVisitDate(visit.visited_at) }}</td>
                                             <td class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400">{{ extractSubdirectory(visit.page_url) }}</td>
                                             <td class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400">{{ formatLocation(visit.city, visit.region, visit.country) }}</td>
@@ -322,6 +366,16 @@ function findPrevNext(links: any[]): { prev?: string | null; next?: string | nul
                                                 <span class="mr-2">{{ visit.is_bot ? 'Bot' : '' }}</span>
                                                 <span>{{ visit.is_unique ? 'Unique' : '' }}</span>
                                             </td>
+                                            <td class="px-3 py-2 text-sm">
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="sm"
+                                                    @click="handleDeleteSiteVisit(visit.id)"
+                                                    class="h-8 w-8 p-0"
+                                                >
+                                                    <Trash2 class="h-4 w-4 text-red-600 dark:text-red-400" />
+                                                </Button>
+                                            </td>
                                         </tr>
                                 </tbody>
                                 </table>
@@ -329,7 +383,7 @@ function findPrevNext(links: any[]): { prev?: string | null; next?: string | nul
 
                             <!-- Mobile / Card view for site visits -->
                                 <div class="md:hidden grid gap-3">
-                                <div v-for="visit in site_visits.data" :key="visit.session_id || visit.id" class="rounded-lg border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                                <div v-for="visit in site_visits.data" :key="visit.id" class="rounded-lg border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                                     <div class="flex items-start justify-between">
                                         <div class="flex-1 min-w-0">
                                             <div class="flex items-center gap-3">
@@ -339,9 +393,19 @@ function findPrevNext(links: any[]): { prev?: string | null; next?: string | nul
                                             <div class="mt-2 text-xs text-gray-600 dark:text-gray-300">Referer: <span class="text-gray-800 dark:text-gray-200">{{ visit.referer || '—' }}</span></div>
                                             <div class="mt-2 text-xs text-gray-600 dark:text-gray-300">Flags: <span class="text-gray-800 dark:text-gray-200">{{ visit.is_bot ? 'Bot' : visit.is_unique ? 'Unique' : '—' }}</span></div>
                                         </div>
-                                        <div class="ml-3 text-right text-sm">
-                                            <div class="font-semibold text-gray-900 dark:text-white">{{ visit.page_views ?? '—' }}</div>
-                                            <div class="text-xs text-gray-500 dark:text-gray-400">{{ formatVisitDate(visit.visited_at) }}</div>
+                                        <div class="ml-3 flex items-center gap-2">
+                                            <div class="text-right text-sm">
+                                                <div class="font-semibold text-gray-900 dark:text-white">{{ visit.page_views ?? '—' }}</div>
+                                                <div class="text-xs text-gray-500 dark:text-gray-400">{{ formatVisitDate(visit.visited_at) }}</div>
+                                            </div>
+                                            <Button 
+                                                variant="ghost" 
+                                                size="sm"
+                                                @click="handleDeleteSiteVisit(visit.id)"
+                                                class="h-8 w-8 p-0"
+                                            >
+                                                <Trash2 class="h-4 w-4 text-red-600 dark:text-red-400" />
+                                            </Button>
                                         </div>
                                     </div>
                                     <div class="mt-3 flex flex-wrap gap-2 text-xs text-gray-600 dark:text-gray-300">
@@ -351,51 +415,44 @@ function findPrevNext(links: any[]): { prev?: string | null; next?: string | nul
                                 </div>
                             </div>
                         </div>
-                        <!-- Site visits pagination (moved here so it appears under the Site Visits table) -->
-                        <div v-if="site_visits.links && site_visits.links.length" class="px-4 py-3 sm:px-6">
-                            <nav class="flex items-center justify-between">
-                                <div class="hidden md:flex -space-x-px">
-                                    <template v-for="(link, idx) in site_visits.links" :key="idx">
-                                        <Link v-if="link.url" :href="link.url" class="px-3 py-1 border border-gray-200 bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50" :class="{'bg-gray-100 dark:bg-gray-600 font-semibold': link.active}">
-                                            <span v-html="link.label"></span>
-                                        </Link>
-                                        <span v-else class="px-3 py-1 border border-gray-200 bg-gray-100 text-sm text-gray-500" v-html="link.label"></span>
-                                    </template>
-                                </div>
 
-                                <!-- Mobile simplified prev/next -->
-                                <div class="flex w-full items-center justify-between md:hidden">
-                                    <div class="flex w-full items-center justify-between">
-                                        <div>
-                                            <Link
-                                                v-if="findPrevNext(site_visits.links).prev"
-                                                :href="findPrevNext(site_visits.links).prev!"
-                                                class="px-4 py-2 rounded-md border bg-white text-sm font-medium dark:bg-gray-700"
-                                                aria-label="Previous page"
-                                            >
-                                                ← Previous
-                                            </Link>
-                                            <span v-else class="px-4 py-2 rounded-md text-sm text-gray-500">← Previous</span>
-                                        </div>
-
-                                        <div>
-                                            <Link
-                                                v-if="findPrevNext(site_visits.links).next"
-                                                :href="findPrevNext(site_visits.links).next!"
-                                                class="px-4 py-2 rounded-md border bg-white text-sm font-medium dark:bg-gray-700"
-                                                aria-label="Next page"
-                                            >
-                                                Next →
-                                            </Link>
-                                            <span v-else class="px-4 py-2 rounded-md text-sm text-gray-500">Next →</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </nav>
+                        <!-- Pagination -->
+                        <div class="flex items-center justify-between border-t border-gray-200 px-6 py-4 dark:border-gray-700" v-if="site_visits.data.length">
+                            <div class="text-sm text-gray-500 dark:text-gray-400">
+                                Showing {{ site_visits.meta.from }} to {{ site_visits.meta.to }} of {{ site_visits.meta.total }} results
+                            </div>
+                            <div class="flex gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    :disabled="site_visits.meta.current_page === 1"
+                                    @click="router.visit('/admin/analytics', { data: { daily_page: daily_visit_stats.meta?.current_page || 1, site_page: site_visits.meta.current_page - 1 }, preserveState: true, preserveScroll: true })"
+                                >
+                                    Previous
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    :disabled="site_visits.meta.current_page === site_visits.meta.last_page"
+                                    @click="router.visit('/admin/analytics', { data: { daily_page: daily_visit_stats.meta?.current_page || 1, site_page: site_visits.meta.current_page + 1 }, preserveState: true, preserveScroll: true })"
+                                >
+                                    Next
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </AdminLayout>
+
+    <!-- Bulk Delete Modals -->
+    <DeleteAnalyticsModal
+        v-model:open="showDailyStatsBulkDeleteModal"
+        type="daily_stats"
+    />
+    <DeleteAnalyticsModal
+        v-model:open="showSiteVisitsBulkDeleteModal"
+        type="site_visits"
+    />
 </template>

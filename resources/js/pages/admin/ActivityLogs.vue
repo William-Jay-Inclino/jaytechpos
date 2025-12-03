@@ -2,9 +2,11 @@
 import { Head, router } from '@inertiajs/vue3'
 import AdminLayout from '@/layouts/AdminLayout.vue'
 import { ref } from 'vue'
-import { Search } from 'lucide-vue-next'
+import { Search, Trash2 } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import DeleteActivityLogsModal from '@/components/modals/DeleteActivityLogsModal.vue'
+import { showConfirmDelete, showSuccessAlert } from '@/lib/swal'
 import {
     Table,
     TableBody,
@@ -57,9 +59,29 @@ interface Props {
 
 const props = defineProps<Props>()
 
+const showBulkDeleteModal = ref(false)
+
 // const breadcrumbs = [
 //     { title: 'Activity Logs', href: '/admin/activity-logs' }
 // ]
+
+const handleDelete = async (id: number) => {
+    const result = await showConfirmDelete({
+        title: 'Delete Activity Log?',
+        text: 'This action cannot be undone.',
+    })
+
+    if (result.isConfirmed) {
+        router.delete(`/admin/activity-logs/${id}`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                showSuccessAlert({
+                    text: 'Activity log deleted successfully.'
+                })
+            }
+        })
+    }
+}
 
 // Filter state
 const searchQuery = ref(props.filters.search || '')
@@ -115,6 +137,14 @@ function openDatePicker(event: FocusEvent) {
                         <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Activity Logs</h2>
                         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Monitor user activities and system events.</p>
                     </div>
+                    <Button 
+                        variant="destructive" 
+                        size="sm"
+                        @click="showBulkDeleteModal = true"
+                    >
+                        <Trash2 class="h-4 w-4 mr-2" />
+                        Bulk Delete
+                    </Button>
                 </div>
 
                 <!-- Filters -->
@@ -208,6 +238,7 @@ function openDatePicker(event: FocusEvent) {
                                     <TableHead class="text-left text-sm font-medium text-gray-900 dark:text-white">IP Address</TableHead>
                                     <TableHead class="text-left text-sm font-medium text-gray-900 dark:text-white">Device</TableHead>
                                     <TableHead class="text-right text-sm font-medium text-gray-900 dark:text-white">Time</TableHead>
+                                    <TableHead class="text-right text-sm font-medium text-gray-900 dark:text-white">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -229,6 +260,16 @@ function openDatePicker(event: FocusEvent) {
                                     </TableCell>
                                     <TableCell class="text-right text-sm text-gray-500 dark:text-gray-400">
                                         <span :title="activity.created_at">{{ activity.created_at_diff }}</span>
+                                    </TableCell>
+                                    <TableCell class="text-right">
+                                        <Button 
+                                            variant="ghost" 
+                                            size="sm"
+                                            @click="handleDelete(activity.id)"
+                                            class="h-8 w-8 p-0"
+                                        >
+                                            <Trash2 class="h-4 w-4 text-red-600 dark:text-red-400" />
+                                        </Button>
                                     </TableCell>
                                 </TableRow>
                             </TableBody>
@@ -263,4 +304,9 @@ function openDatePicker(event: FocusEvent) {
             </div>
         </div>
     </AdminLayout>
+
+    <!-- Bulk Delete Modal -->
+    <DeleteActivityLogsModal
+        v-model:open="showBulkDeleteModal"
+    />
 </template>

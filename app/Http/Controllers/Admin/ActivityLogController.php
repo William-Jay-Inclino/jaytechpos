@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\BulkDeleteActivityLogsRequest;
 use App\Http\Resources\ActivityResource;
 use App\Models\Activity;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -69,5 +72,28 @@ class ActivityLogController extends Controller
         return Inertia::render('admin/ActivityLogShow', [
             'activity' => new ActivityResource($log),
         ]);
+    }
+
+    public function destroy(Activity $log): RedirectResponse
+    {
+        Gate::authorize('delete', $log);
+
+        $log->delete();
+
+        return redirect()->back()->with('success', 'Activity log deleted successfully.');
+    }
+
+    public function bulkDelete(BulkDeleteActivityLogsRequest $request): RedirectResponse
+    {
+        $validated = $request->validated();
+
+        $count = Activity::query()
+            ->whereBetween('created_at', [
+                $validated['start_date'].' 00:00:00',
+                $validated['end_date'].' 23:59:59',
+            ])
+            ->delete();
+
+        return redirect()->back()->with('success', "Successfully deleted {$count} activity log(s).");
     }
 }
