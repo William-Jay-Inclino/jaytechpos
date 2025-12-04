@@ -80,6 +80,9 @@ class CustomerController extends Controller
                     'transaction_date' => now(),
                     'transaction_amount' => $startingBalance,
                 ]);
+
+                $customer->update(['has_utang' => true]);
+
             }
 
             return $customer;
@@ -150,6 +153,13 @@ class CustomerController extends Controller
                 'transaction_date' => now(),
                 'transaction_amount' => $newBalance,
             ]);
+
+            if($newBalance > 0) {
+                $customer->update(['has_utang' => true]);
+            } else {
+                $customer->update(['has_utang' => false]);
+            }
+
         });
 
         return redirect()->back()

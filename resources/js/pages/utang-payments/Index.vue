@@ -311,7 +311,7 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                         for="customer_id"
                                         class="text-sm font-medium text-gray-700 dark:text-gray-300"
                                     >
-                                        Customer <span class="text-red-500">*</span>
+                                        Customer
                                     </label>
                                     <div class="relative customer-dropdown">
                                         <input
@@ -333,13 +333,13 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                         
                                         <div
                                             v-if="showCustomerDropdown"
-                                                class="absolute z-50 mt-1 max-h-[60vh] w-full overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-lg dark:border-gray-700 dark:bg-gray-800"
+                                                class="absolute z-50 mt-1 max-h-[60vh] w-full overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-lg dark:border-gray-700"
                                         >
                                             <div class="flex items-center border-b px-3 pb-2 mb-2 dark:border-gray-700">
                                                 <Search class="mr-2 h-4 w-4 shrink-0 opacity-50" />
                                                 <input
                                                     v-model="customerSearch"
-                                                    placeholder="Search customers by name..."
+                                                    placeholder="Enter name of customer..."
                                                     class="flex h-8 w-full rounded-md bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 dark:text-white"
                                                     @click.stop
                                                 />
@@ -353,12 +353,6 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                                 >
                                                     <div class="flex flex-col">
                                                         <div class="font-medium">{{ customer.name }}</div>
-                                                        <!-- <div 
-                                                            v-if="customer.mobile_number"
-                                                            class="text-xs text-gray-500 dark:text-gray-400"
-                                                        >
-                                                            {{ customer.mobile_number }}
-                                                        </div> -->
                                                         <div 
                                                             v-if="customer.running_utang_balance"
                                                             class="text-xs text-red-600 dark:text-red-400 font-medium"
@@ -415,7 +409,7 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                         <!-- Interest Rate and View Transaction History Button -->
                                         <div class="flex items-center justify-between">
                                             <span class="text-xs text-gray-500 dark:text-gray-400">
-                                                Interest Rate: {{ selectedCustomer.effective_interest_rate?.toFixed(2) || '0.00' }}%
+                                                Interest Rate: {{ selectedCustomer.interest_rate?.toFixed(2) || '0.00' }}%
                                             </span>
                                             <Button
                                                 type="button"
@@ -437,7 +431,7 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                             for="payment-amount"
                                             class="text-sm font-medium text-gray-700 dark:text-gray-300"
                                         >
-                                            Payment Amount <span class="text-red-500">*</span>
+                                            Payment Amount
                                         </label>
                                     </div>
                                     <div class="relative">
@@ -477,7 +471,7 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                         for="payment-date"
                                         class="text-sm font-medium text-gray-700 dark:text-gray-300"
                                     >
-                                        Payment Date & Time <span class="text-red-500">*</span>
+                                        Payment Date & Time
                                     </label>
                                     <Input
                                         id="payment_date"

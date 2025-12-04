@@ -24,7 +24,7 @@ class CustomerTransactionController extends Controller
     public function utangPayments(): Response
     {
         $customers = Customer::ownedBy()
-            ->select(['id', 'name'])
+            ->select(['id', 'name', 'interest_rate'])
             ->orderBy('name')
             ->get();
 
