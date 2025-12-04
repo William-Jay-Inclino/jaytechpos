@@ -62,8 +62,10 @@ class UserController extends Controller
             'status' => 'active',
         ]);
 
-        return redirect()->route('admin.users.index')
-            ->with('success', 'User created successfully.');
+        return response()->json([
+            'success' => true,
+            'msg' => 'User created successfully.',
+        ]);
     }
 
     public function edit(User $user)

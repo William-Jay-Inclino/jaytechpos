@@ -5,7 +5,7 @@ import { Customer, CustomerTransaction, type BreadcrumbItem } from '@/types';
 import {
     getCurrentManilaDateTime,
 } from '@/utils/timezone';
-import { Head, router, useForm } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import { computed, ref, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import axios from 'axios';
 import { Search, UserPlus } from 'lucide-vue-next';
@@ -30,10 +30,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 // Form state
 const selectedCustomerId = ref<string>('');
-// paymentAmount may be a string while typing or a number when parsed by InputCurrency
 const paymentAmount = ref<string | number>('');
-const paymentDate = ref<string>(getCurrentManilaDateTime()); // Current Manila date and time
+const paymentDate = ref<string>(getCurrentManilaDateTime());
 const notes = ref<string>('');
+const processing = ref(false);
+const errors = ref<Record<string, string>>({});
 
 // Customer search state
 const customerSearch = ref('');
@@ -47,14 +48,6 @@ const customerBalance = ref<number>(0);
 const transactions = ref<CustomerTransaction[]>([]);
 const loadingTransactions = ref(false);
 const showTransactionHistory = ref(false);
-
-// Inertia form for submission (provides `processing` and `errors`)
-const form = useForm({
-    customer_id: '',
-    payment_amount: '',
-    payment_date: paymentDate.value,
-    notes: '',
-});
 
 // Computed properties
 const selectedCustomer = computed(() => {
@@ -106,7 +99,8 @@ const isFormValid = computed(() => {
         (typeof paymentAmount.value === 'number' ? paymentAmount.value > 0 : parseFloat(String(paymentAmount.value)) > 0) &&
         paymentDate.value &&
         !paymentAmountError.value &&
-        !isLoadingBalance.value
+        !isLoadingBalance.value &&
+        !processing.value
     );
 });
 
@@ -174,10 +168,10 @@ const resetForm = () => {
     paymentAmount.value = '';
     paymentDate.value = getCurrentManilaDateTime();
     notes.value = '';
+    errors.value = {};
     customerSearch.value = '';
     showCustomerDropdown.value = false;
     customerBalance.value = 0;
-    isLoadingBalance.value = false;
     transactions.value = [];
     showTransactionHistory.value = false;
 };
@@ -185,11 +179,6 @@ const resetForm = () => {
 const handleFormSuccess = () => {
     showSuccessToast('Payment recorded successfully!');
     resetForm();
-
-    // Refresh transaction history if a customer was selected
-    if (selectedCustomerId.value) {
-        fetchCustomerTransactions(parseInt(selectedCustomerId.value));
-    }
 };
 
 const showTransactionHistoryView = async () => {
@@ -227,25 +216,28 @@ const showTransactionHistoryView = async () => {
 };
 
 async function handleSubmit(): Promise<void> {
-    if (form.processing) return;
+    if (processing.value) return;
 
-    form.clearErrors();
+    processing.value = true;
+    errors.value = {};
 
-    const data = {
-        customer_id: selectedCustomerId.value,
-        payment_amount: typeof paymentAmount.value === 'number' ? paymentAmount.value : parseFloat(String(paymentAmount.value)),
-        payment_date: paymentDate.value,
-        notes: notes.value,
+    try {
+        const response = await axios.post('/utang-payments', {
+            customer_id: selectedCustomerId.value,
+            payment_amount: typeof paymentAmount.value === 'number' ? paymentAmount.value : parseFloat(String(paymentAmount.value)),
+            payment_date: paymentDate.value,
+            notes: notes.value,
+        });
+
+        handleFormSuccess();
+    } catch (error: any) {
+        if (error.response?.status === 422) {
+            errors.value = error.response.data.errors || {};
+        }
+        showErrorToast('Failed to record payment. Please try again.');
+    } finally {
+        processing.value = false;
     }
-
-    router.post('/utang-payments', data, {
-        onSuccess: () => {
-            handleFormSuccess();
-        },
-        onError: () => {
-           showErrorToast('Failed to record payment. Please try again.');
-        },
-    });
 }
 
 // Handle click outside to close dropdowns
@@ -381,10 +373,10 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                         </div>
                                     </div>
                                     <div
-                                        v-if="form.errors.customer_id"
+                                        v-if="errors.customer_id"
                                         class="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400"
                                     >
-                                        {{ form.errors.customer_id }}
+                                        {{ errors.customer_id }}
                                     </div>
 
                                     <!-- Customer Balance Display -->
@@ -452,10 +444,10 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                         {{ paymentAmountError }}
                                     </div>
                                     <div
-                                        v-else-if="form.errors.payment_amount"
+                                        v-else-if="errors.payment_amount"
                                         class="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400"
                                     >
-                                        {{ form.errors.payment_amount }}
+                                        {{ errors.payment_amount }}
                                     </div>
                                     <div
                                         v-if="selectedCustomer && !paymentAmountError && paymentAmount"
@@ -481,10 +473,10 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                         class="h-12 border-2 focus:ring-2 focus:ring-blue-500"
                                     />
                                     <div
-                                        v-if="form.errors.payment_date"
+                                        v-if="errors.payment_date"
                                         class="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400"
                                     >
-                                        {{ form.errors.payment_date }}
+                                        {{ errors.payment_date }}
                                     </div>
                                 </div>
 
@@ -505,21 +497,21 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                         class="border-2 focus:ring-2 focus:ring-blue-500"
                                     />
                                     <div
-                                        v-if="form.errors.notes"
+                                        v-if="errors.notes"
                                         class="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400"
                                     >
-                                        {{ form.errors.notes }}
+                                        {{ errors.notes }}
                                     </div>
                                 </div>
 
                                 <!-- Submit Button -->
                                 <Button
                                     type="submit"
-                                    :disabled="form.processing || !isFormValid"
+                                    :disabled="!isFormValid"
                                     class="h-12 w-full bg-green-600 text-lg font-semibold text-white shadow-lg hover:bg-green-700"
                                 >
                                     <span
-                                        v-if="form.processing"
+                                        v-if="processing"
                                         class="flex items-center gap-2"
                                     >
                                         <div

@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { showSuccessToast } from '@/lib/toast';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, useForm, router } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import axios from 'axios';
 
@@ -37,20 +37,18 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Edit Expense', href: `/expenses/${props.expense.id}/edit` },
 ];
 
-const form = useForm({
+const form = ref({
     name: props.expense.name || '',
     category_id: props.expense.category_id?.toString() || '',
     amount: props.expense.amount?.toString() || '',
     expense_date: props.expense.expense_date || '',
 });
 
-const isSubmitting = ref(false);
-
-// Search functionality
+const processing = ref(false);
+const errors = ref<Record<string, string>>({});
 const categorySearch = ref('');
 const showCategoryDropdown = ref(false);
 
-// Filtered options
 const filteredCategories = computed(() => {
     if (!categorySearch.value) return props.categories;
     return props.categories.filter(category =>
@@ -58,63 +56,44 @@ const filteredCategories = computed(() => {
     );
 });
 
-// Get selected category name for display
 const selectedCategoryName = computed(() => {
-    const category = props.categories.find(c => c.id.toString() === form.category_id);
+    const category = props.categories.find(c => c.id.toString() === form.value.category_id);
     return category?.name || '';
 });
 
-// Functions to handle selection
 function selectCategory(categoryId: string) {
-    form.category_id = categoryId;
+    form.value.category_id = categoryId;
     showCategoryDropdown.value = false;
     categorySearch.value = '';
 }
 
 async function submit() {
-    if (isSubmitting.value) return;
+    if (processing.value) return;
     
-    // Clear previous errors
-    form.clearErrors();
-    isSubmitting.value = true;
+    processing.value = true;
+    errors.value = {};
     
     try {
-        const formData = {
-            name: form.name,
-            category_id: parseInt(form.category_id),
-            amount: parseFloat(String(form.amount)),
-            expense_date: form.expense_date,
-        };
-
-        const response = await axios.put(`/expenses/${props.expense.id}`, formData);
+        const response = await axios.put(`/expenses/${props.expense.id}`, {
+            name: form.value.name,
+            category_id: parseInt(form.value.category_id),
+            amount: parseFloat(String(form.value.amount)),
+            expense_date: form.value.expense_date,
+        });
         
-        if (response.data.success) {
-            showSuccessToast('Expense updated successfully!');
-            // Redirect to expenses listing
-            router.visit('/expenses');
-        }
+        showSuccessToast(response.data.message || 'Expense updated successfully!');
+        router.visit('/expenses');
     } catch (error: any) {
         if (error.response?.status === 422) {
-            // Handle validation errors
-            const errors = error.response.data.errors;
-            Object.keys(errors).forEach(key => {
-                if (key in form.data()) {
-                    form.setError(key as keyof typeof form.data, errors[key][0]);
-                }
-            });
-        } else {
-            console.error('Error updating expense:', error);
+            errors.value = error.response.data.errors || {};
         }
     } finally {
-        isSubmitting.value = false;
+        processing.value = false;
     }
 }
 
-// Click outside handler
 function handleClickOutside(event: Event) {
     const target = event.target as Element;
-    
-    // Check if click is outside category dropdown
     const categoryDropdown = document.querySelector('.category-dropdown');
     if (categoryDropdown && !categoryDropdown.contains(target)) {
         showCategoryDropdown.value = false;
@@ -152,7 +131,7 @@ onUnmounted(() => {
                                 required
                                 class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                             />
-                            <InputError :message="form.errors.name" class="mt-1" />
+                            <InputError :message="errors.name" class="mt-1" />
                         </div>
 
                         <!-- Category -->
@@ -194,7 +173,7 @@ onUnmounted(() => {
                                     </div>
                                 </div>
                             </div>
-                            <InputError :message="form.errors.category_id" class="mt-1" />
+                            <InputError :message="errors.category_id" class="mt-1" />
                         </div>
 
                         <!-- Amount -->
@@ -208,7 +187,7 @@ onUnmounted(() => {
                                 required
                                 class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                             />
-                            <InputError :message="form.errors.amount" class="mt-1" />
+                            <InputError :message="errors.amount" class="mt-1" />
                         </div>
                         
                         <!-- Expense Date -->
@@ -221,13 +200,13 @@ onUnmounted(() => {
                                 required
                                 class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                             />
-                            <InputError :message="form.errors.expense_date" class="mt-1" />
+                            <InputError :message="errors.expense_date" class="mt-1" />
                         </div>
     
                         <!-- Actions -->
                         <div class="flex items-center gap-4">
-                            <Button type="submit" :disabled="isSubmitting">
-                                {{ isSubmitting ? 'Saving Expense...' : 'Save Expense' }}
+                            <Button type="submit" :disabled="processing">
+                                {{ processing ? 'Saving Expense...' : 'Save Expense' }}
                             </Button>
                             <Link href="/expenses">
                                 <Button variant="outline" type="button">

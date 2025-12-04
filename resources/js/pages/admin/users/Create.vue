@@ -1,24 +1,49 @@
 <script setup lang="ts">
-import InputError from '@/components/InputError.vue';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import AdminLayout from '@/layouts/AdminLayout.vue';
-import { showSuccessToast } from '@/lib/toast';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3'
+import axios from 'axios'
+import { ref } from 'vue'
+import InputError from '@/components/InputError.vue'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import AdminLayout from '@/layouts/AdminLayout.vue'
+import { showSuccessToast, showErrorToast } from '@/lib/toast'
 
-// const breadcrumbs = [
-//     { title: 'Users', href: '/admin/users' },
-//     { title: 'Add User', href: '/admin/users/create' },
-// ];
-
-const form = useForm({
+const form = ref({
     name: '',
     email: '',
     password: '',
     password_confirmation: '',
-    role: 'user',
-});
+})
+
+const errors = ref<Record<string, string>>({})
+const processing = ref(false)
+
+const submitForm = async () => {
+    processing.value = true
+    errors.value = {}
+
+    try {
+        const res = await axios.post('/admin/users', form.value)
+        const data = res?.data || {}
+
+        if (data.success) {
+            showSuccessToast(data.msg || 'User created successfully!')
+            router.visit('/admin/users')
+        } else {
+            showErrorToast(data.msg || 'Failed to create user')
+        }
+    } catch (error: any) {
+        if (error?.response?.status === 422) {
+            errors.value = error.response.data.errors || {}
+        } else {
+            const message = error?.response?.data?.msg || error?.response?.data?.message || 'Failed to create user'
+            showErrorToast(message)
+        }
+    } finally {
+        processing.value = false
+    }
+}
 </script>
 
 <template>
@@ -30,8 +55,7 @@ const form = useForm({
 
                 <!-- Form Card -->
                 <div class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 sm:p-8 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none">
-                    <form @submit.prevent="form.post('/admin/users', { onSuccess: () => { form.reset(); showSuccessToast('User created successfully!'); } })" class="space-y-6">
-                        <!-- Name -->
+                    <form @submit.prevent="submitForm" class="space-y-6">
                         <div class="grid gap-2">
                             <Label for="name">Full Name</Label>
                             <Input
@@ -41,10 +65,9 @@ const form = useForm({
                                 required
                                 class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                             />
-                            <InputError :message="form.errors.name" class="mt-1" />
+                            <InputError :message="errors.name" class="mt-1" />
                         </div>
 
-                        <!-- Email -->
                         <div class="grid gap-2">
                             <Label for="email">Email Address</Label>
                             <Input
@@ -54,10 +77,9 @@ const form = useForm({
                                 required
                                 class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                             />
-                            <InputError :message="form.errors.email" class="mt-1" />
+                            <InputError :message="errors.email" class="mt-1" />
                         </div>
 
-                        <!-- Password -->
                         <div class="grid gap-2">
                             <Label for="password">Password</Label>
                             <Input
@@ -67,10 +89,9 @@ const form = useForm({
                                 required
                                 class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                             />
-                            <InputError :message="form.errors.password" class="mt-1" />
+                            <InputError :message="errors.password" class="mt-1" />
                         </div>
 
-                        <!-- Confirm Password -->
                         <div class="grid gap-2">
                             <Label for="password_confirmation">Confirm Password</Label>
                             <Input
@@ -80,13 +101,12 @@ const form = useForm({
                                 required
                                 class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                             />
-                            <InputError :message="form.errors.password_confirmation" class="mt-1" />
+                            <InputError :message="errors.password_confirmation" class="mt-1" />
                         </div>
 
-                        <!-- Actions -->
                         <div class="flex items-center gap-4">
-                            <Button type="submit" :disabled="form.processing">
-                                {{ form.processing ? 'Creating User...' : 'Create User' }}
+                            <Button type="submit" :disabled="processing">
+                                {{ processing ? 'Creating User...' : 'Create User' }}
                             </Button>
                             <Link href="/admin/users">
                                 <Button variant="outline" type="button">

@@ -4,12 +4,11 @@ namespace App\Http\Controllers\POS;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreUtangPaymentRequest;
-use App\Http\Resources\CustomerResource;
 use App\Models\Customer;
 use App\Models\CustomerTransaction;
 use App\Traits\HandlesTimezone;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -36,7 +35,7 @@ class CustomerTransactionController extends Controller
     /**
      * Store a new utang payment as a customer transaction
      */
-    public function storeUtangPayment(StoreUtangPaymentRequest $request): RedirectResponse
+    public function storeUtangPayment(StoreUtangPaymentRequest $request): JsonResponse
     {
         $customer = Customer::findOrFail($request->customer_id);
         $currentBalance = $customer->running_utang_balance;
@@ -65,7 +64,9 @@ class CustomerTransactionController extends Controller
             return $transaction;
         });
 
-        return redirect()->route('utang-payments')
-            ->with('message', 'Payment recorded successfully!');
+        return response()->json([
+            'success' => true,
+            'msg' => 'Payment recorded successfully!',
+        ]);
     }
 }

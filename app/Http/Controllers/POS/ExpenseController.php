@@ -131,8 +131,10 @@ class ExpenseController extends Controller
         $expense = Expense::create($validated);
         $expense->load(['category']);
 
-        return redirect()->route('expenses.index')
-            ->with('message', 'Expense created successfully!');
+        return response()->json([
+            'success' => true,
+            'msg' => 'Expense created successfully!',
+        ]);
     }
 
     public function edit(string $id)
