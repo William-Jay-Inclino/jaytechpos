@@ -139,7 +139,6 @@ class UserController extends Controller
         $hasCustomers = $user->customers()->exists();
         $hasProducts = $user->products()->exists();
         $hasExpenses = $user->expenses()->exists();
-        // $hasExpenseCategories = $user->expenseCategories()->exists();
 
         if ($hasCustomerTransactions || $hasSales || $hasCustomers || $hasProducts || $hasExpenses) {
             $associations = [];
@@ -157,9 +156,6 @@ class UserController extends Controller
             }
             if ($hasExpenses) {
                 $associations[] = 'expenses';
-            }
-            if ($hasExpenseCategories) {
-                $associations[] = 'expense categories';
             }
 
             $message = 'Cannot delete user. This user has associated '.implode(', ', $associations).'.';
