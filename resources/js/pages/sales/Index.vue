@@ -10,9 +10,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 
 // UI Components
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Input, InputCurrency } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 
 // Utils
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
@@ -471,7 +469,7 @@ watch(amountTendered, () => {
                                     <!-- Customer Selection -->
                                     <div>
                                         <div class="flex items-center justify-between mb-2">
-                                            <Label
+                                            <label
                                                 for="customer"
                                                 class="text-sm font-medium text-gray-700 dark:text-gray-300"
                                             >
@@ -484,7 +482,7 @@ watch(amountTendered, () => {
                                                     class="text-red-500"
                                                     >*</span
                                                 >
-                                            </Label>
+                                            </label>
                                         </div>
                                         <div class="relative customer-dropdown">
                                             <div
@@ -548,14 +546,18 @@ watch(amountTendered, () => {
 
                                     <!-- Customer Balance Display -->
                                     <div
-                                        v-if="selectedCustomer && selectedCustomer.running_utang_balance > 0"
+                                        v-if="selectedCustomer"
                                         class="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-900/20"
                                     >
                                         <div class="flex items-center justify-between">
                                             <span class="text-sm font-medium text-amber-800 dark:text-amber-200"
                                                 >Outstanding Balance:</span
                                             >
-                                            <span class="text-lg font-bold text-amber-900 dark:text-amber-100"
+                                            <span v-if="isLoadingBalance" class="flex items-center gap-2 text-amber-700 dark:text-amber-300">
+                                                <div class="h-4 w-4 animate-spin rounded-full border-2 border-amber-600 border-t-transparent dark:border-amber-400"></div>
+                                                <span class="text-sm">Loading...</span>
+                                            </span>
+                                            <span v-else class="text-lg font-bold text-amber-900 dark:text-amber-100"
                                                 >{{ formatCurrency(selectedCustomer.running_utang_balance) }}</span
                                             >
                                         </div>
@@ -563,9 +565,9 @@ watch(amountTendered, () => {
 
                                     <!-- Payment Method -->
                                     <div>
-                                        <Label
+                                        <label
                                             class="mb-3 block text-sm font-medium text-gray-700 dark:text-gray-300"
-                                            >Payment Type</Label
+                                            >Payment Type</label
                                         >
 
                                         <!-- Modern Toggle Design -->
@@ -606,11 +608,11 @@ watch(amountTendered, () => {
 
                                     <!-- Transaction Date & Time -->
                                     <div>
-                                        <Label
+                                        <label
                                             class="mb-2 block text-sm font-medium text-gray-600 dark:text-gray-400"
                                         >
                                             Date & Time
-                                        </Label>
+                                        </label>
                                         <div class="grid grid-cols-2 gap-3">
                                             <div>
                                                 <Input
@@ -875,9 +877,9 @@ watch(amountTendered, () => {
                                         >
                                             <!-- Total Amount Display -->
                                             <div class="space-y-2">
-                                                <Label
+                                                <label
                                                     class="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                                    >Total Amount</Label
+                                                    >Total Amount</label
                                                 >
                                                 <div
                                                     class="rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-orange-800 dark:bg-orange-900/20 text-right"
@@ -891,10 +893,10 @@ watch(amountTendered, () => {
 
                                             <!-- Amount Tendered Input -->
                                             <div class="space-y-2">
-                                                <Label
+                                                <label
                                                     for="amountTendered"
                                                     class="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                                    >Amount Tendered</Label
+                                                    >Amount Tendered</label
                                                 >
                                                 <div
                                                     class="rounded-lg border border-teal-200 bg-teal-50 p-4 dark:border-teal-800 dark:bg-teal-900/20"
@@ -909,9 +911,9 @@ watch(amountTendered, () => {
 
                                             <!-- Change Display -->
                                             <div class="space-y-2">
-                                                <Label
+                                                <label
                                                     class="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                                    >Change</Label
+                                                    >Change</label
                                                 >
                                                 <div
                                                     class="rounded-lg border p-4 text-right"
@@ -939,17 +941,18 @@ watch(amountTendered, () => {
                                             v-if="selectedCustomer && selectedCustomer.running_utang_balance > 0"
                                             class="flex items-center space-x-3 rounded-lg bg-blue-50 border border-blue-200 p-4 dark:bg-blue-900/20 dark:border-blue-800"
                                         >
-                                            <Checkbox
+                                            <input
                                                 id="payTowardsBalance"
                                                 v-model="payTowardsBalance"
-                                                class="h-5 w-5 rounded-md border-2 border-blue-300 bg-white text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-blue-600 dark:bg-gray-700"
+                                                type="checkbox"
+                                                class="h-5 w-5 rounded border-2 border-blue-300 bg-white text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-blue-600 dark:bg-gray-700"
                                             />
-                                            <Label
+                                            <label
                                                 for="payTowardsBalance"
                                                 class="cursor-pointer text-sm font-medium text-blue-900 dark:text-blue-100"
                                             >
                                                 💡 Gamitin ang sukli para sa utang ng customer
-                                            </Label>
+                                            </label>
                                         </div>
 
                                         <!-- Balance Deduction Section -->
@@ -958,12 +961,12 @@ watch(amountTendered, () => {
                                             class="grid grid-cols-1 gap-4 rounded-lg border border-blue-200 bg-blue-50 p-4 md:grid-cols-2 dark:border-blue-800 dark:bg-blue-900/20"
                                         >
                                             <div class="space-y-2">
-                                                <Label
+                                                <label
                                                     for="deductFromBalance"
                                                     class="text-sm font-medium text-blue-800 dark:text-blue-200"
                                                 >
                                                     Payment towards Utang
-                                                </Label>
+                                                </label>
                                                     <InputCurrency
                                                         id="deductFromBalance"
                                                         v-model="deductFromBalance"
@@ -1000,9 +1003,9 @@ watch(amountTendered, () => {
                                                 </p>
                                             </div>
                                             <div class="space-y-2">
-                                                <Label
+                                                <label
                                                     class="text-sm font-medium text-blue-800 dark:text-blue-200"
-                                                    >New Balance</Label
+                                                    >New Balance</label
                                                 >
                                                 <div
                                                     class="flex h-12 items-center justify-end rounded-lg border border-blue-300 bg-blue-100 p-4 dark:border-blue-600 dark:bg-blue-800/40"
@@ -1033,9 +1036,9 @@ watch(amountTendered, () => {
                                         >
                                             <!-- Total Amount Display -->
                                             <div class="space-y-2">
-                                                <Label
+                                                <label
                                                     class="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                                    >Total Amount</Label
+                                                    >Total Amount</label
                                                 >
                                                 <div
                                                     class="rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-orange-800 dark:bg-orange-900/20"
@@ -1051,13 +1054,13 @@ watch(amountTendered, () => {
 
                                             <!-- Paid Amount Input -->
                                             <div class="space-y-2">
-                                                <Label
+                                                <label
                                                     for="paidAmount"
                                                     class="text-sm font-medium text-gray-700 dark:text-gray-300"
                                                     >Amount Paid
                                                     <span class="text-red-500"
                                                         >*</span
-                                                    ></Label
+                                                    ></label
                                                 >
                                                 <div
                                                     class="rounded-lg border border-teal-200 bg-teal-50 p-4 dark:border-teal-800 dark:bg-teal-900/20"
@@ -1107,7 +1110,7 @@ watch(amountTendered, () => {
                                         <Button
                                             size="lg"
                                             class="h-16 w-full bg-green-600 text-xl font-bold text-white shadow-lg hover:bg-green-700 hover:shadow-xl transition-all"
-                                            :disabled="!isCheckoutValid || isProcessing"
+                                            :disabled="!isCheckoutValid || isProcessing || isLoadingBalance"
                                             @click="handleCheckout"
                                         >
                                             <span
