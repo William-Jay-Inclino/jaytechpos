@@ -1,17 +1,13 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { Head, router } from '@inertiajs/vue3'
-import { Filter, TrendingUp, DollarSign, CreditCard, Receipt, RefreshCw, Eye, X, ChevronLeft, ChevronRight } from 'lucide-vue-next'
+import { Filter, TrendingUp, Receipt, RefreshCw, Eye, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import axios from 'axios'
 import AppLayout from '@/layouts/AppLayout.vue'
 import SalesChart from '@/components/SalesChart.vue'
 import StatsCard from '@/components/StatsCard.vue'
 import SaleDetailsModal from '@/components/modals/SaleDetailsModal.vue'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { salesReport } from '@/routes'
 import { Sale, type BreadcrumbItem } from '@/types'
@@ -53,28 +49,21 @@ interface Props {
 
 const props = defineProps<Props>()
 
-console.log('props', props);
-
 const loading = ref(false)
 const salesData = ref<SalesData>(props.sales)
 const chartData = ref<ChartData>(props.chartData)
 
-// Date filter form data (affects chart and stats)
 const filters = ref({
     period: props.filters.period || 'month',
     start_date: props.filters.start_date || '',
     end_date: props.filters.end_date || '',
-    payment_type: 'all', // Remove payment type from main filters
+    payment_type: 'all',
 })
 
-// Separate payment filter for table only
 const tablePaymentFilter = ref(props.filters.payment_type || 'all')
-
-// Pagination state
 const currentPage = ref(props.filters.page || 1)
 const perPage = ref(20)
 
-// Sale details modal state
 const showSaleDetails = ref(false)
 const selectedSale = ref<Sale | null>(null)
 
@@ -82,15 +71,9 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Sales Report', href: salesReport().url },
 ]
 
-// Computed values
 const isCustomPeriod = computed(() => filters.value.period === 'custom')
+const filteredSalesData = computed(() => salesData.value.data)
 
-// Since we're now filtering on the backend, we don't need client-side filtering
-const filteredSalesData = computed(() => {
-    return salesData.value.data
-})
-
-// Format currency
 const formatCurrency = (value: number): string => {
     return new Intl.NumberFormat('en-PH', {
         style: 'currency',
@@ -100,7 +83,6 @@ const formatCurrency = (value: number): string => {
     }).format(value)
 }
 
-// Format date
 const formatDate = (dateString: string): string => {
     return new Date(dateString).toLocaleDateString('en-US', {
         year: 'numeric',
@@ -111,26 +93,23 @@ const formatDate = (dateString: string): string => {
     })
 }
 
-// Apply filters and fetch new data
 const applyFilters = async (page: number = 1) => {
     if (isCustomPeriod.value && (!filters.value.start_date || !filters.value.end_date)) {
-        return // Don't apply if custom period is selected but dates are not provided
+        return
     }
 
     loading.value = true
     
     try {
-        // Create params without payment_type as it's handled client-side for table
         const params = new URLSearchParams({
             period: filters.value.period,
             start_date: filters.value.start_date,
             end_date: filters.value.end_date,
-            payment_type: tablePaymentFilter.value, // Use table filter for backend pagination
+            payment_type: tablePaymentFilter.value,
             page: page.toString(),
             per_page: perPage.value.toString(),
         })
         
-        // Fetch data in parallel
         const [salesResponse, chartResponse] = await Promise.all([
             axios.get(`/api/sales-report/data?${params}`),
             axios.get(`/api/sales-report/chart?${params}`),
@@ -140,7 +119,6 @@ const applyFilters = async (page: number = 1) => {
         chartData.value = chartResponse.data.data
         currentPage.value = page
 
-        // Update URL without page reload
         router.visit('/sales-report', {
             data: {
                 period: filters.value.period,
@@ -160,7 +138,6 @@ const applyFilters = async (page: number = 1) => {
     }
 }
 
-// Reset filters to this month
 const resetFilters = () => {
     filters.value = {
         period: 'month',
@@ -173,7 +150,6 @@ const resetFilters = () => {
     applyFilters(1)
 }
 
-// Apply custom date range
 const applyCustomRange = () => {
     if (filters.value.start_date && filters.value.end_date) {
         currentPage.value = 1
@@ -181,7 +157,6 @@ const applyCustomRange = () => {
     }
 }
 
-// Pagination functions
 const goToPage = (page: number) => {
     if (page >= 1 && page <= salesData.value.pagination.last_page) {
         applyFilters(page)
@@ -200,11 +175,9 @@ const goToNextPage = () => {
     }
 }
 
-// View sale details
 const viewSaleDetails = async (sale: Sale) => {
     loading.value = true
     try {
-        // Get CSRF token from the meta tag
         const token = document
             .querySelector('meta[name="csrf-token"]')
             ?.getAttribute('content');
@@ -237,9 +210,6 @@ const viewSaleDetails = async (sale: Sale) => {
     }
 }
 
-
-
-// Watch for period changes to clear custom dates when needed
 watch(() => filters.value.period, (newPeriod) => {
     if (newPeriod !== 'custom') {
         filters.value.start_date = ''
@@ -249,32 +219,27 @@ watch(() => filters.value.period, (newPeriod) => {
     }
 })
 
-// Watch for payment type changes to reset pagination and apply filter
 watch(tablePaymentFilter, () => {
     currentPage.value = 1
     applyFilters(1)
 })
 
-// Generate visible page numbers for pagination
 const getVisiblePages = (): (number | string)[] => {
     const totalPages = salesData.value.pagination.last_page
     const current = currentPage.value
     const pages: (number | string)[] = []
 
     if (totalPages <= 7) {
-        // Show all pages if 7 or fewer
         for (let i = 1; i <= totalPages; i++) {
             pages.push(i)
         }
     } else {
-        // Always show first page
         pages.push(1)
 
         if (current > 3) {
             pages.push('...')
         }
 
-        // Show pages around current page
         const start = Math.max(2, current - 1)
         const end = Math.min(totalPages - 1, current + 1)
 
@@ -286,7 +251,6 @@ const getVisiblePages = (): (number | string)[] => {
             pages.push('...')
         }
 
-        // Always show last page if it's not already included
         if (totalPages > 1) {
             pages.push(totalPages)
         }
@@ -301,44 +265,25 @@ const getVisiblePages = (): (number | string)[] => {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-slate-900 dark:to-indigo-950">
-            <!-- Hero Section -->
             <div class="relative overflow-hidden">
                 <div class="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-indigo-600/5 dark:from-blue-400/5 dark:to-indigo-400/5"></div>
                 <div class="absolute top-0 right-0 -mt-4 -mr-16 w-96 h-96 bg-gradient-to-br from-blue-400/10 to-indigo-500/10 rounded-full blur-3xl"></div>
                 
                 <div class="relative px-4 py-8 sm:px-6 lg:px-8">
                     <div class="max-w-7xl mx-auto">
-                        <!-- Header -->
-                        <!-- <div class="text-center mb-8">
-                            <div class="flex items-center justify-center gap-3 mb-4">
-                                <div class="relative">
-                                    <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl blur opacity-30 animate-pulse"></div>
-                                    <div class="relative flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg">
-                                        <TrendingUp class="h-8 w-8" />
-                                    </div>
-                                </div>
-                                <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
-                                    Sales Report
-                                </h1>
-                            </div>
-                        </div> -->
-
                         <!-- Date Filters -->
-                        <Card class="mb-8 border-white/20 bg-white/70 backdrop-blur-xl shadow-xl dark:border-gray-700/50 dark:bg-gray-800/70">
-                            <CardHeader>
-                                <div class="flex items-center gap-2">
+                        <div class="mb-8 border border-white/20 bg-white/70 backdrop-blur-xl shadow-xl dark:border-gray-700/50 dark:bg-gray-800/70 rounded-lg">
+                            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                                <div class="flex items-center gap-2 mb-2">
                                     <Filter class="h-5 w-5 text-blue-500" />
-                                    <CardTitle>Date Filters</CardTitle>
+                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Date Filters</h3>
                                 </div>
-                                <CardDescription>
-                                    Filter your sales data by time period
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <!-- Period Toggle Buttons -->
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Filter your sales data by time period</p>
+                            </div>
+                            <div class="p-6">
                                 <div class="space-y-4">
                                     <div>
-                                        <Label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 block">Time Period</Label>
+                                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 block">Time Period</label>
                                         <div class="flex flex-wrap gap-2">
                                             <Button 
                                                 @click="filters.period = 'today'"
@@ -383,11 +328,10 @@ const getVisiblePages = (): (number | string)[] => {
                                         </div>
                                     </div>
 
-                                    <!-- Custom Date Range -->
                                     <div v-show="isCustomPeriod" class="space-y-4">
                                         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                                             <div class="space-y-2">
-                                                <Label for="start_date">Start Date</Label>
+                                                <label for="start_date" class="text-sm font-medium text-gray-700 dark:text-gray-300">Start Date</label>
                                                 <Input
                                                     id="start_date"
                                                     v-model="filters.start_date"
@@ -395,7 +339,7 @@ const getVisiblePages = (): (number | string)[] => {
                                                 />
                                             </div>
                                             <div class="space-y-2">
-                                                <Label for="end_date">End Date</Label>
+                                                <label for="end_date" class="text-sm font-medium text-gray-700 dark:text-gray-300">End Date</label>
                                                 <Input
                                                     id="end_date"
                                                     v-model="filters.end_date"
@@ -415,7 +359,6 @@ const getVisiblePages = (): (number | string)[] => {
                                         </div>
                                     </div>
 
-                                    <!-- Reset Button -->
                                     <div class="flex justify-end">
                                         <Button @click="resetFilters" variant="outline" size="sm">
                                             <RefreshCw class="h-4 w-4 mr-1" />
@@ -423,8 +366,8 @@ const getVisiblePages = (): (number | string)[] => {
                                         </Button>
                                     </div>
                                 </div>
-                            </CardContent>
-                        </Card>
+                            </div>
+                        </div>
 
                         <!-- Summary Stats -->
                         <div class="grid gap-6 grid-cols-1 mb-8">
@@ -438,45 +381,39 @@ const getVisiblePages = (): (number | string)[] => {
 
                         <!-- Charts Section -->
                         <div class="mb-8">
-                            <!-- Sales Chart -->
-                            <div class="relative">
-                                <SalesChart 
-                                    :chart-data="chartData" 
-                                    :current-year="new Date().getFullYear()"
-                                    :disable-year-selector="true"
-                                    :loading="loading"
-                                    class="transform hover:shadow-2xl transition-all duration-500" 
-                                />
-                            </div>
+                            <SalesChart 
+                                :chart-data="chartData" 
+                                :current-year="new Date().getFullYear()"
+                                :disable-year-selector="true"
+                                :loading="loading"
+                                class="transform hover:shadow-2xl transition-all duration-500" 
+                            />
                         </div>
 
                         <!-- Sales Table -->
-                        <Card class="border-white/20 bg-white/70 backdrop-blur-xl shadow-xl dark:border-gray-700/50 dark:bg-gray-800/70">
-                            <CardHeader>
+                        <div class="border border-white/20 bg-white/70 backdrop-blur-xl shadow-xl dark:border-gray-700/50 dark:bg-gray-800/70 rounded-lg">
+                            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
                                 <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                                     <div class="flex items-center gap-2">
                                         <Receipt class="h-5 w-5 text-blue-500" />
-                                        <CardTitle>Sales Transactions</CardTitle>
+                                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Sales Transactions</h3>
                                     </div>
                                     <div class="flex items-center gap-4">
-                                        <!-- Payment Type Filter -->
                                         <div class="flex items-center gap-2">
-                                            <Label class="text-sm font-medium whitespace-nowrap">Payment Type:</Label>
-                                            <Select v-model="tablePaymentFilter">
-                                                <SelectTrigger class="w-36">
-                                                    <SelectValue placeholder="All" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="all">All Types</SelectItem>
-                                                    <SelectItem value="cash">Cash Only</SelectItem>
-                                                    <SelectItem value="utang">Utang Only</SelectItem>
-                                                </SelectContent>
-                                            </Select>
+                                            <label class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Payment Type:</label>
+                                            <select
+                                                v-model="tablePaymentFilter"
+                                                class="w-36 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            >
+                                                <option value="all">All Types</option>
+                                                <option value="cash">Cash Only</option>
+                                                <option value="utang">Utang Only</option>
+                                            </select>
                                         </div>
                                     </div>
                                 </div>
-                            </CardHeader>
-                            <CardContent>
+                            </div>
+                            <div class="p-6">
                                 <div class="overflow-x-auto">
                                     <table class="w-full text-sm">
                                         <thead>
@@ -507,7 +444,7 @@ const getVisiblePages = (): (number | string)[] => {
                                                 </td>
                                                 <td class="py-3 px-2">
                                                     <div class="text-gray-600 dark:text-gray-400">
-                                                        {{ sale.customer_name || 'Walk-in Customer' }}
+                                                        {{ sale.customer_name || 'Walk-in' }}
                                                     </div>
                                                 </td>
                                                 <td class="py-3 px-2 text-right">
@@ -516,19 +453,19 @@ const getVisiblePages = (): (number | string)[] => {
                                                     </div>
                                                 </td>
                                                 <td class="py-3 px-2 text-center">
-                                                    <Badge 
-                                                        :variant="sale.payment_type === 'cash' ? 'default' : 'secondary'"
-                                                        class="capitalize"
+                                                    <span
+                                                        :class="[
+                                                            'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium capitalize',
+                                                            sale.payment_type === 'cash' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400'
+                                                        ]"
                                                     >
-                                                        <CreditCard v-if="sale.payment_type === 'utang'" class="h-3 w-3 mr-1" />
-                                                        <DollarSign v-else class="h-3 w-3 mr-1" />
-                                                        {{ sale.payment_type }}
-                                                    </Badge>
+                                                        {{ sale.payment_type === 'cash' ? '💵 Cash' : '📝 Utang' }}
+                                                    </span>
                                                 </td>
                                                 <td class="py-3 px-2 text-center">
                                                     <Button 
                                                         @click="viewSaleDetails(sale)"
-                                                        variant="ghost" 
+                                                        variant="ghost"
                                                         size="sm"
                                                         class="h-8 w-8 p-0"
                                                     >
@@ -565,7 +502,6 @@ const getVisiblePages = (): (number | string)[] => {
                                     </div>
                                     
                                     <div class="flex flex-wrap items-center gap-2">
-                                        <!-- Previous Button -->
                                         <Button 
                                             @click="goToPreviousPage"
                                             :disabled="currentPage <= 1 || loading"
@@ -577,7 +513,6 @@ const getVisiblePages = (): (number | string)[] => {
                                             Previous
                                         </Button>
 
-                                        <!-- Page Numbers -->
                                         <div class="flex items-center gap-1 overflow-x-auto whitespace-nowrap max-w-full sm:max-w-none">
                                             <template v-for="page in getVisiblePages()" :key="page">
                                                 <Button
@@ -592,7 +527,7 @@ const getVisiblePages = (): (number | string)[] => {
                                                 <Button
                                                     v-else
                                                     @click="goToPage(page as number)"
-                                                    :variant="currentPage === page ? 'default' : 'outline'"
+                                                    :variant="page === currentPage ? 'default' : 'outline'"
                                                     :disabled="loading"
                                                     size="sm"
                                                     class="w-10 h-8 p-0"
@@ -602,7 +537,6 @@ const getVisiblePages = (): (number | string)[] => {
                                             </template>
                                         </div>
 
-                                        <!-- Next Button -->
                                         <Button 
                                             @click="goToNextPage"
                                             :disabled="currentPage >= salesData.pagination.last_page || loading"
@@ -615,8 +549,8 @@ const getVisiblePages = (): (number | string)[] => {
                                         </Button>
                                     </div>
                                 </div>
-                            </CardContent>
-                        </Card>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
