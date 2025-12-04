@@ -37,11 +37,10 @@ class SaleController extends Controller
             ->orderBy('product_name')
             ->get();
 
-        $customers = CustomerResource::collection(
-            Customer::ownedBy()
-                ->orderBy('name')
-                ->get()
-        )->resolve();
+        $customers = Customer::ownedBy()
+            ->select(['id', 'name'])
+            ->orderBy('name')
+            ->get();
 
         return Inertia::render('sales/Index', [
             'products' => $products,
@@ -63,7 +62,16 @@ class SaleController extends Controller
         ]);
     }
 
-    public function store(StoreSaleRequest $request): Response
+    public function getCustomerBalance(Customer $customer)
+    {
+        $this->authorize('view', $customer);
+
+        return response()->json([
+            'balance' => $customer->running_utang_balance,
+        ]);
+    }
+
+    public function store(StoreSaleRequest $request)
     {
         $this->authorize('createForCustomer', [Sale::class, $request->validated('customer_id')]);
 
@@ -155,29 +163,18 @@ class SaleController extends Controller
             // Prepare response data using the resource
             $saleData = (new SaleResource($sale))->resolve();
 
-            return Inertia::render('sales/Index', [
-                'products' => Product::availableForSale()->with(['unit'])->orderBy('product_name')->get(),
-                'customers' => CustomerResource::collection(
-                    Customer::ownedBy()
-                        ->orderBy('name')
-                        ->get()
-                )->resolve(),
+            return response()->json([
                 'sale' => $saleData,
+                'message' => 'Sale completed successfully',
             ]);
 
         } catch (\Exception $e) {
             DB::rollback();
             Log::error('Sale creation failed: '.$e->getMessage());
 
-            return Inertia::render('sales/Index', [
-                'products' => Product::availableForSale()->with(['unit'])->orderBy('product_name')->get(),
-                'customers' => CustomerResource::collection(
-                    Customer::ownedBy()
-                        ->orderBy('name')
-                        ->get()
-                )->resolve(),
-                'error' => 'Failed to process the sale. Please try again.',
-            ]);
+            return response()->json([
+                'message' => 'Failed to process the sale. Please try again.',
+            ], 500);
         }
     }
 }

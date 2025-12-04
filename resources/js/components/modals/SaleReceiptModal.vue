@@ -25,6 +25,7 @@ interface SaleResponse {
     amount_tendered?: number;
     change_amount?: number;
     balance_payment?: number;
+    deduct_from_balance?: number;
     original_customer_balance?: number;
     new_customer_balance?: number;
     payment_type: string;
@@ -207,6 +208,17 @@ const handleClose = () => {
                                         >{{
                                             formatCurrency(saleData.amount_tendered)
                                         }}</span
+                                    >
+                                </div>
+                                <div
+                                    v-if="saleData.deduct_from_balance && saleData.deduct_from_balance > 0"
+                                    class="flex justify-between"
+                                >
+                                    <span class="text-muted-foreground"
+                                        >Deduct to Balance:</span
+                                    >
+                                    <span
+                                        >{{ formatCurrency(saleData.deduct_from_balance) }}</span
                                     >
                                 </div>
                                 <div

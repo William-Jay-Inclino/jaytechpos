@@ -2,6 +2,7 @@
 import { Head, router } from '@inertiajs/vue3';
 import { X, Search, UserPlus, Plus, Minus} from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import axios from 'axios';
 
 // Layout & Components
 import SaleReceiptModal from '@/components/modals/SaleReceiptModal.vue';
@@ -13,7 +14,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input, InputCurrency } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-
+// Utils
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
 // Types
 import type { BreadcrumbItem } from '@/types';
@@ -23,14 +25,12 @@ import { formatCurrency } from '@/utils/currency';
 const props = defineProps<{
     products: Product[];
     customers: Customer[];
-    sale?: SaleResponse;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'New Sale', href: '/sales' },
 ];
 
-// Types for sale response
 interface SaleResponse {
     id: number;
     invoice_number: string;
@@ -68,7 +68,6 @@ const paidAmount = ref(0);
 const amountTendered = ref(0);
 const payTowardsBalance = ref(false);
 const deductFromBalance = ref(0);
-// Numeric view of deductFromBalance to handle InputCurrency emitting strings
 const numericDeductFromBalance = computed((): number => {
     const v = deductFromBalance.value as unknown as string | number
     const n = typeof v === 'number' ? v : parseFloat(String(v || '0'))
@@ -77,16 +76,12 @@ const numericDeductFromBalance = computed((): number => {
 const showSuccessModal = ref(false);
 const saleData = ref<SaleResponse | null>(null);
 const isProcessing = ref(false);
-
-// Customer search state
+const customerBalance = ref<number>(0);
+const isLoadingBalance = ref(false);
 const customerSearch = ref('');
 const showCustomerDropdown = ref(false);
-
-// Product search state
 const productSearch = ref('');
 const showProductDropdown = ref(false);
-
-// Transaction date and time
 const transactionDate = ref(new Date().toISOString().split('T')[0]);
 const transactionTime = ref(
     new Date().toLocaleTimeString('en-US', { 
@@ -137,7 +132,6 @@ function calculateItemTotal(item: CartItem): number {
     return Number(item.unit_price) * item.quantity;
 }
 
-// Computed Properties
 const cartTotalAmount = computed((): number => {
     return cartItems.value.reduce(
         (sum: number, item: CartItem) => sum + calculateItemTotal(item),
@@ -157,13 +151,16 @@ const changeAmount = computed((): number => {
     return Math.max(0, amountTendered.value - cartTotalAmount.value);
 });
 
-const selectedCustomer = computed((): Customer | null => {
+const selectedCustomer = computed((): (Customer & { running_utang_balance: number }) | null => {
     if (selectedCustomerId.value === '0') return null;
-    return (
-        props.customers.find(
-            (customer) => customer.id.toString() === selectedCustomerId.value,
-        ) || null
+    const customer = props.customers.find(
+        (c) => c.id.toString() === selectedCustomerId.value,
     );
+    if (!customer) return null;
+    return {
+        ...customer,
+        running_utang_balance: customerBalance.value,
+    };
 });
 
 const filteredCustomers = computed(() => {
@@ -182,13 +179,7 @@ const filteredProducts = computed(() => {
 
 const selectedCustomerName = computed(() => {
     if (selectedCustomerId.value === '0') return '---';
-    const customer = props.customers.find(c => c.id.toString() === selectedCustomerId.value);
-    return customer ? `${customer.name}${customer.mobile_number ? ` (${customer.mobile_number})` : ''}` : '';
-});
-
-// Customer data for form display - just use current customer since form is reset after checkout
-const displayCustomer = computed((): Customer | null => {
-    return selectedCustomer.value;
+    return selectedCustomer.value?.name || '';
 });
 
 const isCheckoutValid = computed((): boolean => {
@@ -201,7 +192,7 @@ const isCheckoutValid = computed((): boolean => {
 
         if (payTowardsBalance.value) {
             const maxDeductible = Math.min(
-                selectedCustomer.value?.running_utang_balance || 0,
+                customerBalance.value,
                 amountTendered.value - cartTotalAmount.value,
             );
             return (
@@ -214,22 +205,17 @@ const isCheckoutValid = computed((): boolean => {
 
         return hasItems && hasEnoughMoney;
     } else if (paymentMethod.value === 'utang') {
-        // For utang (credit) payments, ensure paidAmount is not negative and
-        // does not exceed the cart total. Partial payments are allowed.
         return (
-                hasItems &&
-                selectedCustomerId.value !== '0' &&
-                paidAmount.value >= 0 &&
-                // For utang payments, the paid amount must be strictly less than the total.
-                // If the user intends to pay the full amount, they should use Cash.
-                paidAmount.value < cartTotalAmount.value
-            );
+            hasItems &&
+            selectedCustomerId.value !== '0' &&
+            paidAmount.value >= 0 &&
+            paidAmount.value < cartTotalAmount.value
+        );
     }
 
     return false;
 });
 
-// Short helper text explaining why checkout is disabled. Keeps messages brief.
 const checkoutDisabledReason = computed<string | null>(() => {
     const hasItems = cartItems.value.length > 0;
     if (!hasItems) return 'Add items to cart.';
@@ -241,7 +227,7 @@ const checkoutDisabledReason = computed<string | null>(() => {
         if (!hasEnoughMoney) return 'Amount tendered is less than total.';
         if (payTowardsBalance.value && !hasValidCustomer) return 'Select a customer to use change for balance.';
 
-        const maxDeductible = Math.min(selectedCustomer.value?.running_utang_balance || 0, Math.max(0, amountTendered.value - cartTotalAmount.value));
+        const maxDeductible = Math.min(customerBalance.value, Math.max(0, amountTendered.value - cartTotalAmount.value));
         if (payTowardsBalance.value && deductFromBalance.value > maxDeductible) return 'Deduction exceeds available change or customer balance.';
 
         return null;
@@ -257,12 +243,34 @@ const checkoutDisabledReason = computed<string | null>(() => {
     return null;
 });
 
+async function fetchCustomerBalance(customerId: number): Promise<void> {
+    if (!customerId) {
+        customerBalance.value = 0;
+        return;
+    }
 
-// Functions to handle selection
+    isLoadingBalance.value = true;
+    try {
+        const response = await axios.get(`/api/customers/${customerId}/balance`);
+        customerBalance.value = response.data.balance;
+    } catch (error) {
+        customerBalance.value = 0;
+    } finally {
+        isLoadingBalance.value = false;
+    }
+}
+
 function selectCustomer(customerId: string) {
     selectedCustomerId.value = customerId;
     showCustomerDropdown.value = false;
     customerSearch.value = '';
+    
+    // Fetch up-to-date balance when customer is selected
+    if (customerId !== '0') {
+        fetchCustomerBalance(parseInt(customerId));
+    } else {
+        customerBalance.value = 0;
+    }
 }
 
 function selectProduct(product: Product) {
@@ -271,8 +279,7 @@ function selectProduct(product: Product) {
     productSearch.value = '';
 }
 
-// Event Handlers
-function handleCheckout(): void {
+async function handleCheckout(): Promise<void> {
     if (!isCheckoutValid.value || isProcessing.value) return;
 
     isProcessing.value = true;
@@ -302,21 +309,18 @@ function handleCheckout(): void {
             : 0,
     };
 
-    console.log('Processing checkout...', checkoutData);
-
-    router.post('/sales', checkoutData, {
-        onSuccess: () => {
-            console.log('✅ Sale completed successfully!');
-            resetFormData();
-        },
-        onError: (errors) => {
-            console.error('❌ Checkout failed:', errors);
-            isProcessing.value = false;
-        },
-        onFinish: () => {
-            isProcessing.value = false;
-        },
-    });
+    try {
+        const response = await axios.post('/sales', checkoutData);
+        saleData.value = response.data.sale;
+        showSuccessModal.value = true;
+        showSuccessToast('Sale completed successfully!');
+        resetFormData();
+    } catch (error: any) {
+        const errorMessage = error.response?.data?.message || 'Failed to process the sale. Please try again.';
+        showErrorToast(errorMessage);
+    } finally {
+        isProcessing.value = false;
+    }
 }
 
 function resetFormData(): void {
@@ -327,6 +331,7 @@ function resetFormData(): void {
     amountTendered.value = 0;
     payTowardsBalance.value = false;
     deductFromBalance.value = 0;
+    customerBalance.value = 0;
     customerSearch.value = '';
     showCustomerDropdown.value = false;
     productSearch.value = '';
@@ -361,7 +366,6 @@ function handleKeyboardShortcuts(event: KeyboardEvent): void {
     }
 }
 
-// Handle click outside to close dropdowns
 function handleClickOutside(event: MouseEvent) {
     const customerDropdown = document.querySelector('.customer-dropdown');
     const productDropdown = document.querySelector('.product-dropdown');
@@ -375,7 +379,6 @@ function handleClickOutside(event: MouseEvent) {
     }
 }
 
-// Add keyboard event listener when component mounts
 onMounted(() => {
     document.addEventListener('keydown', handleKeyboardShortcuts);
     document.addEventListener('click', handleClickOutside);
@@ -386,36 +389,18 @@ onUnmounted(() => {
     document.removeEventListener('click', handleClickOutside);
 });
 
-// Watch for sale prop changes to show success modal
-watch(
-    () => props.sale,
-    (newSale: SaleResponse | undefined) => {
-        if (newSale) {
-            console.log('✅ Sale completed successfully!', newSale);
-            saleData.value = newSale;
-            showSuccessModal.value = true;
-            isProcessing.value = false;
-        }
-    },
-    { immediate: true },
-);
-
 // Watch for checkbox changes to set default deduction amount
 watch(payTowardsBalance, (isChecked: boolean) => {
-    console.log('payTowardsBalance changed:', isChecked);
     if (isChecked) {
         // Set default to available change amount, but not more than running balance
         const availableChange = Math.max(
             0,
             amountTendered.value - cartTotalAmount.value,
         );
-        const maxDeductible =
-            selectedCustomer.value?.running_utang_balance || 0;
+        const maxDeductible = customerBalance.value;
         deductFromBalance.value = Math.min(availableChange, maxDeductible);
-        console.log('Setting deductFromBalance to:', deductFromBalance.value);
     } else {
         deductFromBalance.value = 0;
-        console.log('Reset deductFromBalance to 0');
     }
 });
 
@@ -426,8 +411,7 @@ watch(amountTendered, () => {
             0,
             amountTendered.value - cartTotalAmount.value,
         );
-        const maxDeductible =
-            selectedCustomer.value?.running_utang_balance || 0;
+        const maxDeductible = customerBalance.value;
         // Only update if current deduction is more than what's available
         if (
             deductFromBalance.value > Math.min(availableChange, maxDeductible)
@@ -437,9 +421,6 @@ watch(amountTendered, () => {
     }
 });
 
-// NOTE: Do NOT clamp `paidAmount` in code. We prefer to keep the user's input intact
-// and rely on validation to disable checkout. The UI will show helper text when
-// the entered paid amount is invalid (e.g., greater than the cart total).
 </script>
 
 <template>
@@ -532,18 +513,6 @@ watch(amountTendered, () => {
                                                     />
                                                 </div>
                                                 <div class="max-h-[52vh] overflow-auto">
-                                                    <!-- Walk-in Customer Option -->
-                                                    <!-- <div
-                                                        @click="selectCustomer('0')"
-                                                        class="relative flex cursor-default select-none items-center rounded-sm px-2 py-2.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground cursor-pointer"
-                                                    >
-                                                        <div class="flex flex-col">
-                                                            <div class="font-medium">Walk-in Customer</div>
-                                                            <div class="text-xs text-gray-500 dark:text-gray-400">
-                                                                No customer information required
-                                                            </div>
-                                                        </div>
-                                                    </div> -->
                                                     
                                                     <!-- Customer Options -->
                                                     <div
@@ -554,18 +523,6 @@ watch(amountTendered, () => {
                                                     >
                                                         <div class="flex flex-col">
                                                             <div class="font-medium">{{ customer.name }}</div>
-                                                            <!-- <div 
-                                                                v-if="customer.mobile_number"
-                                                                class="text-xs text-gray-500 dark:text-gray-400"
-                                                            >
-                                                                {{ customer.mobile_number }}
-                                                            </div> -->
-                                                            <div
-                                                                v-if="customer.running_utang_balance && customer.running_utang_balance > 0"
-                                                                class="text-xs text-red-600 dark:text-red-400 font-medium"
-                                                            >
-                                                                Balance: {{ formatCurrency(customer.running_utang_balance) }}
-                                                            </div>
                                                         </div>
                                                     </div>
                                                     <div
@@ -591,23 +548,15 @@ watch(amountTendered, () => {
 
                                     <!-- Customer Balance Display -->
                                     <div
-                                        v-if="
-                                            displayCustomer &&
-                                            displayCustomer.running_utang_balance >
-                                                0
-                                        "
+                                        v-if="selectedCustomer && selectedCustomer.running_utang_balance > 0"
                                         class="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-900/20"
                                     >
-                                        <div
-                                            class="flex items-center justify-between"
-                                        >
-                                            <span
-                                                class="text-sm font-medium text-amber-800 dark:text-amber-200"
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-sm font-medium text-amber-800 dark:text-amber-200"
                                                 >Outstanding Balance:</span
                                             >
-                                            <span
-                                                class="text-lg font-bold text-amber-900 dark:text-amber-100"
-                                                >{{ formatCurrency(displayCustomer.running_utang_balance) }}</span
+                                            <span class="text-lg font-bold text-amber-900 dark:text-amber-100"
+                                                >{{ formatCurrency(selectedCustomer.running_utang_balance) }}</span
                                             >
                                         </div>
                                     </div>
@@ -950,15 +899,6 @@ watch(amountTendered, () => {
                                                 <div
                                                     class="rounded-lg border border-teal-200 bg-teal-50 p-4 dark:border-teal-800 dark:bg-teal-900/20"
                                                 >
-                                                    <!-- <Input
-                                                        id="amountTendered"
-                                                        v-model.number="amountTendered"
-                                                        type="number"
-                                                        min="0"
-                                                        step="0.01"
-                                                        placeholder="0.00"
-                                                        class="border-0 bg-transparent p-0 text-right text-2xl font-bold text-teal-700 placeholder:text-teal-400 focus:ring-0 dark:text-teal-400 dark:placeholder:text-teal-500"
-                                                    /> -->
                                                     <InputCurrency
                                                         id="amountTendered"
                                                         v-model="amountTendered"
@@ -996,11 +936,7 @@ watch(amountTendered, () => {
 
                                         <!-- Pay towards balance checkbox (only show if customer has running balance) -->
                                         <div
-                                            v-if="
-                                                selectedCustomer &&
-                                                selectedCustomer.running_utang_balance >
-                                                    0
-                                            "
+                                            v-if="selectedCustomer && selectedCustomer.running_utang_balance > 0"
                                             class="flex items-center space-x-3 rounded-lg bg-blue-50 border border-blue-200 p-4 dark:bg-blue-900/20 dark:border-blue-800"
                                         >
                                             <Checkbox
@@ -1138,15 +1074,6 @@ watch(amountTendered, () => {
                                                         You entered the full amount while using Utang (credit). If you're paying the full amount, please switch the payment type to Cash.
                                                     </p>
                                                 </div>
-                                                <!-- <Input
-                                                    id="paidAmount"
-                                                    v-model.number="paidAmount"
-                                                    type="number"
-                                                    min="0"
-                                                    step="0.01"
-                                                    placeholder="0.00"
-                                                    class="h-12 border-2 text-right text-lg font-semibold focus:ring-2 focus:ring-blue-500"
-                                                /> -->
                                                 
                                             </div>
                                         </div>
