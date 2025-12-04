@@ -274,7 +274,7 @@ const clearFilters = () => {
                                     variant="outline"
                                     size="sm"
                                     :disabled="activities.meta.current_page === 1"
-                                    @click="router.visit(`/admin/activity-logs?page=${activities.meta.current_page - 1}`)"
+                                    @click="router.get('/admin/activity-logs', { page: activities.meta.current_page - 1, search: searchQuery || undefined, start_date: startDate || undefined, end_date: endDate || undefined }, { preserveState: true, preserveScroll: true })"
                                 >
                                     Previous
                                 </Button>
@@ -282,7 +282,7 @@ const clearFilters = () => {
                                     variant="outline"
                                     size="sm"
                                     :disabled="activities.meta.current_page === activities.meta.last_page"
-                                    @click="router.visit(`/admin/activity-logs?page=${activities.meta.current_page + 1}`)"
+                                    @click="router.get('/admin/activity-logs', { page: activities.meta.current_page + 1, search: searchQuery || undefined, start_date: startDate || undefined, end_date: endDate || undefined }, { preserveState: true, preserveScroll: true })"
                                 >
                                     Next
                                 </Button>

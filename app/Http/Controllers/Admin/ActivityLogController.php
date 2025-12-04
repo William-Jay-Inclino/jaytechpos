@@ -87,7 +87,7 @@ class ActivityLogController extends Controller
         ]);
     }
 
-    public function bulkDelete(BulkDeleteActivityLogsRequest $request): RedirectResponse
+    public function bulkDelete(BulkDeleteActivityLogsRequest $request): JsonResponse
     {
         $validated = $request->validated();
 
@@ -98,6 +98,9 @@ class ActivityLogController extends Controller
             ])
             ->delete();
 
-        return redirect()->back()->with('success', "Successfully deleted {$count} activity log(s).");
+        return response()->json([
+            'success' => true,
+            'msg' => "Successfully deleted {$count} activity log(s).",
+        ]);
     }
 }
