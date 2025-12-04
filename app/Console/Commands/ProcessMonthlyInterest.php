@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Customer;
 use App\Services\CustomerService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class ProcessMonthlyInterest extends Command
 {
@@ -24,9 +25,11 @@ class ProcessMonthlyInterest extends Command
 
     public function handle(CustomerService $service): int
     {
+        Log::info('Monthly interest processing command started');
         $this->info('Starting monthly interest processing...');
 
         $totalCustomers = Customer::where('has_utang', true)->count();
+        Log::info("Total customers with utang: {$totalCustomers}");
 
         $created = $service->processMonthlyInterest();
 
@@ -35,6 +38,8 @@ class ProcessMonthlyInterest extends Command
         $this->info("Total customers considered: {$totalCustomers}");
         $this->info("Interest transactions created: {$processed}");
         $this->info('A summary activity log has been written to the activity log.');
+
+        Log::info("Monthly interest processing completed. Transactions created: {$processed}");
 
         return 0;
     }

@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Customer;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class CheckMonthlyInterest extends Command
 {
@@ -23,7 +24,10 @@ class CheckMonthlyInterest extends Command
 
     public function handle(): int
     {
+        Log::info('Monthly interest check command started');
+
         $customers = Customer::where('has_utang', true)->get();
+        Log::info("Total customers with utang: {$customers->count()}");
 
         $needsProcessing = $customers->filter(function ($customer) {
             $alreadyApplied = $customer->customerTransactions()
@@ -45,11 +49,13 @@ class CheckMonthlyInterest extends Command
         $count = $needsProcessing->count();
 
         if ($count > 0) {
+            Log::info("Monthly interest check: {$count} customers need processing");
             $this->info("{$count} customers need monthly interest processing this month.");
 
             return 0;
         }
 
+        Log::info('Monthly interest check: No customers need processing');
         $this->info('No customers require monthly interest processing this month.');
 
         return 0;
