@@ -1,15 +1,9 @@
 <script setup lang="ts">
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
 import { Sale, CustomerTransaction } from '@/types/pos';
 import { formatPhilippinePeso, formatManilaDateTime } from '@/utils/timezone';
 import { computed } from 'vue';
-
+import { X } from 'lucide-vue-next';
+import { Button } from '@/components/ui/button';
 
 const props = defineProps<{
     open: boolean;
@@ -21,10 +15,9 @@ const emit = defineEmits<{
     'update:open': [value: boolean];
 }>();
 
-const isOpen = computed({
-    get: () => props.open,
-    set: (value) => emit('update:open', value),
-});
+const handleClose = () => {
+    emit('update:open', false);
+};
 
 const formatAmountLocal = (amount: number | string | null | undefined) => {
     if (amount === null || amount === undefined || amount === '') return '';
@@ -61,128 +54,137 @@ const changeAmountComputed = computed<number | null>(() => {
 </script>
 
 <template>
-    <Dialog v-model:open="isOpen">
-        <DialogContent class="max-h-[85vh] max-w-lg overflow-y-auto">
-                <DialogHeader class="pb-2 text-center">
-                <DialogTitle class="text-xl">Receipt #{{ sale?.invoice_number || 'N/A' }}</DialogTitle>
-                <DialogDescription class="text-sm text-muted-foreground">
-                    {{ formatDate }}
-                </DialogDescription>
-            </DialogHeader>
-
-            <div v-if="sale" class="space-y-4">
-                <!-- Items Purchased -->
-                <div
-                    v-if="sale.items && sale.items.length > 0"
-                    class="space-y-3"
+    <!-- Simple Modal Overlay -->
+    <div
+        v-if="open"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+        @click.self="handleClose"
+    >
+        <div
+            class="relative w-full max-w-lg max-h-[85vh] flex flex-col bg-white dark:bg-gray-800 rounded-lg shadow-xl overflow-hidden"
+        >
+            <!-- Header -->
+            <div class="flex-shrink-0 border-b border-gray-200 dark:border-gray-700 p-6 pb-4 text-center">
+                <button
+                    @click="handleClose"
+                    class="absolute right-4 top-4 rounded-sm opacity-70 hover:opacity-100 transition-opacity"
                 >
-                    <h4
-                        class="text-sm font-medium tracking-wide text-muted-foreground uppercase"
-                    >
-                        Items Sold
-                    </h4>
-                    <div class="space-y-2">
-                        <div
-                            v-for="item in sale.items"
-                            :key="item.id"
-                            class="flex items-center justify-between border-b border-border/30 py-2 last:border-0"
-                        >
-                            <div class="flex-1">
+                    <X class="h-4 w-4" />
+                </button>
+                <h2 class="text-xl font-semibold">Receipt #{{ sale?.invoice_number || 'N/A' }}</h2>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ formatDate }}</p>
+            </div>
+
+            <!-- Content -->
+            <div class="flex-1 overflow-y-auto p-6">
+                <div v-if="sale" class="space-y-4">
+                    <!-- Items Purchased -->
+                    <div v-if="sale.items && sale.items.length > 0" class="space-y-3">
+                        <h4 class="text-sm font-medium tracking-wide text-gray-600 dark:text-gray-400 uppercase">
+                            Items Sold
+                        </h4>
+                        <div class="space-y-2">
+                            <div
+                                v-for="item in sale.items"
+                                :key="item.id"
+                                class="flex items-center justify-between py-2"
+                            >
+                                <div class="flex-1">
+                                    <div class="text-sm font-medium">
+                                        {{ item.product_name }}
+                                    </div>
+                                    <div class="text-xs text-gray-600 dark:text-gray-400">
+                                        {{ item.quantity }} × {{ formatPhilippinePeso(item.unit_price) }}
+                                    </div>
+                                </div>
                                 <div class="text-sm font-medium">
-                                    {{ item.product_name }}
-                                </div>
-                                <div class="text-xs text-muted-foreground">
-                                    {{ item.quantity }} ×
-                                    {{ formatPhilippinePeso(item.unit_price) }}
+                                    {{ formatPhilippinePeso(item.total_amount) }}
                                 </div>
                             </div>
-                            <div class="text-sm font-medium">
-                                {{ formatPhilippinePeso(item.total_amount) }}
-                            </div>
-                        </div>
-                        
-                        <!-- Total Amount Summary Row -->
-                        <div class="flex items-center justify-between border-t-2 border-border pt-3 mt-3">
-                            <div class="text-base font-semibold">Total Amount</div>
-                            <div class="text-lg font-bold">
-                                {{ formatPhilippinePeso(sale.total_amount || 0) }}
+                            
+                            <!-- Total Amount Summary Row -->
+                            <div class="flex items-center justify-between border-t-2 border-gray-300 dark:border-gray-600 pt-3 mt-2">
+                                <div class="text-sm font-bold">Total Amount</div>
+                                <div class="text-sm font-bold">
+                                    {{ formatPhilippinePeso(sale.total_amount || 0) }}
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Payment Details Section -->
-                <div class="space-y-3 rounded-lg bg-muted/20 p-4">
-                    <h4
-                        class="text-sm font-medium tracking-wide text-muted-foreground uppercase"
-                    >
-                        Payment Details
-                    </h4>
+                    <!-- Payment Details Section -->
+                    <div class="space-y-2 rounded-lg bg-gray-100 dark:bg-gray-700 p-3">
+                        <h4 class="text-sm font-medium tracking-wide text-gray-600 dark:text-gray-400 uppercase">
+                            Payment Details
+                        </h4>
 
-                    <!-- Cash Payment Details -->
-                    <div v-if="sale.payment_type === 'cash'" class="space-y-2 text-sm">
-                        <div class="flex justify-between">
-                            <span class="text-muted-foreground"
-                                >Payment Method:</span
-                            >
-                            <span class="font-medium">💵 Cash</span>
+                        <!-- Cash Payment Details -->
+                        <div v-if="sale.payment_type === 'cash'" class="space-y-1 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600 dark:text-gray-400">Payment Method:</span>
+                                <span class="font-medium">💵 Cash</span>
+                            </div>
+                            <div v-if="sale.amount_tendered" class="flex justify-between">
+                                <span class="text-gray-600 dark:text-gray-400">Amount Tendered:</span>
+                                <span>{{ formatPhilippinePeso(sale.amount_tendered) }}</span>
+                            </div>
+                            <div v-if="sale.deduct_from_balance && sale.deduct_from_balance > 0" class="flex justify-between">
+                                <span class="text-gray-600 dark:text-gray-400">Deduct to Balance:</span>
+                                <span>{{ formatPhilippinePeso(sale.deduct_from_balance) }}</span>
+                            </div>
+                            <div v-if="sale.payment_type === 'cash' && changeAmountComputed !== null" class="flex justify-between">
+                                <span class="text-gray-600 dark:text-gray-400">Change:</span>
+                                <span>{{ formatPhilippinePeso(changeAmountComputed || 0) }}</span>
+                            </div>
                         </div>
-                        <div v-if="sale.amount_tendered" class="flex justify-between">
-                            <span class="text-muted-foreground">Amount Tendered:</span>
-                            <span class="font-medium">{{ formatPhilippinePeso(sale.amount_tendered) }}</span>
-                        </div>
-                        <div v-if="sale.deduct_from_balance && sale.deduct_from_balance > 0" class="flex justify-between">
-                            <span class="text-muted-foreground">Deduct to Balance:</span>
-                            <span class="font-medium">{{ formatPhilippinePeso(sale.deduct_from_balance) }}</span>
-                        </div>
-                        <div v-if="sale.payment_type === 'cash' && changeAmountComputed !== null" class="flex justify-between">
-                            <span class="text-muted-foreground">Change:</span>
-                            <span class="font-medium">{{ formatPhilippinePeso(changeAmountComputed || 0) }}</span>
+
+                        <!-- Utang Payment Details -->
+                        <div v-else-if="sale.payment_type === 'utang'" class="space-y-1 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600 dark:text-gray-400">Payment Method:</span>
+                                <span class="font-medium">📝 Credit (Utang)</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600 dark:text-gray-400">Amount Paid:</span>
+                                <span>{{ formatPhilippinePeso(sale.paid_amount || 0) }}</span>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Utang Payment Details -->
-                    <div v-else-if="sale.payment_type === 'utang'" class="space-y-2 text-sm">
-                        <div class="flex justify-between">
-                            <span class="text-muted-foreground"
-                                >Payment Method:</span
-                            >
-                            <span class="font-medium">📝 Credit (Utang)</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-muted-foreground">Amount Paid:</span>
-                            <span class="font-medium">{{ formatPhilippinePeso(sale.paid_amount || 0) }}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Customer Balance Summary (only for transactions with customers) -->
-                <div v-if="(props.transaction as any)?.previous_balance !== undefined && (props.transaction as any)?.new_balance !== undefined" class="space-y-3 rounded-lg bg-muted/20 p-4">
-                    <h4
-                        class="text-sm font-medium tracking-wide text-muted-foreground uppercase"
-                    >
-                        Customer Balance
-                    </h4>
-                    <div class="space-y-2 text-sm">
-                        <div class="flex justify-between">
-                            <span class="text-muted-foreground">Previous:</span>
-                            <span class="font-medium">{{ formatAmountLocal((props.transaction as any).previous_balance ?? 0) }}</span>
-                        </div>
-                        <div
-                            class="flex justify-between border-t border-border/50 pt-2 font-semibold"
-                        >
-                            <span>New Balance:</span>
-                            <span class="text-destructive">{{ formatAmountLocal((props.transaction as any).new_balance ?? 0) }}</span>
+                    <!-- Customer Balance Summary -->
+                    <div v-if="(props.transaction as any)?.previous_balance !== undefined && (props.transaction as any)?.new_balance !== undefined" class="space-y-2 rounded-lg bg-gray-100 dark:bg-gray-700 p-3">
+                        <h4 class="text-sm font-medium tracking-wide text-gray-600 dark:text-gray-400 uppercase">
+                            Customer Balance
+                        </h4>
+                        <div class="space-y-1 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600 dark:text-gray-400">Previous:</span>
+                                <span>{{ formatAmountLocal((props.transaction as any).previous_balance ?? 0) }}</span>
+                            </div>
+                            <div class="flex justify-between border-t border-gray-200 dark:border-gray-600 pt-1 font-medium">
+                                <span>New Balance:</span>
+                                <span class="text-red-600 dark:text-red-400">{{ formatAmountLocal((props.transaction as any).new_balance ?? 0) }}</span>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Notes (if any) -->
-                <div v-if="sale?.notes && sale.notes.trim()" class="rounded-lg bg-blue-50 p-3 dark:bg-blue-950/20">
-                    <h4 class="mb-1 text-sm font-medium text-blue-800 dark:text-blue-200">Notes:</h4>
-                    <p class="text-sm text-blue-700 dark:text-blue-300">{{ sale.notes }}</p>
+                    <!-- Notes -->
+                    <div v-if="sale?.notes && sale.notes.trim()" class="rounded-lg bg-blue-50 dark:bg-blue-900/20 p-3">
+                        <h4 class="mb-1 text-sm font-medium text-blue-800 dark:text-blue-200">Notes:</h4>
+                        <p class="text-sm text-blue-700 dark:text-blue-300">{{ sale.notes }}</p>
+                    </div>
                 </div>
             </div>
-        </DialogContent>
-    </Dialog>
+
+            <!-- Footer -->
+            <div class="flex-shrink-0 border-t border-gray-200 dark:border-gray-700 p-4 flex justify-center">
+                <Button
+                    @click="handleClose"
+                    class="px-8"
+                >
+                    Close
+                </Button>
+            </div>
+        </div>
+    </div>
 </template>

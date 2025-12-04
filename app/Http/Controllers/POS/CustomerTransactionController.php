@@ -23,11 +23,10 @@ class CustomerTransactionController extends Controller
      */
     public function utangPayments(): Response
     {
-        $customers = CustomerResource::collection(
-            Customer::ownedBy()
-                ->orderBy('name')
-                ->get()
-        )->resolve();
+        $customers = Customer::ownedBy()
+            ->select(['id', 'name'])
+            ->orderBy('name')
+            ->get();
 
         return Inertia::render('utang-payments/Index', [
             'customers' => $customers,

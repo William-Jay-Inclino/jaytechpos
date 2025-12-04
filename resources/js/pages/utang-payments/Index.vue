@@ -14,7 +14,6 @@ import { Search, UserPlus } from 'lucide-vue-next';
 import CustomerTransactionHistory from '@/components/CustomerTransactionHistory.vue';
 import { Button } from '@/components/ui/button';
 import { Input, InputCurrency } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { formatCurrency } from '@/utils/currency';
 
@@ -40,6 +39,10 @@ const notes = ref<string>('');
 const customerSearch = ref('');
 const showCustomerDropdown = ref(false);
 
+// Customer balance loading state
+const isLoadingBalance = ref(false);
+const customerBalance = ref<number>(0);
+
 // Transaction history state
 const transactions = ref<CustomerTransaction[]>([]);
 const loadingTransactions = ref(false);
@@ -56,11 +59,14 @@ const form = useForm({
 // Computed properties
 const selectedCustomer = computed(() => {
     if (!selectedCustomerId.value) return null;
-    return (
-        props.customers.find(
-            (c) => c.id === parseInt(selectedCustomerId.value),
-        ) || null
+    const customer = props.customers.find(
+        (c) => c.id === parseInt(selectedCustomerId.value),
     );
+    if (!customer) return null;
+    return {
+        ...customer,
+        running_utang_balance: customerBalance.value,
+    };
 });
 
 const filteredCustomers = computed(() => {
@@ -99,11 +105,30 @@ const isFormValid = computed(() => {
         paymentAmount.value &&
         (typeof paymentAmount.value === 'number' ? paymentAmount.value > 0 : parseFloat(String(paymentAmount.value)) > 0) &&
         paymentDate.value &&
-        !paymentAmountError.value
+        !paymentAmountError.value &&
+        !isLoadingBalance.value
     );
 });
 
 // Methods
+const fetchCustomerBalance = async (customerId: number): Promise<void> => {
+    if (!customerId) {
+        customerBalance.value = 0;
+        return;
+    }
+
+    isLoadingBalance.value = true;
+    try {
+        const response = await axios.get(`/api/customers/${customerId}/balance`);
+        customerBalance.value = response.data.balance;
+    } catch (error) {
+        console.error('Error fetching customer balance:', error);
+        customerBalance.value = 0;
+    } finally {
+        isLoadingBalance.value = false;
+    }
+};
+
 const fetchCustomerTransactions = async (customerId: number) => {
     if (!customerId) {
         transactions.value = [];
@@ -135,6 +160,13 @@ function selectCustomer(customerId: string) {
     showCustomerDropdown.value = false;
     customerSearch.value = '';
     showTransactionHistory.value = false; // Hide transaction history when customer changes
+    
+    // Fetch up-to-date balance when customer is selected
+    if (customerId) {
+        fetchCustomerBalance(parseInt(customerId));
+    } else {
+        customerBalance.value = 0;
+    }
 }
 
 const resetForm = () => {
@@ -144,6 +176,8 @@ const resetForm = () => {
     notes.value = '';
     customerSearch.value = '';
     showCustomerDropdown.value = false;
+    customerBalance.value = 0;
+    isLoadingBalance.value = false;
     transactions.value = [];
     showTransactionHistory.value = false;
 };
@@ -238,12 +272,16 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
     }
     
     if (newCustomerId) {
-        // Only fetch if transaction history is being shown
+        // Fetch balance when customer changes
+        fetchCustomerBalance(parseInt(newCustomerId));
+        
+        // Only fetch transactions if transaction history is being shown
         if (showTransactionHistory.value) {
             fetchCustomerTransactions(parseInt(newCustomerId));
         }
     } else {
         transactions.value = [];
+        customerBalance.value = 0;
     }
 });
 </script>
@@ -269,12 +307,12 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                             <form @submit.prevent="handleSubmit" class="space-y-6">
                                 <!-- Customer Selection -->
                                 <div class="space-y-3">
-                                    <Label
+                                    <label
                                         for="customer_id"
                                         class="text-sm font-medium text-gray-700 dark:text-gray-300"
                                     >
-                                        Customer
-                                    </Label>
+                                        Customer <span class="text-red-500">*</span>
+                                    </label>
                                     <div class="relative customer-dropdown">
                                         <input
                                             type="hidden"
@@ -355,8 +393,25 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                         {{ form.errors.customer_id }}
                                     </div>
 
-                                    <!-- Customer Info Below Selection -->
-                                    <div v-if="selectedCustomer" class="space-y-2">
+                                    <!-- Customer Balance Display -->
+                                    <div v-if="selectedCustomer">
+                                        <div
+                                            class="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-900/20 mb-2"
+                                        >
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-sm font-medium text-amber-800 dark:text-amber-200"
+                                                    >Outstanding Balance:</span
+                                                >
+                                                <span v-if="isLoadingBalance" class="flex items-center gap-2 text-amber-700 dark:text-amber-300">
+                                                    <div class="h-4 w-4 animate-spin rounded-full border-2 border-amber-600 border-t-transparent dark:border-amber-400"></div>
+                                                    <span class="text-sm">Loading...</span>
+                                                </span>
+                                                <span v-else class="text-lg font-bold text-amber-900 dark:text-amber-100"
+                                                    >{{ formatCurrency(selectedCustomer.running_utang_balance) }}</span
+                                                >
+                                            </div>
+                                        </div>
+                                        
                                         <!-- Interest Rate and View Transaction History Button -->
                                         <div class="flex items-center justify-between">
                                             <span class="text-xs text-gray-500 dark:text-gray-400">
@@ -372,30 +427,18 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                                 📋 View History
                                             </Button>
                                         </div>
-                                        
-                                        <!-- Current Balance (Highlighted) -->
-                                        <div class="rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20">
-                                            <div class="flex items-center justify-between">
-                                                <span class="text-sm font-medium text-red-800 dark:text-red-200">
-                                                    Current Balance:
-                                                </span>
-                                                <span class="text-xl font-bold text-red-900 dark:text-red-100">
-                                                    {{ formatCurrency(selectedCustomer.running_utang_balance || 0) }}
-                                                </span>
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
 
                                 <!-- Payment Amount -->
                                 <div class="space-y-3">
                                     <div class="flex items-center justify-between">
-                                        <Label
-                                            for="payment_amount"
+                                        <label
+                                            for="payment-amount"
                                             class="text-sm font-medium text-gray-700 dark:text-gray-300"
                                         >
-                                            Payment Amount
-                                        </Label>
+                                            Payment Amount <span class="text-red-500">*</span>
+                                        </label>
                                     </div>
                                     <div class="relative">
                                         <InputCurrency
@@ -430,12 +473,12 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
 
                                 <!-- Payment Date -->
                                 <div class="space-y-3">
-                                    <Label
-                                        for="payment_date"
+                                    <label
+                                        for="payment-date"
                                         class="text-sm font-medium text-gray-700 dark:text-gray-300"
                                     >
-                                        Payment Date & Time
-                                    </Label>
+                                        Payment Date & Time <span class="text-red-500">*</span>
+                                    </label>
                                     <Input
                                         id="payment_date"
                                         name="payment_date"
@@ -453,12 +496,12 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
 
                                 <!-- Notes -->
                                 <div class="space-y-3">
-                                    <Label
+                                    <label
                                         for="notes"
                                         class="text-sm font-medium text-gray-700 dark:text-gray-300"
                                     >
                                         Notes  <span class="text-gray-400 dark:text-gray-400">(Optional)</span>
-                                    </Label>
+                                    </label>
                                     <Textarea
                                         id="notes"
                                         name="notes"
