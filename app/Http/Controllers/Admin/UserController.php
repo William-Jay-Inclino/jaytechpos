@@ -139,9 +139,9 @@ class UserController extends Controller
         $hasCustomers = $user->customers()->exists();
         $hasProducts = $user->products()->exists();
         $hasExpenses = $user->expenses()->exists();
-        $hasExpenseCategories = $user->expenseCategories()->exists();
+        // $hasExpenseCategories = $user->expenseCategories()->exists();
 
-        if ($hasCustomerTransactions || $hasSales || $hasCustomers || $hasProducts || $hasExpenses || $hasExpenseCategories) {
+        if ($hasCustomerTransactions || $hasSales || $hasCustomers || $hasProducts || $hasExpenses) {
             $associations = [];
             if ($hasCustomerTransactions) {
                 $associations[] = 'customer transactions';
