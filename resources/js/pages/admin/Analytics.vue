@@ -6,6 +6,8 @@ import { Trash2 } from 'lucide-vue-next'
 import { ref } from 'vue'
 import DeleteAnalyticsModal from '@/components/modals/DeleteAnalyticsModal.vue'
 import { showConfirmDelete, showSuccessAlert } from '@/lib/swal'
+import { showErrorToast } from '@/lib/toast'
+import axios from 'axios'
 
 interface PaginationMeta {
     current_page: number
@@ -19,33 +21,39 @@ interface PaginationMeta {
 interface SiteVisit {
     id: number
     session_id?: string
-    ip_address?: string | null
+    ip_address: string
     user_agent?: string | null
-    referer?: string | null
+    referer: string
     page_url?: string | null
+    page_display: string
     country?: string | null
     region?: string | null
     city?: string | null
+    location_formatted: string
     device_type?: string | null
     browser?: string | null
     os?: string | null
+    device_formatted: string
     is_bot?: boolean
     is_unique?: boolean
-    page_views?: number
+    flags_formatted: string
+    page_views: number
     visited_at: string
+    visited_at_formatted: string
 }
 
 interface DailyVisitStat {
     id: number
     date: string
+    date_formatted: string
     total_visits: number
     unique_visits: number
     page_views: number
-    top_page?: string | null
-    top_referer?: string | null
-    mobile_visits?: number
-    desktop_visits?: number
-    tablet_visits?: number
+    top_page: string
+    top_referer: string
+    mobile_visits: number
+    desktop_visits: number
+    tablet_visits: number
 }
 
 interface Props {
@@ -66,63 +74,76 @@ const props = defineProps<Props>()
 const showDailyStatsBulkDeleteModal = ref(false)
 const showSiteVisitsBulkDeleteModal = ref(false)
 
-const handleDeleteDailyStat = async (id: number) => {
+const handleDelete = async ({
+    id,
+    url,
+    title,
+    reloadKey,
+    successMessage,
+    errorMessage
+}: {
+    id: number
+    url: string
+    title: string
+    reloadKey: string
+    successMessage: string
+    errorMessage: string
+}) => {
     const result = await showConfirmDelete({
-        title: 'Delete Daily Visit Stat?',
+        title,
         text: 'This action cannot be undone.',
     })
 
     if (result.isConfirmed) {
-        router.delete(`/admin/analytics/daily-stats/${id}`, {
-            preserveScroll: true,
-            onSuccess: () => {
-                showSuccessAlert({
-                    text: 'Daily visit stat deleted successfully.'
-                })
+        try {
+            const res = await axios.delete(url)
+            const data = res?.data || {}
+
+            if (data.success) {
+                showSuccessAlert({ text: data.msg || successMessage })
+                router.reload({ only: [reloadKey] })
+            } else {
+                showErrorToast(data.msg || errorMessage)
             }
-        })
+        } catch (error: any) {
+            const message = error?.response?.data?.msg || error?.response?.data?.message || errorMessage
+            showErrorToast(message)
+        }
     }
 }
 
-const handleDeleteSiteVisit = async (id: number) => {
-    const result = await showConfirmDelete({
-        title: 'Delete Site Visit?',
-        text: 'This action cannot be undone.',
-    })
+const handleDeleteDailyStat = (id: number) => handleDelete({
+    id,
+    url: `/admin/analytics/daily-stats/${id}`,
+    title: 'Delete Daily Visit Stat?',
+    reloadKey: 'daily_visit_stats',
+    successMessage: 'Daily visit stat deleted successfully.',
+    errorMessage: 'Failed to delete daily visit stat'
+})
 
-    if (result.isConfirmed) {
-        router.delete(`/admin/analytics/site-visits/${id}`, {
-            preserveScroll: true,
-            onSuccess: () => {
-                showSuccessAlert({
-                    text: 'Site visit deleted successfully.'
-                })
-            }
-        })
-    }
-}
+const handleDeleteSiteVisit = (id: number) => handleDelete({
+    id,
+    url: `/admin/analytics/site-visits/${id}`,
+    title: 'Delete Site Visit?',
+    reloadKey: 'site_visits',
+    successMessage: 'Site visit deleted successfully.',
+    errorMessage: 'Failed to delete site visit'
+})
 
-function formatVisitDate(dateStr: string): string {
-    // Format as 'Nov 4, 1:30 PM'
+const formatDate = (dateStr: string, includeTime = false): string => {
     const date = new Date(dateStr)
     if (isNaN(date.getTime())) return dateStr
-    const options: Intl.DateTimeFormatOptions = {
-        month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true
-    }
-    let formatted = date.toLocaleString('en-US', options)
-    formatted = formatted.replace(/,\s(\d{1,2}:\d{2}\s[AP]M)/, ', $1')
-    return formatted
+    
+    const options: Intl.DateTimeFormatOptions = includeTime
+        ? { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }
+        : { month: 'short', day: 'numeric', year: 'numeric' }
+    
+    const formatted = date.toLocaleString('en-US', options)
+    return includeTime ? formatted.replace(/,\s(\d{1,2}:\d{2}\s[AP]M)/, ', $1') : formatted
 }
 
-function formatStatsDate(dateStr: string): string {
-    // Format as 'Nov 4, 2025'
-    const date = new Date(dateStr)
-    if (isNaN(date.getTime())) return dateStr
-    const options: Intl.DateTimeFormatOptions = {
-        month: 'short', day: 'numeric', year: 'numeric'
-    }
-    return date.toLocaleDateString('en-US', options)
-}
+const formatVisitDate = (dateStr: string) => formatDate(dateStr, true)
+const formatStatsDate = (dateStr: string) => formatDate(dateStr, false)
 
 function formatLocation(city: string | null | undefined, region: string | null | undefined, country: string | null | undefined): string {
     const parts: string[] = []
@@ -226,15 +247,15 @@ function extractSubdirectory(urlStr: string | null | undefined): string {
                                 </thead>
                                 <tbody class="bg-white dark:bg-gray-800">
                                         <tr v-for="stat in daily_visit_stats.data" :key="stat.id" class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ formatStatsDate(stat.date) }}</td>
-                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ stat.total_visits ?? '—' }}</td>
-                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ stat.unique_visits ?? '—' }}</td>
-                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ stat.page_views ?? '—' }}</td>
-                                            <td class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400" :title="stat.top_page ?? ''">{{ stat.top_page || '—' }}</td>
-                                            <td class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400" :title="stat.top_referer ?? ''">{{ stat.top_referer || '—' }}</td>
-                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ stat.mobile_visits ?? '—' }}</td>
-                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ stat.desktop_visits ?? '—' }}</td>
-                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ stat.tablet_visits ?? '—' }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ stat.date_formatted }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ stat.total_visits }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ stat.unique_visits }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ stat.page_views }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400" :title="stat.top_page">{{ stat.top_page }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400" :title="stat.top_referer">{{ stat.top_referer }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ stat.mobile_visits }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ stat.desktop_visits }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ stat.tablet_visits }}</td>
                                             <td class="px-3 py-2 text-sm">
                                                 <Button 
                                                     variant="ghost" 
@@ -255,13 +276,13 @@ function extractSubdirectory(urlStr: string | null | undefined): string {
                                 <div v-for="stat in daily_visit_stats.data" :key="stat.id" class="rounded-lg border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                                     <div class="flex items-start justify-between">
                                         <div>
-                                            <div class="text-sm font-medium text-gray-900 dark:text-white">{{ formatStatsDate(stat.date) }}</div>
-                                            <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">Total: <span class="text-gray-700 dark:text-gray-200">{{ stat.total_visits ?? '—' }}</span></div>
-                                            <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">Unique: <span class="text-gray-700 dark:text-gray-200">{{ stat.unique_visits ?? '—' }}</span></div>
+                                            <div class="text-sm font-medium text-gray-900 dark:text-white">{{ stat.date_formatted }}</div>
+                                            <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">Total: <span class="text-gray-700 dark:text-gray-200">{{ stat.total_visits }}</span></div>
+                                            <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">Unique: <span class="text-gray-700 dark:text-gray-200">{{ stat.unique_visits }}</span></div>
                                         </div>
                                         <div class="flex items-center gap-2">
                                             <div class="text-right text-sm text-gray-600 dark:text-gray-300">
-                                                <div class="font-semibold text-gray-900 dark:text-white">{{ stat.total_visits ?? '—' }}</div>
+                                                <div class="font-semibold text-gray-900 dark:text-white">{{ stat.total_visits }}</div>
                                                 <div class="text-xs">visits</div>
                                             </div>
                                             <Button 
@@ -275,9 +296,9 @@ function extractSubdirectory(urlStr: string | null | undefined): string {
                                         </div>
                                     </div>
                                     <div class="mt-3 grid grid-cols-3 gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                        <div class="text-center">Visits<br/><span class="font-semibold text-gray-900 dark:text-white">{{ stat.total_visits ?? '—' }}</span></div>
-                                        <div class="text-center">Page Views<br/><span class="font-semibold text-gray-900 dark:text-white">{{ stat.page_views ?? '—' }}</span></div>
-                                        <div class="text-center">Mobile<br/><span class="font-semibold text-gray-900 dark:text-white">{{ stat.mobile_visits ?? '—' }}</span></div>
+                                        <div class="text-center">Visits<br/><span class="font-semibold text-gray-900 dark:text-white">{{ stat.total_visits }}</span></div>
+                                        <div class="text-center">Page Views<br/><span class="font-semibold text-gray-900 dark:text-white">{{ stat.page_views }}</span></div>
+                                        <div class="text-center">Mobile<br/><span class="font-semibold text-gray-900 dark:text-white">{{ stat.mobile_visits }}</span></div>
                                     </div>
                                 </div>
                             </div>
@@ -355,17 +376,14 @@ function extractSubdirectory(urlStr: string | null | undefined): string {
                                 </thead>
                                 <tbody class="bg-white dark:bg-gray-800">
                                         <tr v-for="visit in site_visits.data" :key="visit.id" class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ formatVisitDate(visit.visited_at) }}</td>
-                                            <td class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400">{{ extractSubdirectory(visit.page_url) }}</td>
-                                            <td class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400">{{ formatLocation(visit.city, visit.region, visit.country) }}</td>
-                                            <td class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400">{{ visit.ip_address || '—' }}</td>
-                                            <td class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400">{{ formatDevice(visit.device_type, visit.browser, visit.os) }}</td>
-                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ visit.page_views ?? '—' }}</td>
-                                            <td class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400 truncate" :title="visit.referer ?? ''">{{ visit.referer || '—' }}</td>
-                                            <td class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400">
-                                                <span class="mr-2">{{ visit.is_bot ? 'Bot' : '' }}</span>
-                                                <span>{{ visit.is_unique ? 'Unique' : '' }}</span>
-                                            </td>
+                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ visit.visited_at_formatted }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400">{{ visit.page_display }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400">{{ visit.location_formatted }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400">{{ visit.ip_address }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400">{{ visit.device_formatted }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ visit.page_views }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400 truncate" :title="visit.referer">{{ visit.referer }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400">{{ visit.flags_formatted }}</td>
                                             <td class="px-3 py-2 text-sm">
                                                 <Button 
                                                     variant="ghost" 
@@ -387,16 +405,16 @@ function extractSubdirectory(urlStr: string | null | undefined): string {
                                     <div class="flex items-start justify-between">
                                         <div class="flex-1 min-w-0">
                                             <div class="flex items-center gap-3">
-                                                <div class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ extractSubdirectory(visit.page_url) || 'Unknown page' }}</div>
+                                                <div class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ visit.page_display }}</div>
                                             </div>
-                                            <div class="mt-1 text-xs text-gray-500 dark:text-gray-400 truncate">Location: {{ formatLocation(visit.city, visit.region, visit.country) }}</div>
-                                            <div class="mt-2 text-xs text-gray-600 dark:text-gray-300">Referer: <span class="text-gray-800 dark:text-gray-200">{{ visit.referer || '—' }}</span></div>
-                                            <div class="mt-2 text-xs text-gray-600 dark:text-gray-300">Flags: <span class="text-gray-800 dark:text-gray-200">{{ visit.is_bot ? 'Bot' : visit.is_unique ? 'Unique' : '—' }}</span></div>
+                                            <div class="mt-1 text-xs text-gray-500 dark:text-gray-400 truncate">Location: {{ visit.location_formatted }}</div>
+                                            <div class="mt-2 text-xs text-gray-600 dark:text-gray-300">Referer: <span class="text-gray-800 dark:text-gray-200">{{ visit.referer }}</span></div>
+                                            <div class="mt-2 text-xs text-gray-600 dark:text-gray-300">Flags: <span class="text-gray-800 dark:text-gray-200">{{ visit.flags_formatted }}</span></div>
                                         </div>
                                         <div class="ml-3 flex items-center gap-2">
                                             <div class="text-right text-sm">
-                                                <div class="font-semibold text-gray-900 dark:text-white">{{ visit.page_views ?? '—' }}</div>
-                                                <div class="text-xs text-gray-500 dark:text-gray-400">{{ formatVisitDate(visit.visited_at) }}</div>
+                                                <div class="font-semibold text-gray-900 dark:text-white">{{ visit.page_views }}</div>
+                                                <div class="text-xs text-gray-500 dark:text-gray-400">{{ visit.visited_at_formatted }}</div>
                                             </div>
                                             <Button 
                                                 variant="ghost" 
@@ -409,8 +427,8 @@ function extractSubdirectory(urlStr: string | null | undefined): string {
                                         </div>
                                     </div>
                                     <div class="mt-3 flex flex-wrap gap-2 text-xs text-gray-600 dark:text-gray-300">
-                                        <span class="inline-flex items-center gap-2 rounded-full bg-gray-100 px-2 py-1 dark:bg-gray-700">IP: {{ visit.ip_address || '—' }}</span>
-                                        <span class="inline-flex items-center gap-2 rounded-full bg-gray-100 px-2 py-1 dark:bg-gray-700">Device: {{ formatDevice(visit.device_type, visit.browser, visit.os) }}</span>
+                                        <span class="inline-flex items-center gap-2 rounded-full bg-gray-100 px-2 py-1 dark:bg-gray-700">IP: {{ visit.ip_address }}</span>
+                                        <span class="inline-flex items-center gap-2 rounded-full bg-gray-100 px-2 py-1 dark:bg-gray-700">Device: {{ visit.device_formatted }}</span>
                                     </div>
                                 </div>
                             </div>

@@ -8,6 +8,7 @@ use App\Http\Resources\DailyVisitStatResource;
 use App\Http\Resources\SiteVisitResource;
 use App\Models\DailyVisitStat;
 use App\Models\SiteVisit;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -38,49 +39,49 @@ class AnalyticsController extends Controller
         ]);
     }
 
-    public function destroyDailyStat(DailyVisitStat $dailyVisitStat): RedirectResponse
+    public function destroyDailyStat(DailyVisitStat $dailyVisitStat): JsonResponse
     {
-        Gate::authorize('delete', $dailyVisitStat);
-
-        $dailyVisitStat->delete();
-
-        return redirect()->back()->with('success', 'Daily visit stat deleted successfully.');
+        return $this->destroyModel($dailyVisitStat, 'Daily visit stat deleted successfully.');
     }
 
-    public function destroySiteVisit(SiteVisit $siteVisit): RedirectResponse
+    public function destroySiteVisit(SiteVisit $siteVisit): JsonResponse
     {
-        Gate::authorize('delete', $siteVisit);
+        return $this->destroyModel($siteVisit, 'Site visit deleted successfully.');
+    }
 
-        $siteVisit->delete();
+    private function destroyModel(DailyVisitStat|SiteVisit $model, string $message): JsonResponse
+    {
+        Gate::authorize('delete', $model);
 
-        return redirect()->back()->with('success', 'Site visit deleted successfully.');
+        $model->delete();
+
+        return response()->json([
+            'success' => true,
+            'msg' => $message,
+        ]);
     }
 
     public function bulkDeleteDailyStats(BulkDeleteAnalyticsRequest $request): RedirectResponse
     {
-        $validated = $request->validated();
-
-        $count = DailyVisitStat::query()
-            ->whereBetween('created_at', [
-                $validated['start_date'].' 00:00:00',
-                $validated['end_date'].' 23:59:59',
-            ])
-            ->delete();
-
-        return redirect()->back()->with('success', "Successfully deleted {$count} daily visit stat(s).");
+        return $this->bulkDelete($request, DailyVisitStat::class, 'daily visit stat(s)');
     }
 
     public function bulkDeleteSiteVisits(BulkDeleteAnalyticsRequest $request): RedirectResponse
     {
+        return $this->bulkDelete($request, SiteVisit::class, 'site visit(s)');
+    }
+
+    private function bulkDelete(BulkDeleteAnalyticsRequest $request, string $modelClass, string $itemName): RedirectResponse
+    {
         $validated = $request->validated();
 
-        $count = SiteVisit::query()
+        $count = $modelClass::query()
             ->whereBetween('created_at', [
                 $validated['start_date'].' 00:00:00',
                 $validated['end_date'].' 23:59:59',
             ])
             ->delete();
 
-        return redirect()->back()->with('success', "Successfully deleted {$count} site visit(s).");
+        return redirect()->back()->with('success', "Successfully deleted {$count} {$itemName}.");
     }
 }

@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import DeleteActivityLogsModal from '@/components/modals/DeleteActivityLogsModal.vue'
 import { showConfirmDelete, showSuccessAlert } from '@/lib/swal'
+import { showErrorToast } from '@/lib/toast'
+import axios from 'axios'
 import {
     Table,
     TableBody,
@@ -61,10 +63,6 @@ const props = defineProps<Props>()
 
 const showBulkDeleteModal = ref(false)
 
-// const breadcrumbs = [
-//     { title: 'Activity Logs', href: '/admin/activity-logs' }
-// ]
-
 const handleDelete = async (id: number) => {
     const result = await showConfirmDelete({
         title: 'Delete Activity Log?',
@@ -72,14 +70,20 @@ const handleDelete = async (id: number) => {
     })
 
     if (result.isConfirmed) {
-        router.delete(`/admin/activity-logs/${id}`, {
-            preserveScroll: true,
-            onSuccess: () => {
-                showSuccessAlert({
-                    text: 'Activity log deleted successfully.'
-                })
+        try {
+            const res = await axios.delete(`/admin/activity-logs/${id}`)
+            const data = res?.data || {}
+
+            if (data.success) {
+                showSuccessAlert({ text: data.msg || 'Activity log deleted successfully.' })
+                router.reload({ only: ['activities'] })
+            } else {
+                showErrorToast(data.msg || 'Failed to delete activity log')
             }
-        })
+        } catch (error: any) {
+            const message = error?.response?.data?.msg || error?.response?.data?.message || 'Failed to delete activity log'
+            showErrorToast(message)
+        }
     }
 }
 
@@ -110,18 +114,6 @@ const clearFilters = () => {
     startDate.value = ''
     endDate.value = ''
     applyFilters()
-}
-
-// Try to trigger the native date picker on focus for browsers that support showPicker()
-function openDatePicker(event: FocusEvent) {
-    const target = event.target as HTMLInputElement
-    try {
-        if (target && typeof (target as any).showPicker === 'function') {
-            ;(target as any).showPicker()
-        }
-    } catch (e) {
-        // ignore — not all browsers support showPicker
-    }
 }
 </script>
 
@@ -244,10 +236,7 @@ function openDatePicker(event: FocusEvent) {
                             <TableBody>
                                 <TableRow v-for="activity in activities.data" :key="activity.id" class="border-b border-gray-200 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700/50">
                                     <TableCell>
-                                        <!-- <div> -->
-                                            <div class="font-medium text-gray-900 dark:text-white">{{ activity.causer.name }}</div>
-                                            <!-- <div class="text-xs text-gray-500 dark:text-gray-400">{{ activity.causer.email }}</div> -->
-                                        <!-- </div> -->
+                                        <div class="font-medium text-gray-900 dark:text-white">{{ activity.causer.name }}</div>
                                     </TableCell>
                                     <TableCell>
                                         <div class="text-sm text-gray-900 dark:text-white">{{ activity.description || 'No description' }}</div>

@@ -43,15 +43,11 @@ class ActivityResource extends JsonResource
     {
         $properties = $this->properties ?? collect();
 
-        // Special summary for the monthly-interest processing run (audited as a single activity)
         if ($properties->has('total_customers') && $properties->has('processed')) {
-            $total = $properties->get('total_customers');
-            $processed = $properties->get('processed');
-
             return sprintf(
                 'Monthly Interest Processed. Total customers considered is %s and interest transactions created is %s',
-                $total,
-                $processed
+                $properties->get('total_customers'),
+                $properties->get('processed')
             );
         }
 
@@ -62,36 +58,29 @@ class ActivityResource extends JsonResource
         $className = class_basename($this->subject_type);
         $event = ucfirst($this->event);
 
-        // Special handling for CustomerTransaction
         if ($className === 'CustomerTransaction') {
-            $properties = $this->properties ?? collect();
-
-            // Try to get transaction_type from attributes first, then from old
-            $attributes = $properties->get('attributes', []);
-            $old = $properties->get('old', []);
-
-            $transactionType = $attributes['transaction_type'] ?? $old['transaction_type'] ?? null;
+            $transactionType = $properties->get('attributes.transaction_type')
+                ?? $properties->get('old.transaction_type');
 
             if ($transactionType) {
-                $formattedType = str_replace('_', ' ', $transactionType);
-
-                return "{$event} {$formattedType} transaction";
+                return "{$event} ".str_replace('_', ' ', $transactionType).' transaction';
             }
 
             return "{$event} transaction";
         }
 
-        // Convert class name to lowercase with article
         $subjectName = strtolower($className);
-
-        // Special cases for article usage
-        $article = match ($subjectName) {
-            'user' => 'a',  // "user" starts with consonant sound
-            'expense' => 'an',
-            default => in_array($subjectName[0], ['a', 'e', 'i', 'o']) ? 'an' : 'a',
-        };
+        $article = $this->getArticle($subjectName);
 
         return "{$event} {$article} {$subjectName}";
+    }
+
+    /**
+     * Get the appropriate article (a/an) for a word
+     */
+    private function getArticle(string $word): string
+    {
+        return in_array($word[0], ['a', 'e', 'i', 'o']) ? 'an' : 'a';
     }
 
     /**
@@ -126,33 +115,30 @@ class ActivityResource extends JsonResource
             return 'Unknown Device';
         }
 
-        // Detect device type
-        if (preg_match('/mobile|android|iphone|ipad|phone/i', $userAgent)) {
-            if (preg_match('/ipad/i', $userAgent)) {
-                return 'iPad';
-            }
-            if (preg_match('/iphone/i', $userAgent)) {
-                return 'iPhone';
-            }
-            if (preg_match('/android/i', $userAgent)) {
-                return 'Android Device';
-            }
+        $patterns = [
+            '/ipad/i' => 'iPad',
+            '/iphone/i' => 'iPhone',
+            '/android/i' => 'Android Device',
+            '/mobile|phone/i' => 'Mobile Device',
+        ];
 
-            return 'Mobile Device';
+        foreach ($patterns as $pattern => $device) {
+            if (preg_match($pattern, $userAgent)) {
+                return $device;
+            }
         }
 
-        // Detect browser
-        if (preg_match('/chrome/i', $userAgent) && ! preg_match('/edge/i', $userAgent)) {
-            return 'Chrome Browser';
-        }
-        if (preg_match('/firefox/i', $userAgent)) {
-            return 'Firefox Browser';
-        }
-        if (preg_match('/safari/i', $userAgent) && ! preg_match('/chrome/i', $userAgent)) {
-            return 'Safari Browser';
-        }
-        if (preg_match('/edge/i', $userAgent)) {
-            return 'Edge Browser';
+        $browsers = [
+            '/edge/i' => 'Edge Browser',
+            '/chrome/i' => 'Chrome Browser',
+            '/firefox/i' => 'Firefox Browser',
+            '/safari/i' => 'Safari Browser',
+        ];
+
+        foreach ($browsers as $pattern => $browser) {
+            if (preg_match($pattern, $userAgent)) {
+                return $browser;
+            }
         }
 
         return 'Desktop Browser';

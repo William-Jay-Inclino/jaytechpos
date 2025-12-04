@@ -17,14 +17,15 @@ class DailyVisitStatResource extends JsonResource
         return [
             'id' => $this->id,
             'date' => $this->date?->toDateString(),
-            'total_visits' => $this->total_visits,
-            'unique_visits' => $this->unique_visits,
-            'page_views' => $this->page_views,
-            'top_page' => $this->top_page,
-            'top_referer' => $this->top_referer,
-            'mobile_visits' => $this->mobile_visits,
-            'desktop_visits' => $this->desktop_visits,
-            'tablet_visits' => $this->tablet_visits,
+            'date_formatted' => $this->date?->format('M j, Y') ?? '—',
+            'total_visits' => $this->total_visits ?? 0,
+            'unique_visits' => $this->unique_visits ?? 0,
+            'page_views' => $this->page_views ?? 0,
+            'top_page' => $this->top_page ?? '—',
+            'top_referer' => $this->top_referer ?? '—',
+            'mobile_visits' => $this->mobile_visits ?? 0,
+            'desktop_visits' => $this->desktop_visits ?? 0,
+            'tablet_visits' => $this->tablet_visits ?? 0,
         ];
     }
 }
