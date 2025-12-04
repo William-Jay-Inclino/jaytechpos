@@ -7,8 +7,8 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { showConfirmDelete } from '@/lib/swal';
 import { Customer, type BreadcrumbItem } from '@/types';
-import { Head, Link, useForm, router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { ref, reactive } from 'vue';
 import EditBalanceModal from '@/components/modals/EditBalanceModal.vue';
 import { Edit3 } from 'lucide-vue-next';
 import axios from 'axios';
@@ -23,10 +23,12 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: `Edit ${props.customer.name}`, href: `/customers/${props.customer.id}/edit` },
 ];
 
-const form = useForm({
+const form = reactive({
     name: props.customer.name || '',
     mobile_number: props.customer.mobile_number || '',
     interest_rate: props.customer.interest_rate?.toString() || '',
+    processing: false,
+    errors: {} as Record<string, string>
 });
 
 // Modal state
@@ -66,9 +68,45 @@ const handleDelete = async () => {
     }
 };
 
-const handleBalanceSuccess = () => {
-    // Reload the page to refresh customer data
-    router.reload();
+const handleBalanceSuccess = async () => {
+    // Fetch updated customer data
+    try {
+        const res = await axios.get(`/customers/${props.customer.id}/edit`);
+        const data = res?.data;
+        
+        if (data?.customer) {
+            // Update local customer data
+            Object.assign(props.customer, data.customer);
+        }
+    } catch (error) {
+        // Silently fail, user can refresh if needed
+        console.error('Failed to refresh customer data:', error);
+    }
+};
+
+const handleSubmit = () => {
+    router.put(`/customers/${props.customer.id}`, {
+        name: form.name,
+        mobile_number: form.mobile_number,
+        interest_rate: form.interest_rate,
+    }, {
+        onStart: () => {
+            form.processing = true;
+            form.errors = {};
+        },
+        onSuccess: () => {
+            showSuccessToast('Customer updated successfully!');
+            router.visit('/customers');
+        },
+        onError: (errors: any) => {
+            form.errors = errors;
+            const firstError = Object.values(errors)[0];
+            showErrorToast(Array.isArray(firstError) ? firstError[0] : firstError);
+        },
+        onFinish: () => {
+            form.processing = false;
+        }
+    });
 };
 </script>
 
@@ -93,7 +131,7 @@ const handleBalanceSuccess = () => {
 
                 <!-- Form Card -->
                 <div class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 sm:p-8 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none">
-                    <form @submit.prevent="form.put(`/customers/${customer.id}`, { onSuccess: () => showSuccessToast('Customer updated successfully!') })" class="space-y-6">
+                    <form @submit.prevent="handleSubmit" class="space-y-6">
                         <!-- Customer Name -->
                         <div class="grid gap-2">
                             <Label for="name">Customer Name</Label>
@@ -104,7 +142,7 @@ const handleBalanceSuccess = () => {
                                 required
                                 class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                             />
-                            <InputError :message="form.errors.name" class="mt-1" />
+                            <InputError :message="form.errors.name?.[0] || form.errors.name" class="mt-1" />
                         </div>
 
                         <!-- Mobile Number -->
@@ -118,7 +156,7 @@ const handleBalanceSuccess = () => {
                                 type="tel"
                                 class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                             />
-                            <InputError :message="form.errors.mobile_number" class="mt-1" />
+                            <InputError :message="form.errors.mobile_number?.[0] || form.errors.mobile_number" class="mt-1" />
                         </div>
 
                         <!-- Interest Rate -->
@@ -134,7 +172,7 @@ const handleBalanceSuccess = () => {
                                 :placeholder="`Default: ${defaultInterestRate}%`"
                                 class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                             />
-                            <InputError :message="form.errors.interest_rate" class="mt-1" />
+                            <InputError :message="form.errors.interest_rate?.[0] || form.errors.interest_rate" class="mt-1" />
                         </div>
 
                         <!-- Actions -->

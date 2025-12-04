@@ -1,13 +1,5 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
 import { X } from 'lucide-vue-next';
 
 interface Expense {
@@ -142,110 +134,141 @@ const getCategoryBadgeStyle = () => {
 </script>
 
 <template>
-    <Dialog :open="open" @update:open="emit('update:open', $event)">
-        <DialogContent class="max-w-4xl w-[calc(100vw-2rem)] max-h-[90vh] sm:max-h-[85vh] p-0 overflow-hidden flex flex-col gap-0">
-            <!-- Header -->
-            <DialogHeader class="px-4 sm:px-6 pt-4 sm:pt-6 pb-3 sm:pb-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-                <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
-                    <div class="flex-1 min-w-0">
-                        <DialogTitle class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white truncate">
-                            {{ categoryName }}
-                        </DialogTitle>
-                        <DialogDescription class="mt-1 sm:mt-1.5 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                            All expenses in this category for {{ year }}
-                        </DialogDescription>
-                    </div>
-                    <Badge 
-                        variant="outline" 
-                        :style="getCategoryBadgeStyle()"
-                        class="self-start sm:ml-auto flex-shrink-0 text-xs sm:text-sm font-semibold px-2.5 py-1 sm:px-3 sm:py-1.5 whitespace-nowrap"
-                    >
-                        {{ expenses.length }} {{ expenses.length === 1 ? 'expense' : 'expenses' }}
-                    </Badge>
-                </div>
-            </DialogHeader>
+    <!-- Modal Overlay -->
+    <Transition
+        enter-active-class="transition-opacity duration-200 ease-out"
+        enter-from-class="opacity-0"
+        enter-to-class="opacity-100"
+        leave-active-class="transition-opacity duration-150 ease-in"
+        leave-from-class="opacity-100"
+        leave-to-class="opacity-0"
+    >
+        <div
+            v-if="open"
+            class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+            @click="emit('update:open', false)"
+        ></div>
+    </Transition>
 
-            <!-- Content -->
-            <div class="flex-1 overflow-y-auto overscroll-contain px-4 sm:px-6 py-3 sm:py-4">
-                <!-- Empty State -->
-                <div v-if="expenses.length === 0" class="flex items-center justify-center py-12 sm:py-16">
-                    <div class="text-center px-4">
-                        <div class="mx-auto flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
-                            <span class="text-3xl sm:text-4xl">📋</span>
+    <!-- Modal Content -->
+    <Transition
+        enter-active-class="transition-all duration-200 ease-out"
+        enter-from-class="opacity-0 scale-95"
+        enter-to-class="opacity-100 scale-100"
+        leave-active-class="transition-all duration-150 ease-in"
+        leave-from-class="opacity-100 scale-100"
+        leave-to-class="opacity-0 scale-95"
+    >
+        <div
+            v-if="open"
+            class="fixed inset-0 z-50 flex items-center justify-center p-4"
+        >
+            <div
+                class="relative w-full max-w-3xl max-h-[85vh] bg-white dark:bg-gray-800 rounded-lg shadow-xl flex flex-col overflow-hidden"
+                @click.stop
+            >
+                <!-- Header -->
+                <div class="px-6 pt-6 pb-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-3 mb-2">
+                                <div 
+                                    class="h-3 w-3 rounded-full flex-shrink-0"
+                                    :style="{ backgroundColor: categoryColor }"
+                                ></div>
+                                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+                                    {{ categoryName }}
+                                </h2>
+                            </div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                {{ expenses.length }} {{ expenses.length === 1 ? 'expense' : 'expenses' }} · {{ year }}
+                            </p>
                         </div>
-                        <h3 class="mt-4 sm:mt-6 text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
+                        <div class="flex items-start gap-4">
+                            <div class="text-right flex-shrink-0">
+                                <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
+                                    Total
+                                </div>
+                                <div class="text-2xl font-bold text-gray-900 dark:text-white tabular-nums">
+                                    {{ formatCurrency(totalAmount) }}
+                                </div>
+                            </div>
+                            <button
+                                @click="emit('update:open', false)"
+                                class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300 transition-colors"
+                            >
+                                <X class="h-5 w-5" />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content -->
+                <div class="flex-1 overflow-y-auto px-6 py-4">
+                    <!-- Empty State -->
+                    <div v-if="expenses.length === 0" class="flex items-center justify-center py-16">
+                    <div class="text-center">
+                        <div class="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
+                            <span class="text-4xl">📋</span>
+                        </div>
+                        <h3 class="mt-6 text-lg font-semibold text-gray-900 dark:text-white">
                             No expenses found
                         </h3>
-                        <p class="mt-1.5 sm:mt-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
                             There are no expenses in this category for {{ year }}.
                         </p>
                     </div>
-                </div>
+                    </div>
 
-                <!-- Expenses List -->
-                <div v-else class="space-y-6 sm:space-y-8 pb-2">
+                    <!-- Expenses List -->
+                    <div v-else class="space-y-6">
                     <div 
                         v-for="monthData in expensesByMonth" 
                         :key="monthData.month"
-                        class="space-y-2 sm:space-y-3"
                     >
-                        <!-- Month Header -->
-                        <div class="sticky top-0 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2.5 sm:py-3 bg-gray-50/95 dark:bg-gray-800/95 backdrop-blur-sm border-y border-gray-200 dark:border-gray-700 z-10 shadow-sm">
-                            <div class="flex items-baseline justify-between gap-2">
-                                <h3 class="text-xs sm:text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">
+                        <!-- Month Section -->
+                        <div class="space-y-3">
+                            <!-- Month Header -->
+                            <div class="flex items-center justify-between py-2 border-b-2 border-gray-300 dark:border-gray-600">
+                                <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wide">
                                     {{ monthData.month }}
                                 </h3>
-                                <span class="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 tabular-nums">
-                                    {{ formatCurrency(monthData.total) }}
-                                </span>
-                            </div>
-                            <!-- Expense count for month (helpful for large lists) -->
-                            <p class="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                                {{ monthData.expenses.length }} {{ monthData.expenses.length === 1 ? 'expense' : 'expenses' }}
-                            </p>
-                        </div>
-
-                        <!-- Month Expenses -->
-                        <div class="space-y-1.5 sm:space-y-2">
-                            <div 
-                                v-for="expense in monthData.expenses" 
-                                :key="expense.id"
-                                class="group relative flex items-center gap-2 sm:gap-4 p-3 sm:p-4 rounded-lg border border-gray-200 bg-white hover:shadow-sm hover:border-gray-300 transition-all duration-200 dark:border-gray-700 dark:bg-gray-800/50 dark:hover:bg-gray-700/50 dark:hover:border-gray-600"
-                            >
-                                <!-- Expense Info -->
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-semibold text-gray-900 dark:text-white leading-snug break-words">
-                                        {{ expense.name }}
-                                    </p>
-                                    <p class="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mt-0.5 sm:mt-1 flex items-center gap-1 sm:gap-1.5">
-                                        <span class="text-xs sm:text-sm">📅</span>
-                                        <span class="whitespace-nowrap">{{ formatDate(expense.expense_date) }}</span>
-                                    </p>
+                                <div class="flex items-center gap-3">
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">
+                                        {{ monthData.expenses.length }} {{ monthData.expenses.length === 1 ? 'item' : 'items' }}
+                                    </span>
+                                    <span class="text-sm font-bold text-gray-900 dark:text-white tabular-nums">
+                                        {{ formatCurrency(monthData.total) }}
+                                    </span>
                                 </div>
-                                
-                                <!-- Amount -->
-                                <div class="flex-shrink-0 text-right">
-                                    <p class="text-sm sm:text-base font-bold text-red-600 dark:text-red-400 tabular-nums whitespace-nowrap">
+                            </div>
+
+                            <!-- Expenses Cards -->
+                            <div class="space-y-2">
+                                <div 
+                                    v-for="expense in monthData.expenses" 
+                                    :key="expense.id"
+                                    class="group flex items-center justify-between gap-4 p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors duration-150 dark:bg-gray-800/50 dark:hover:bg-gray-700/50"
+                                >
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                            {{ expense.name }}
+                                        </p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                            {{ formatDate(expense.expense_date) }}
+                                        </p>
+                                    </div>
+                                    
+                                    <div class="text-base font-bold text-gray-900 dark:text-white tabular-nums flex-shrink-0">
                                         {{ formatCurrency(expense.amount) }}
-                                    </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    </div>
                 </div>
             </div>
-
-            <!-- Footer with Total -->
-            <div class="px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50 flex-shrink-0">
-                <div class="flex items-center justify-between gap-2">
-                    <span class="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
-                        Total for {{ year }}
-                    </span>
-                    <span class="text-lg sm:text-2xl font-bold text-red-600 dark:text-red-400 tabular-nums">
-                        {{ formatCurrency(totalAmount) }}
-                    </span>
-                </div>
-            </div>
-        </DialogContent>
-    </Dialog>
+        </div>
+    </Transition>
 </template>

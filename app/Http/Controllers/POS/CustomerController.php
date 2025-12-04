@@ -126,7 +126,7 @@ class CustomerController extends Controller
     /**
      * Update the customer's balance.
      */
-    public function updateBalance(UpdateBalanceRequest $request, Customer $customer): RedirectResponse
+    public function updateBalance(UpdateBalanceRequest $request, Customer $customer): JsonResponse
     {
         $this->authorize('update', $customer);
 
@@ -136,8 +136,10 @@ class CustomerController extends Controller
 
         // Check if balance actually changed
         if ($newBalance == $currentBalance) {
-            return redirect()->back()
-                ->with('error', 'New balance must be different from current balance.');
+            return response()->json([
+                'success' => false,
+                'msg' => 'New balance must be different from current balance.',
+            ], 422);
         }
 
         DB::transaction(function () use ($customer, $newBalance, $note, $currentBalance) {
@@ -162,8 +164,10 @@ class CustomerController extends Controller
 
         });
 
-        return redirect()->back()
-            ->with('message', 'Customer balance updated successfully!');
+        return response()->json([
+            'success' => true,
+            'msg' => 'Customer balance updated successfully!',
+        ]);
     }
 
     /**

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { ref, watch, reactive } from 'vue';
+import axios from 'axios';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { formatCurrency } from '@/utils/currency';
 
@@ -32,15 +32,19 @@ const emit = defineEmits<{
 }>();
 
 // Form state
-const balance = ref<string>('');
-const note = ref<string>('');
-const isLoading = ref(false);
+const form = reactive({
+    balance: '',
+    note: '',
+    isLoading: false,
+    errors: {} as Record<string, string>
+});
 
 // Reset form when modal opens
 watch(() => props.open, (isOpen) => {
     if (isOpen) {
-        balance.value = props.currentBalance.toString();
-        note.value = '';
+        form.balance = props.currentBalance.toString();
+        form.note = '';
+        form.errors = {};
     }
 });
 
@@ -49,7 +53,7 @@ const closeModal = () => {
 };
 
 const handleSubmit = async () => {
-    const newBalance = parseFloat(balance.value);
+    const newBalance = parseFloat(form.balance);
     
     // Validation
     if (isNaN(newBalance) || newBalance < 0) {
@@ -62,36 +66,48 @@ const handleSubmit = async () => {
         return;
     }
 
-    if (note.value.length > 100) {
+    if (form.note.length > 100) {
         showErrorToast('Note must not exceed 100 characters');
         return;
     }
 
-    isLoading.value = true;
+    form.isLoading = true;
+    form.errors = {};
 
-    // Submit via Inertia
-    router.patch(`/customers/${props.customerId}/balance`, {
-        balance: parseFloat(String(newBalance)),
-        note: note.value || null,
-    }, {
-        onSuccess: () => {
-            showSuccessToast('Customer balance updated successfully!');
+    try {
+        const res = await axios.post(`/customers/${props.customerId}/balance`, {
+            _method: 'PATCH',
+            balance: parseFloat(String(newBalance)),
+            note: form.note || null,
+        });
+
+        const data = res?.data || {};
+
+        if (data.success) {
+            showSuccessToast(data.msg || 'Customer balance updated successfully!');
             emit('success');
             closeModal();
-        },
-        onError: (errors: any) => {
+        } else {
+            showErrorToast(data.msg || 'Failed to update balance');
+        }
+    } catch (error: any) {
+        const errors = error?.response?.data?.errors;
+        if (errors) {
+            form.errors = errors;
             if (errors.balance) {
-                showErrorToast(errors.balance);
+                showErrorToast(errors.balance[0] || errors.balance);
             } else if (errors.note) {
-                showErrorToast(errors.note);
+                showErrorToast(errors.note[0] || errors.note);
             } else {
                 showErrorToast('Failed to update balance. Please try again.');
             }
-        },
-        onFinish: () => {
-            isLoading.value = false;
+        } else {
+            const message = error?.response?.data?.msg || error?.response?.data?.message || 'Failed to update balance';
+            showErrorToast(message);
         }
-    });
+    } finally {
+        form.isLoading = false;
+    }
 };
 
 </script>
@@ -124,12 +140,12 @@ const handleSubmit = async () => {
                     </Label>
                     <InputCurrency
                         id="balance"
-                        v-model="balance"
+                        v-model="form.balance"
                         step="0.01"
                         min="0"
                         placeholder="0.00"
                         class="text-right"
-                        :disabled="isLoading"
+                        :disabled="form.isLoading"
                         required
                     />
                 </div>
@@ -142,14 +158,14 @@ const handleSubmit = async () => {
                     </Label>
                     <Input
                         id="note"
-                        v-model="note"
+                        v-model="form.note"
                         type="text"
                         maxlength="500"
                         placeholder="Reason for balance update..."
-                        :disabled="isLoading"
+                        :disabled="form.isLoading"
                     />
                     <p class="text-xs text-gray-500 dark:text-gray-400">
-                        {{ note.length }}/100 characters
+                        {{ form.note.length }}/100 characters
                     </p>
                 </div>
             </div>
@@ -159,7 +175,7 @@ const handleSubmit = async () => {
                     type="button"
                     variant="outline"
                     @click="closeModal"
-                    :disabled="isLoading"
+                    :disabled="form.isLoading"
                     class="flex-1"
                 >
                     Cancel
@@ -167,10 +183,10 @@ const handleSubmit = async () => {
                 <Button
                     type="button"
                     @click="handleSubmit"
-                    :disabled="isLoading || balance === '' || balance === null || typeof balance === 'undefined'"
+                    :disabled="form.isLoading || form.balance === '' || form.balance === null || typeof form.balance === 'undefined'"
                     class="flex-1"
                 >
-                    <span v-if="isLoading" class="flex items-center gap-2">
+                    <span v-if="form.isLoading" class="flex items-center gap-2">
                         <div class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
                         Updating...
                     </span>

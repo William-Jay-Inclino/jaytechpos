@@ -108,7 +108,10 @@ class UserController extends Controller
 
         $user->update($data);
 
-        return back()->with('success', 'User updated successfully.');
+        return response()->json([
+            'success' => true,
+            'msg' => 'User updated successfully.',
+        ]);
     }
 
     public function destroy(User $user)

@@ -5,8 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AdminLayout from '@/layouts/AdminLayout.vue';
-import { showSuccessToast } from '@/lib/toast';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { showSuccessToast, showErrorToast } from '@/lib/toast';
+import { Head, Link } from '@inertiajs/vue3';
+import { reactive } from 'vue';
+import axios from 'axios';
 
 interface User {
     id: number
@@ -22,28 +24,128 @@ interface Props {
 
 const props = defineProps<Props>();
 
-// const breadcrumbs = [
-//     { title: 'Users', href: '/admin/users' },
-//     { title: 'Edit User', href: '' }
-// ];
-
 // Form for updating user information
-const infoForm = useForm({
+const infoForm = reactive({
     name: props.user.name,
     email: props.user.email,
-    role: props.user.role,
+    processing: false,
+    errors: {} as Record<string, string>
 });
 
 // Form for updating password
-const passwordForm = useForm({
+const passwordForm = reactive({
     password: '',
     password_confirmation: '',
+    processing: false,
+    errors: {} as Record<string, string>
 });
 
 // Form for updating status
-const statusForm = useForm({
+const statusForm = reactive({
     status: props.user.status,
+    processing: false,
+    errors: {} as Record<string, string>
 });
+
+const handleInfoSubmit = async () => {
+    infoForm.processing = true;
+    infoForm.errors = {};
+
+    try {
+        const res = await axios.post(`/admin/users/${props.user.id}`, {
+            _method: 'PUT',
+            name: infoForm.name,
+            email: infoForm.email,
+        });
+
+        const data = res?.data || {};
+
+        if (data.success) {
+            showSuccessToast(data.msg || 'User information updated successfully!');
+        } else {
+            showErrorToast(data.msg || 'Failed to update user information');
+        }
+    } catch (error: any) {
+        const errors = error?.response?.data?.errors;
+        if (errors) {
+            infoForm.errors = errors;
+            const firstError = Object.values(errors)[0];
+            showErrorToast(Array.isArray(firstError) ? firstError[0] : firstError);
+        } else {
+            const message = error?.response?.data?.msg || error?.response?.data?.message || 'Failed to update user information';
+            showErrorToast(message);
+        }
+    } finally {
+        infoForm.processing = false;
+    }
+};
+
+const handleStatusSubmit = async () => {
+    statusForm.processing = true;
+    statusForm.errors = {};
+
+    try {
+        const res = await axios.post(`/admin/users/${props.user.id}`, {
+            _method: 'PUT',
+            status: statusForm.status,
+        });
+
+        const data = res?.data || {};
+
+        if (data.success) {
+            showSuccessToast(data.msg || 'User status updated successfully!');
+        } else {
+            showErrorToast(data.msg || 'Failed to update user status');
+        }
+    } catch (error: any) {
+        const errors = error?.response?.data?.errors;
+        if (errors) {
+            statusForm.errors = errors;
+            const firstError = Object.values(errors)[0];
+            showErrorToast(Array.isArray(firstError) ? firstError[0] : firstError);
+        } else {
+            const message = error?.response?.data?.msg || error?.response?.data?.message || 'Failed to update user status';
+            showErrorToast(message);
+        }
+    } finally {
+        statusForm.processing = false;
+    }
+};
+
+const handlePasswordSubmit = async () => {
+    passwordForm.processing = true;
+    passwordForm.errors = {};
+
+    try {
+        const res = await axios.post(`/admin/users/${props.user.id}`, {
+            _method: 'PUT',
+            password: passwordForm.password,
+            password_confirmation: passwordForm.password_confirmation,
+        });
+
+        const data = res?.data || {};
+
+        if (data.success) {
+            passwordForm.password = '';
+            passwordForm.password_confirmation = '';
+            showSuccessToast(data.msg || 'Password updated successfully!');
+        } else {
+            showErrorToast(data.msg || 'Failed to update password');
+        }
+    } catch (error: any) {
+        const errors = error?.response?.data?.errors;
+        if (errors) {
+            passwordForm.errors = errors;
+            const firstError = Object.values(errors)[0];
+            showErrorToast(Array.isArray(firstError) ? firstError[0] : firstError);
+        } else {
+            const message = error?.response?.data?.msg || error?.response?.data?.message || 'Failed to update password';
+            showErrorToast(message);
+        }
+    } finally {
+        passwordForm.processing = false;
+    }
+};
 </script>
 
 <template>
@@ -60,7 +162,7 @@ const statusForm = useForm({
                         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Update the user's name and email address.</p>
                     </div>
 
-                    <form @submit.prevent="infoForm.put(`/admin/users/${user.id}`, { onSuccess: () => { showSuccessToast('User information updated successfully!'); } })" class="space-y-6">
+                    <form @submit.prevent="handleInfoSubmit" class="space-y-6">
                         <!-- Name -->
                         <div class="grid gap-2">
                             <Label for="name">Full Name</Label>
@@ -71,7 +173,7 @@ const statusForm = useForm({
                                 required
                                 class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                             />
-                            <InputError :message="infoForm.errors.name" class="mt-1" />
+                            <InputError :message="infoForm.errors.name?.[0] || infoForm.errors.name" class="mt-1" />
                         </div>
 
                         <!-- Email -->
@@ -84,7 +186,7 @@ const statusForm = useForm({
                                 required
                                 class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                             />
-                            <InputError :message="infoForm.errors.email" class="mt-1" />
+                            <InputError :message="infoForm.errors.email?.[0] || infoForm.errors.email" class="mt-1" />
                         </div>
 
                         <!-- Actions -->
@@ -108,7 +210,7 @@ const statusForm = useForm({
                         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Update the user's account status.</p>
                     </div>
 
-                    <form @submit.prevent="statusForm.put(`/admin/users/${user.id}`, { onSuccess: () => { showSuccessToast('User status updated successfully!'); } })" class="space-y-6">
+                    <form @submit.prevent="handleStatusSubmit" class="space-y-6">
                         <!-- Status -->
                         <div class="grid gap-2">
                             <Label for="status">Status</Label>
@@ -121,7 +223,7 @@ const statusForm = useForm({
                                     <SelectItem value="inactive">Inactive</SelectItem>
                                 </SelectContent>
                             </Select>
-                            <InputError :message="statusForm.errors.status" class="mt-1" />
+                            <InputError :message="statusForm.errors.status?.[0] || statusForm.errors.status" class="mt-1" />
                         </div>
 
                         <!-- Actions -->
@@ -140,7 +242,7 @@ const statusForm = useForm({
                         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Update the user's password.</p>
                     </div>
 
-                    <form @submit.prevent="passwordForm.put(`/admin/users/${user.id}`, { onSuccess: () => { passwordForm.reset(); showSuccessToast('Password updated successfully!'); } })" class="space-y-6">
+                    <form @submit.prevent="handlePasswordSubmit" class="space-y-6">
                         <!-- New Password -->
                         <div class="grid gap-2">
                             <Label for="password">New Password</Label>
@@ -151,7 +253,7 @@ const statusForm = useForm({
                                 required
                                 class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                             />
-                            <InputError :message="passwordForm.errors.password" class="mt-1" />
+                            <InputError :message="passwordForm.errors.password?.[0] || passwordForm.errors.password" class="mt-1" />
                         </div>
 
                         <!-- Actions -->
@@ -162,7 +264,7 @@ const statusForm = useForm({
                             <Button 
                                 variant="outline" 
                                 type="button"
-                                @click="passwordForm.reset()"
+                                @click="passwordForm.password = ''; passwordForm.password_confirmation = ''"
                             >
                                 Clear
                             </Button>

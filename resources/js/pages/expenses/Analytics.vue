@@ -10,14 +10,6 @@ import axios from 'axios';
 
 // UI Components
 import { Button } from '@/components/ui/button';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from '@/components/ui/dialog';
 
 interface ChartDataItem {
     id?: number;
@@ -81,7 +73,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 // Date filter state
 const selectedYear = ref(props.selectedYear);
-const showDateDialog = ref(false);
 
 // Category details modal
 const showCategoryModal = ref(false);
@@ -169,7 +160,7 @@ watch(selectedYear, () => {
                 <!-- Year Selection -->
                 <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                     <div class="flex items-center justify-center">
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-3">
                             <Button
                                 variant="ghost"
                                 size="sm"
@@ -179,44 +170,14 @@ watch(selectedYear, () => {
                                 <ChevronLeft class="h-4 w-4" />
                             </Button>
                             
-                            <Dialog v-model:open="showDateDialog">
-                                <DialogTrigger as-child>
-                                    <Button
-                                        variant="ghost"
-                                        class="min-w-[100px] font-medium text-gray-900 hover:text-gray-700 dark:text-white dark:hover:text-gray-300"
-                                    >
-                                        {{ selectedYear }}
-                                    </Button>
-                                </DialogTrigger>
-                                <DialogContent class="sm:max-w-md">
-                                    <DialogHeader>
-                                        <DialogTitle>Select Year</DialogTitle>
-                                        <DialogDescription>
-                                            Choose the year to view expense analytics for.
-                                        </DialogDescription>
-                                    </DialogHeader>
-                                    <div class="grid gap-4 py-4">
-                                        <div class="grid grid-cols-4 items-center gap-4">
-                                            <label class="text-right font-medium">
-                                                Year:
-                                            </label>
-                                            <select
-                                                v-model="selectedYear"
-                                                class="col-span-3 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                            >
-                                                <option v-for="year in yearOptions" :key="year" :value="year">
-                                                    {{ year }}
-                                                </option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="flex justify-end">
-                                        <Button @click="showDateDialog = false">
-                                            Apply
-                                        </Button>
-                                    </div>
-                                </DialogContent>
-                            </Dialog>
+                            <select
+                                v-model="selectedYear"
+                                class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-base font-semibold text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                            >
+                                <option v-for="year in yearOptions" :key="year" :value="year">
+                                    {{ year }}
+                                </option>
+                            </select>
                             
                             <Button
                                 variant="ghost"
@@ -263,54 +224,102 @@ watch(selectedYear, () => {
                 </div>
 
                 <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                    <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
                                 Monthly Expenses
                             </h2>
-                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                                 Total expenses for each month in {{ selectedYear }}
                             </p>
                         </div>
+                        <div class="text-sm font-medium text-gray-600 dark:text-gray-400">
+                            Total: <span class="text-lg font-bold text-gray-900 dark:text-white">{{ formatCurrency(sortedMonthlyExpenses.reduce((sum, item) => sum + item.amount, 0)) }}</span>
+                        </div>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead>
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900">Month</th>
-                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900">Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-                                <tr v-if="sortedMonthlyExpenses.length === 0">
-                                    <td colspan="2" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400 text-base">
-                                        No monthly expense data available.
-                                    </td>
-                                </tr>
-                                <tr
-                                    v-for="row in sortedMonthlyExpenses"
-                                    :key="row.month"
+
+                    <!-- Empty State -->
+                    <div v-if="sortedMonthlyExpenses.length === 0 || sortedMonthlyExpenses.every(item => item.amount === 0)" class="py-12 text-center">
+                        <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
+                            <span class="text-3xl">📅</span>
+                        </div>
+                        <h3 class="mt-4 text-base font-medium text-gray-900 dark:text-white">
+                            No monthly data available
+                        </h3>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                            No expenses recorded for {{ selectedYear }}.
+                        </p>
+                    </div>
+
+                    <!-- Grid Layout for Months -->
+                    <div v-else class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                        <div
+                            v-for="row in sortedMonthlyExpenses"
+                            :key="row.month"
+                            :class="[
+                                'group relative rounded-lg border p-4 transition-all duration-200',
+                                (selectedYear === currentYear && row.month === currentMonthName)
+                                    ? 'border-blue-500 bg-blue-50 shadow-md dark:border-blue-400 dark:bg-blue-950/30'
+                                    : row.amount > 0 
+                                        ? 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-800/50 dark:hover:border-gray-600'
+                                        : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900/30'
+                            ]"
+                        >
+                            <!-- Current Month Badge -->
+                            <div
+                                v-if="selectedYear === currentYear && row.month === currentMonthName"
+                                class="absolute right-2 top-2 rounded-full bg-blue-500 px-2 py-0.5 text-xs font-medium text-white dark:bg-blue-400"
+                            >
+                                Current
+                            </div>
+
+                            <!-- Month Name -->
+                            <div class="mb-2 flex items-center gap-2">
+                                <div
                                     :class="[
-                                        (selectedYear === currentYear && row.month === currentMonthName) ? 'border-l-4 border-yellow-300 dark:border-yellow-600' : '',
-                                        'hover:bg-gray-50 dark:hover:bg-gray-900',
-                                        'transition-colors'
+                                        'text-sm font-semibold',
+                                        (selectedYear === currentYear && row.month === currentMonthName)
+                                            ? 'text-blue-700 dark:text-blue-300'
+                                            : row.amount > 0
+                                                ? 'text-gray-700 dark:text-gray-300'
+                                                : 'text-gray-500 dark:text-gray-500'
                                     ]"
                                 >
-                                    <td
+                                    {{ row.month.substring(0, 3) }}
+                                </div>
+                            </div>
+
+                            <!-- Amount -->
+                            <div
+                                :class="[
+                                    'text-lg font-bold',
+                                    (selectedYear === currentYear && row.month === currentMonthName)
+                                        ? 'text-blue-600 dark:text-blue-400'
+                                        : row.amount > 0
+                                            ? 'text-gray-900 dark:text-white'
+                                            : 'text-gray-400 dark:text-gray-600'
+                                ]"
+                            >
+                                {{ formatCurrency(row.amount) }}
+                            </div>
+
+                            <!-- Visual Bar Indicator -->
+                            <div v-if="row.amount > 0" class="mt-3">
+                                <div class="h-1.5 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                                    <div
                                         :class="[
-                                            (selectedYear === currentYear && row.month === currentMonthName) ? 'font-semibold' : '',
-                                            'px-6 py-4 whitespace-nowrap text-base text-gray-900 dark:text-white flex items-center gap-2'
+                                            'h-full rounded-full transition-all duration-500',
+                                            (selectedYear === currentYear && row.month === currentMonthName)
+                                                ? 'bg-blue-500 dark:bg-blue-400'
+                                                : 'bg-gradient-to-r from-blue-500 to-purple-500 dark:from-blue-400 dark:to-purple-400'
                                         ]"
-                                    >
-                                        <span v-if="selectedYear === currentYear && row.month === currentMonthName" class="inline-block w-2 h-2 rounded-full bg-yellow-400 dark:bg-yellow-500 mr-2" aria-hidden="true"></span>
-                                        <span>{{ row.month }}</span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-base font-semibold text-primary dark:text-primary">
-                                        {{ formatCurrency(row.amount) }}
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                                        :style="{ 
+                                            width: `${Math.min((row.amount / Math.max(...sortedMonthlyExpenses.map(m => m.amount))) * 100, 100)}%` 
+                                        }"
+                                    ></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 

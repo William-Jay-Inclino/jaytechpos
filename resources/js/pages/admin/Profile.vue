@@ -4,8 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AdminLayout from '@/layouts/AdminLayout.vue';
-import { showSuccessToast } from '@/lib/toast';
-import { Head, useForm, usePage } from '@inertiajs/vue3';
+import { showSuccessToast, showErrorToast } from '@/lib/toast';
+import { Head } from '@inertiajs/vue3';
+import { reactive } from 'vue';
+import axios from 'axios';
 
 
 interface User {
@@ -26,17 +28,91 @@ const breadcrumbs = [
 ];
 
 // Form for updating user information
-const infoForm = useForm({
+const infoForm = reactive({
 	name: props.user.name,
 	email: props.user.email,
+	processing: false,
+	errors: {} as Record<string, string>
 });
 
 // Form for updating password
-const passwordForm = useForm({
+const passwordForm = reactive({
 	current_password: '',
 	password: '',
 	password_confirmation: '',
+	processing: false,
+	errors: {} as Record<string, string>
 });
+
+const handleInfoSubmit = async () => {
+	infoForm.processing = true;
+	infoForm.errors = {};
+
+	try {
+		const res = await axios.post('/admin/profile', {
+			_method: 'PATCH',
+			name: infoForm.name,
+			email: infoForm.email,
+		});
+
+		const data = res?.data || {};
+
+		if (data.success) {
+			showSuccessToast(data.msg || 'Profile updated successfully!');
+		} else {
+			showErrorToast(data.msg || 'Failed to update profile');
+		}
+	} catch (error: any) {
+		const errors = error?.response?.data?.errors;
+		if (errors) {
+			infoForm.errors = errors;
+			const firstError = Object.values(errors)[0];
+			showErrorToast(Array.isArray(firstError) ? firstError[0] : firstError);
+		} else {
+			const message = error?.response?.data?.msg || error?.response?.data?.message || 'Failed to update profile';
+			showErrorToast(message);
+		}
+	} finally {
+		infoForm.processing = false;
+	}
+};
+
+const handlePasswordSubmit = async () => {
+	passwordForm.processing = true;
+	passwordForm.errors = {};
+
+	try {
+		const res = await axios.post('/admin/profile/password', {
+			_method: 'PATCH',
+			current_password: passwordForm.current_password,
+			password: passwordForm.password,
+			password_confirmation: passwordForm.password_confirmation,
+		});
+
+		const data = res?.data || {};
+
+		if (data.success) {
+			passwordForm.current_password = '';
+			passwordForm.password = '';
+			passwordForm.password_confirmation = '';
+			showSuccessToast(data.msg || 'Password updated successfully!');
+		} else {
+			showErrorToast(data.msg || 'Failed to update password');
+		}
+	} catch (error: any) {
+		const errors = error?.response?.data?.errors;
+		if (errors) {
+			passwordForm.errors = errors;
+			const firstError = Object.values(errors)[0];
+			showErrorToast(Array.isArray(firstError) ? firstError[0] : firstError);
+		} else {
+			const message = error?.response?.data?.msg || error?.response?.data?.message || 'Failed to update password';
+			showErrorToast(message);
+		}
+	} finally {
+		passwordForm.processing = false;
+	}
+};
 </script>
 
 <template>
@@ -50,7 +126,7 @@ const passwordForm = useForm({
 						<h3 class="text-lg font-semibold text-gray-900 dark:text-white">Profile Information</h3>
 						<p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Update your name and email address.</p>
 					</div>
-					<form @submit.prevent="infoForm.patch('/admin/profile', { onSuccess: () => { showSuccessToast('Profile updated successfully!'); } })" class="space-y-6">
+					<form @submit.prevent="handleInfoSubmit" class="space-y-6">
 						<!-- Name -->
 						<div class="grid gap-2">
 							<Label for="name">Full Name</Label>
@@ -61,7 +137,7 @@ const passwordForm = useForm({
 								required
 								class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
 							/>
-							<InputError :message="infoForm.errors.name" class="mt-1" />
+							<InputError :message="infoForm.errors.name?.[0] || infoForm.errors.name" class="mt-1" />
 						</div>
 						<!-- Email -->
 						<div class="grid gap-2">
@@ -73,7 +149,7 @@ const passwordForm = useForm({
 								required
 								class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
 							/>
-							<InputError :message="infoForm.errors.email" class="mt-1" />
+							<InputError :message="infoForm.errors.email?.[0] || infoForm.errors.email" class="mt-1" />
 						</div>
 						<!-- Actions -->
 						<div class="flex items-center gap-4">
@@ -89,7 +165,7 @@ const passwordForm = useForm({
 						<h3 class="text-lg font-semibold text-gray-900 dark:text-white">Change Password</h3>
 						<p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Update your account password.</p>
 					</div>
-					<form @submit.prevent="passwordForm.patch('/admin/profile/password', { onSuccess: () => { passwordForm.reset(); showSuccessToast('Password updated successfully!'); } })" class="space-y-6">
+					<form @submit.prevent="handlePasswordSubmit" class="space-y-6">
 						<!-- Current Password -->
 						<div class="grid gap-2">
 							<Label for="current_password">Current Password</Label>
@@ -101,7 +177,7 @@ const passwordForm = useForm({
 								autocomplete="current-password"
 								class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
 							/>
-							<InputError :message="passwordForm.errors.current_password" class="mt-1" />
+							<InputError :message="passwordForm.errors.current_password?.[0] || passwordForm.errors.current_password" class="mt-1" />
 						</div>
 						<!-- New Password -->
 						<div class="grid gap-2">
@@ -114,7 +190,7 @@ const passwordForm = useForm({
 								autocomplete="new-password"
 								class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
 							/>
-							<InputError :message="passwordForm.errors.password" class="mt-1" />
+							<InputError :message="passwordForm.errors.password?.[0] || passwordForm.errors.password" class="mt-1" />
 						</div>
 						<!-- Confirm Password -->
 						<div class="grid gap-2">
@@ -127,7 +203,7 @@ const passwordForm = useForm({
 								autocomplete="new-password"
 								class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
 							/>
-							<InputError :message="passwordForm.errors.password_confirmation" class="mt-1" />
+							<InputError :message="passwordForm.errors.password_confirmation?.[0] || passwordForm.errors.password_confirmation" class="mt-1" />
 						</div>
 						<!-- Actions -->
 						<div class="flex items-center gap-4">
@@ -137,7 +213,7 @@ const passwordForm = useForm({
 							<Button 
 								variant="outline" 
 								type="button"
-								@click="passwordForm.reset()"
+								@click="passwordForm.current_password = ''; passwordForm.password = ''; passwordForm.password_confirmation = ''"
 							>
 								Clear
 							</Button>

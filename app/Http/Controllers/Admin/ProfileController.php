@@ -39,7 +39,10 @@ class ProfileController extends Controller
 
         $user->update($validated);
 
-        return back()->with('success', 'Profile updated successfully.');
+        return response()->json([
+            'success' => true,
+            'msg' => 'Profile updated successfully.',
+        ]);
     }
 
     /**
@@ -58,6 +61,9 @@ class ProfileController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        return back()->with('success', 'Password updated successfully.');
+        return response()->json([
+            'success' => true,
+            'msg' => 'Password updated successfully.',
+        ]);
     }
 }
