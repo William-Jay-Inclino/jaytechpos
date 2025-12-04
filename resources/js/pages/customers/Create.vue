@@ -6,7 +6,9 @@ import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { showSuccessToast } from '@/lib/toast';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
+import axios from 'axios';
+import { ref } from 'vue';
 
 const props = defineProps<{
     defaultInterestRate: number;
@@ -17,27 +19,37 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Add Customer', href: '/customers/create' },
 ];
 
-const form = useForm({
+const form = ref({
     name: '',
     mobile_number: '',
     starting_balance: '',
     interest_rate: props.defaultInterestRate?.toString() || '',
 });
 
+const errors = ref<Record<string, string>>({});
+const processing = ref(false);
+
 async function submit() {
-    if (form.processing) return;
+    if (processing.value) return;
 
-    form.clearErrors();
+    processing.value = true;
+    errors.value = {};
 
-    // Coerce starting_balance to a number (InputCurrency may emit string or number)
-    (form as any).starting_balance = parseFloat(String(form.starting_balance || '0'));
+    try {
+        const response = await axios.post('/customers', {
+            ...form.value,
+            starting_balance: parseFloat(String(form.value.starting_balance || '0')),
+        });
 
-    form.post('/customers', {
-        onSuccess: () => {
-            form.reset();
-            showSuccessToast('Customer created successfully!');
-        },
-    });
+        showSuccessToast(response.data.msg || 'Customer created successfully!');
+        router.visit('/customers');
+    } catch (error: any) {
+        if (error.response?.status === 422) {
+            errors.value = error.response.data.errors || {};
+        }
+    } finally {
+        processing.value = false;
+    }
 }
 </script>
 
@@ -61,7 +73,7 @@ async function submit() {
                                 required
                                 class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                             />
-                            <InputError :message="form.errors.name" class="mt-1" />
+                            <InputError :message="errors.name" class="mt-1" />
                         </div>
 
                         <!-- Mobile Number -->
@@ -75,7 +87,7 @@ async function submit() {
                                 type="tel"
                                 class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                             />
-                            <InputError :message="form.errors.mobile_number" class="mt-1" />
+                            <InputError :message="errors.mobile_number" class="mt-1" />
                         </div>
 
                         <!-- Starting Balance -->
@@ -89,7 +101,7 @@ async function submit() {
                                 placeholder="0.00"
                                 class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                             />
-                            <InputError :message="form.errors.starting_balance" class="mt-1" />
+                            <InputError :message="errors.starting_balance" class="mt-1" />
                         </div>
 
                         <!-- Interest Rate -->
@@ -104,7 +116,7 @@ async function submit() {
                                 max="100"
                                 class="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                             />
-                            <InputError :message="form.errors.interest_rate" class="mt-1" />
+                            <InputError :message="errors.interest_rate" class="mt-1" />
                             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                                 Ginagamit ito para sa automatic calculation sa interest every 1st of the month if a customer has outstanding balance.
                             </p>
@@ -112,8 +124,8 @@ async function submit() {
 
                         <!-- Actions -->
                         <div class="flex items-center gap-4">
-                            <Button type="submit" :disabled="form.processing">
-                                {{ form.processing ? 'Saving Customer...' : 'Save Customer' }}
+                            <Button type="submit" :disabled="processing">
+                                {{ processing ? 'Saving Customer...' : 'Save Customer' }}
                             </Button>
                             <Link href="/customers">
                                 <Button variant="outline" type="button">

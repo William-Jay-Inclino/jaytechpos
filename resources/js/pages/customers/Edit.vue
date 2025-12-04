@@ -84,29 +84,32 @@ const handleBalanceSuccess = async () => {
     }
 };
 
-const handleSubmit = () => {
-    router.put(`/customers/${props.customer.id}`, {
-        name: form.name,
-        mobile_number: form.mobile_number,
-        interest_rate: form.interest_rate,
-    }, {
-        onStart: () => {
-            form.processing = true;
-            form.errors = {};
-        },
-        onSuccess: () => {
-            showSuccessToast('Customer updated successfully!');
-            router.visit('/customers');
-        },
-        onError: (errors: any) => {
-            form.errors = errors;
-            const firstError = Object.values(errors)[0];
+const handleSubmit = async () => {
+    if (form.processing) return;
+
+    form.processing = true;
+    form.errors = {};
+
+    try {
+        const response = await axios.put(`/customers/${props.customer.id}`, {
+            name: form.name,
+            mobile_number: form.mobile_number,
+            interest_rate: form.interest_rate,
+        });
+
+        showSuccessToast(response.data.msg || 'Customer updated successfully!');
+        router.visit('/customers');
+    } catch (error: any) {
+        if (error.response?.status === 422) {
+            form.errors = error.response.data.errors || {};
+            const firstError = Object.values(form.errors)[0];
             showErrorToast(Array.isArray(firstError) ? firstError[0] : firstError);
-        },
-        onFinish: () => {
-            form.processing = false;
+        } else {
+            showErrorToast('Failed to update customer');
         }
-    });
+    } finally {
+        form.processing = false;
+    }
 };
 </script>
 

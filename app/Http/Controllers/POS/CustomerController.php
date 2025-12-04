@@ -55,7 +55,7 @@ class CustomerController extends Controller
     /**
      * Store a newly created customer.
      */
-    public function store(StoreCustomerRequest $request): RedirectResponse
+    public function store(StoreCustomerRequest $request): JsonResponse
     {
         $customer = DB::transaction(function () use ($request) {
             $customer = Customer::create([
@@ -88,8 +88,10 @@ class CustomerController extends Controller
             return $customer;
         });
 
-        return redirect()->route('customers.index')
-            ->with('message', 'Customer created successfully!');
+        return response()->json([
+            'success' => true,
+            'msg' => 'Customer created successfully!',
+        ]);
     }
 
     /**
@@ -108,7 +110,7 @@ class CustomerController extends Controller
     /**
      * Update the specified customer.
      */
-    public function update(UpdateCustomerRequest $request, Customer $customer): RedirectResponse
+    public function update(UpdateCustomerRequest $request, Customer $customer): JsonResponse
     {
         $this->authorize('update', $customer);
 
@@ -119,8 +121,10 @@ class CustomerController extends Controller
             'interest_rate' => $request->validated('interest_rate'),
         ]);
 
-        return redirect()->route('customers.index')
-            ->with('message', 'Customer updated successfully!');
+        return response()->json([
+            'success' => true,
+            'msg' => 'Customer updated successfully!',
+        ]);
     }
 
     /**
