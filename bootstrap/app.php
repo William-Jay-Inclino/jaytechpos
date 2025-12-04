@@ -44,9 +44,9 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withSchedule(function ($schedule) {
-        // Run monthly utang tracking on 1st of every month at 12:01 AM (Asia/Manila time)
+        // Run monthly utang tracking on 1st of every month at 7:40 AM (Asia/Manila time)
         $schedule->command('utang:process-monthly-tracking')
-            ->monthlyOn(5, '00:01')
+            ->monthlyOn(5, '07:40')
             ->timezone('Asia/Manila')
             ->withoutOverlapping()
             ->onOneServer();
