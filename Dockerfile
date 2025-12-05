@@ -99,7 +99,7 @@ RUN if command -v composer >/dev/null 2>&1; then composer dump-autoload --optimi
     && if [ -f artisan ]; then php artisan package:discover --ansi || true; fi
 
 # Set up Laravel scheduler cron job with logging
-RUN echo "* * * * * cd /var/www && php artisan schedule:run >> /var/www/storage/logs/cron.log 2>&1" > /etc/cron.d/laravel-scheduler \
+RUN echo "* * * * * cd /var/www && /usr/local/bin/php artisan schedule:run >> /var/www/storage/logs/cron.log 2>&1" > /etc/cron.d/laravel-scheduler \
     && chmod 0644 /etc/cron.d/laravel-scheduler \
     && crontab /etc/cron.d/laravel-scheduler
 
