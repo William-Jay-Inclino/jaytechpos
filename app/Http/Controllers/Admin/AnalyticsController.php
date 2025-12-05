@@ -61,17 +61,17 @@ class AnalyticsController extends Controller
         ]);
     }
 
-    public function bulkDeleteDailyStats(BulkDeleteAnalyticsRequest $request): RedirectResponse
+    public function bulkDeleteDailyStats(BulkDeleteAnalyticsRequest $request): JsonResponse
     {
         return $this->bulkDelete($request, DailyVisitStat::class, 'daily visit stat(s)');
     }
 
-    public function bulkDeleteSiteVisits(BulkDeleteAnalyticsRequest $request): RedirectResponse
+    public function bulkDeleteSiteVisits(BulkDeleteAnalyticsRequest $request): JsonResponse
     {
         return $this->bulkDelete($request, SiteVisit::class, 'site visit(s)');
     }
 
-    private function bulkDelete(BulkDeleteAnalyticsRequest $request, string $modelClass, string $itemName): RedirectResponse
+    private function bulkDelete(BulkDeleteAnalyticsRequest $request, string $modelClass, string $itemName): JsonResponse
     {
         $validated = $request->validated();
 
@@ -82,6 +82,9 @@ class AnalyticsController extends Controller
             ])
             ->delete();
 
-        return redirect()->back()->with('success', "Successfully deleted {$count} {$itemName}.");
+        return response()->json([
+            'success' => true,
+            'msg' => "Successfully deleted {$count} {$itemName}.",
+        ]);
     }
 }

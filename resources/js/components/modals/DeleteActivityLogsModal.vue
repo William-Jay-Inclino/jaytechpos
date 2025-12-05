@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { router } from '@inertiajs/vue3'
+import axios from 'axios'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -40,7 +41,7 @@ const closeModal = () => {
     isDeleting.value = false
 }
 
-const handleDelete = () => {
+const handleDelete = async () => {
     if (!isFormValid.value) {
         showErrorAlert({
             title: 'Invalid Date Range',
@@ -51,31 +52,32 @@ const handleDelete = () => {
 
     isDeleting.value = true
 
-    router.post('/admin/activity-logs/bulk-delete', {
-        start_date: startDate.value,
-        end_date: endDate.value,
-    }, {
-        preserveState: false,
-        preserveScroll: true,
-        onSuccess: () => {
+    try {
+        const response = await axios.post('/admin/activity-logs/bulk-delete', {
+            start_date: startDate.value,
+            end_date: endDate.value,
+        })
+
+        if (response.data.success) {
             showSuccessAlert({
                 title: 'Deleted Successfully',
-                text: `Activity logs from ${startDate.value} to ${endDate.value} have been deleted.`
+                text: response.data.msg || `Activity logs from ${startDate.value} to ${endDate.value} have been deleted.`
             })
             closeModal()
-        },
-        onError: (errors) => {
-            isDeleting.value = false
-            const errorMessage = errors.start_date || errors.end_date || 'Failed to delete activity logs. Please try again.'
-            showErrorAlert({
-                title: 'Delete Failed',
-                text: errorMessage
-            })
-        },
-        onFinish: () => {
-            isDeleting.value = false
+            router.reload({ only: ['activities'] })
         }
-    })
+    } catch (error: any) {
+        const errorMessage = error.response?.data?.message || 
+                           error.response?.data?.errors?.start_date?.[0] || 
+                           error.response?.data?.errors?.end_date?.[0] || 
+                           'Failed to delete activity logs. Please try again.'
+        showErrorAlert({
+            title: 'Delete Failed',
+            text: errorMessage
+        })
+    } finally {
+        isDeleting.value = false
+    }
 }
 
 const setToday = () => {

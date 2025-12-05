@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { router } from '@inertiajs/vue3'
+import axios from 'axios'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -51,7 +52,7 @@ const closeModal = () => {
     isDeleting.value = false
 }
 
-const handleDelete = () => {
+const handleDelete = async () => {
     if (!isFormValid.value) {
         showErrorAlert({
             title: 'Invalid Date Range',
@@ -66,31 +67,32 @@ const handleDelete = () => {
         ? '/admin/analytics/daily-stats/bulk-delete'
         : '/admin/analytics/site-visits/bulk-delete'
 
-    router.post(endpoint, {
-        start_date: startDate.value,
-        end_date: endDate.value,
-    }, {
-        preserveState: false,
-        preserveScroll: true,
-        onSuccess: () => {
+    try {
+        const response = await axios.post(endpoint, {
+            start_date: startDate.value,
+            end_date: endDate.value,
+        })
+
+        if (response.data.success) {
             showSuccessAlert({
                 title: 'Deleted Successfully',
-                text: `Records from ${startDate.value} to ${endDate.value} have been deleted.`
+                text: response.data.msg || `Records from ${startDate.value} to ${endDate.value} have been deleted.`
             })
             closeModal()
-        },
-        onError: (errors) => {
-            isDeleting.value = false
-            const errorMessage = errors.start_date || errors.end_date || 'Failed to delete records. Please try again.'
-            showErrorAlert({
-                title: 'Delete Failed',
-                text: errorMessage
-            })
-        },
-        onFinish: () => {
-            isDeleting.value = false
+            router.reload({ only: ['daily_visit_stats', 'site_visits'] })
         }
-    })
+    } catch (error: any) {
+        const errorMessage = error.response?.data?.message || 
+                           error.response?.data?.errors?.start_date?.[0] || 
+                           error.response?.data?.errors?.end_date?.[0] || 
+                           'Failed to delete records. Please try again.'
+        showErrorAlert({
+            title: 'Delete Failed',
+            text: errorMessage
+        })
+    } finally {
+        isDeleting.value = false
+    }
 }
 
 const setToday = () => {
