@@ -29,6 +29,8 @@ RUN apt-get update \
         zlib1g-dev \
         libxml2-dev \
         libcurl4-openssl-dev \
+        cron \
+        supervisor \
     && docker-php-ext-install -j"$(nproc)" \
         pdo \
         pdo_pgsql \

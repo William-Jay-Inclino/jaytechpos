@@ -92,7 +92,7 @@ async function submit() {
 
                         <!-- Starting Balance -->
                         <div class="grid gap-2">
-                            <Label for="starting_balance">Starting Balance</Label>
+                            <Label for="starting_balance">Starting Balance/Utang</Label>
                             <InputCurrency
                                 id="starting_balance"
                                 v-model="form.starting_balance"

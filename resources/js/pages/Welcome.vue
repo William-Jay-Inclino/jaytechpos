@@ -227,10 +227,10 @@ z                    />
 
 
             <!-- Footer / small note -->
-            <footer class="mt-8 text-center text-sm text-neutral-500 space-y-1">
+            <footer class="mt-8 text-center text-xs text-neutral-500 space-y-1">
                 <p>
                     For inquiries, please call or text 
-                    <span class="font-medium">0910-602-4370 / 0927-465-4155</span>,  
+                    <span class="font-medium">0910-602-4370</span>,  
                     or reach out via Messenger:
                     <span 
                         class="text-amber-600 hover:underline"
@@ -239,7 +239,7 @@ z                    />
                     </span>
                 </p>
 
-                <p class="pt-2 text-neutral-600 text-xs">
+                <p class="pt-2 text-neutral-600 text-[10px]">
                     Developed by <span class="font-semibold">William Jay Inclino</span> © {{ new Date().getFullYear() }}
                 </p>
             </footer>

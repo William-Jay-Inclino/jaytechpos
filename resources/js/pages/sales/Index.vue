@@ -222,7 +222,7 @@ const checkoutDisabledReason = computed<string | null>(() => {
         const hasValidCustomer = !payTowardsBalance.value || selectedCustomerId.value !== '0';
         const hasEnoughMoney = amountTendered.value >= cartTotalAmount.value;
 
-        if (!hasEnoughMoney) return 'Amount tendered is less than total.';
+        if (!hasEnoughMoney) return 'Amount tendered should be greater than total amount to pay.';
         if (payTowardsBalance.value && !hasValidCustomer) return 'Select a customer to use change for balance.';
 
         const maxDeductible = Math.min(customerBalance.value, Math.max(0, amountTendered.value - cartTotalAmount.value));
