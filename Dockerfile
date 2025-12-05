@@ -71,6 +71,10 @@ RUN if grep -q "\"build\"" package.json; then npm run build || true; fi
 ### Runtime stage: copy vendor, built assets and application files
 FROM base AS runtime
 
+# Set timezone to Asia/Manila
+ENV TZ=Asia/Manila
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
 # Copy PHP vendor from vendor stage
 COPY --from=vendor /var/www/vendor /var/www/vendor
 
