@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use App\Models\Customer;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 
 class CheckMonthlyInterest extends Command
@@ -27,10 +26,23 @@ class CheckMonthlyInterest extends Command
     {
         Log::info('========================================');
         Log::info('[CHECK] Step 1: Monthly interest check started');
-        Log::info("[CHECK] Current date: ".now()->format('Y-m-d H:i:s'));
+        Log::info('[CHECK] Current date: '.now()->format('Y-m-d H:i:s'));
 
-        $customers = Customer::where('has_utang', true)->get();
-        Log::info("[CHECK] Step 2: Found {$customers->count()} customers with utang");
+        $now = now();
+        $year = $now->year;
+        $month = $now->month;
+
+        // Load customers who have utang, excluding those created in the current month
+        $customers = Customer::where('has_utang', true)
+            ->where(function ($query) use ($year, $month) {
+                $query->whereYear('created_at', '<', $year)
+                    ->orWhere(function ($q) use ($year, $month) {
+                        $q->whereYear('created_at', '=', $year)
+                            ->whereMonth('created_at', '<', $month);
+                    });
+            })
+            ->get();
+        Log::info("[CHECK] Step 2: Found {$customers->count()} customers with utang (excluding current month)");
 
         $needsProcessing = $customers->filter(function ($customer) {
             $alreadyApplied = $customer->customerTransactions()
@@ -54,7 +66,7 @@ class CheckMonthlyInterest extends Command
 
         if ($count > 0) {
             $this->info("{$count} customers need monthly interest processing this month.");
-            
+
             Log::info('[CHECK] ✓ Monthly interest check finished successfully');
             Log::info('========================================');
 

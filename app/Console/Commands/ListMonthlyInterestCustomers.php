@@ -25,7 +25,20 @@ class ListMonthlyInterestCustomers extends Command
     {
         $showDetails = $this->option('details');
 
-        $customers = Customer::where('has_utang', true)->get();
+        $now = now();
+        $year = $now->year;
+        $month = $now->month;
+
+        // Load customers who have utang, excluding those created in the current month
+        $customers = Customer::where('has_utang', true)
+            ->where(function ($query) use ($year, $month) {
+                $query->whereYear('created_at', '<', $year)
+                    ->orWhere(function ($q) use ($year, $month) {
+                        $q->whereYear('created_at', '=', $year)
+                            ->whereMonth('created_at', '<', $month);
+                    });
+            })
+            ->get();
 
         $candidates = $customers->filter(function ($customer) {
             $alreadyApplied = $customer->customerTransactions()
