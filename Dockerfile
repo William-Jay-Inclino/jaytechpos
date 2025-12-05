@@ -98,8 +98,8 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 RUN if command -v composer >/dev/null 2>&1; then composer dump-autoload --optimize --no-interaction || true; fi \
     && if [ -f artisan ]; then php artisan package:discover --ansi || true; fi
 
-# Set up Laravel scheduler cron job
-RUN echo "* * * * * cd /var/www && php artisan schedule:run >> /dev/null 2>&1" > /etc/cron.d/laravel-scheduler \
+# Set up Laravel scheduler cron job with logging
+RUN echo "* * * * * cd /var/www && php artisan schedule:run >> /var/www/storage/logs/cron.log 2>&1" > /etc/cron.d/laravel-scheduler \
     && chmod 0644 /etc/cron.d/laravel-scheduler \
     && crontab /etc/cron.d/laravel-scheduler
 

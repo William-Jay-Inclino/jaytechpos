@@ -49,8 +49,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // If need be, it will trigger the processing command. Referene the ProcessMonthlyInterest command.
         $schedule->command('utang:check-monthly-tracking')
             ->daily()
-            ->at('09:23')
-            ->timezone('Asia/Manila')
+            ->at('09:35')
             ->withoutOverlapping()
             ->onOneServer();
             
