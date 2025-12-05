@@ -55,15 +55,8 @@ class CheckMonthlyInterest extends Command
         if ($count > 0) {
             $this->info("{$count} customers need monthly interest processing this month.");
             
-            Log::info('[CHECK] Step 4: Starting automatic processing...');
-            $this->info('Triggering monthly interest processing...');
-            
-            Artisan::call('utang:process-monthly-tracking');
-            
-            Log::info('[CHECK] Step 5: Processing command completed');
             Log::info('[CHECK] ✓ Monthly interest check finished successfully');
             Log::info('========================================');
-            $this->info('Monthly interest processing completed.');
 
             return 0;
         }
