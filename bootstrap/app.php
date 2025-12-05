@@ -45,11 +45,9 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withSchedule(function ($schedule) {
 
-        // Daily check to see if monthly tracking is needed. Reference the CheckMonthlyInterest command.
-        // If need be, it will trigger the processing command. Referene the ProcessMonthlyInterest command.
-        $schedule->command('utang:check-monthly-tracking')
-            ->daily()
-            ->at('02:00')
+        // Reference the ProcessMonthlyInterest command.
+        $schedule->command('utang:process-monthly-tracking')
+            ->monthlyOn(1, '02:00')
             ->withoutOverlapping();
             
     })
