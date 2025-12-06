@@ -5,36 +5,12 @@ import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { CreditCard, Percent, Package, BarChart3 } from 'lucide-vue-next';
 import { getDeviceType, sendAnalytics } from '@/utils/analytics';
 
-// --- Video Demo Logic ---
-const videoSrc = 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4';
-const videoRef = ref<HTMLVideoElement | null>(null);
-const isPlaying = ref(false);
 
-function togglePlay() {
-    if (!videoRef.value) return;
-    if (videoRef.value.paused) {
-        videoRef.value.play();
-        isPlaying.value = true;
-    } else {
-        videoRef.value.pause();
-        isPlaying.value = false;
-    }
-}
-
-function onVideoEnded() {
-    isPlaying.value = false;
-}
 
 // --- Analytics Logic ---
 
 
 onMounted( async() => {
-    // Video autoplay
-    if (videoRef.value) {
-        videoRef.value.play().then(() => {
-            isPlaying.value = !videoRef.value!.paused;
-        }).catch(() => {});
-    }
 
     await sendAnalytics({ 
         referer: document.referrer || null, 
@@ -51,7 +27,7 @@ function onBeforeInstallPrompt() {
     const ua = navigator.userAgent;
     const deviceType = getDeviceType(ua);
     // show only for mobile devices
-    if (deviceType === 'mobile') {
+    if (deviceType === 'mobile' || deviceType === 'tablet') {
         showInstall.value = true;
     }
 }
@@ -133,52 +109,9 @@ z                    />
                 </nav>
             </header>
 
-            <!-- Full-bleed video section placed immediately after header -->
-            <!-- <section class="mt-6">
-                <div class="w-full">
-                    <div class="relative w-full">
-                        <div class="relative overflow-hidden bg-black">
-                            <video
-                                ref="videoRef"
-                                :src="videoSrc"
-                                class="w-full h-[85vh] sm:h-[80vh] lg:h-[90vh] object-cover"
-                                poster="https://via.placeholder.com/1280x720.png?text=JayTech+Preview"
-                                @ended="onVideoEnded"
-                                @play="isPlaying = true"
-                                @pause="isPlaying = false"
-                                autoplay
-                                muted
-                                playsinline
-                                controls
-                            ></video>
-
-                            <button
-                                v-show="!isPlaying"
-                                @click.stop="togglePlay"
-                                class="absolute inset-0 m-auto w-20 h-20 rounded-full bg-amber-600/95 text-white flex items-center justify-center shadow-2xl hover:bg-amber-700 transition"
-                                aria-label="Play demo video"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 3v18l15-9L5 3z" fill="currentColor" />
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </section> -->
-
             <!-- Hero (centered, modern) -->
             <section class="mt-10 flex flex-col items-center text-center">
                 <div class="w-full max-w-3xl">
-                    <!-- Primary CTAs -->
-                    <!-- <div class="mt-6 flex flex-wrap justify-center gap-3">
-                        <Link
-                            :href="register()"
-                            class="inline-flex items-center gap-2 rounded-md bg-amber-600 px-5 py-3 text-white shadow-lg hover:bg-amber-700"
-                        >
-                            Get started — Sign up
-                        </Link>
-                    </div> -->
 
                     <!-- Key selling points (icons + text) -->
                     <div class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
