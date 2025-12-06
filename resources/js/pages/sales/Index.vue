@@ -1088,7 +1088,7 @@ watch(amountTendered, () => {
                                         >
                                                 <div class="flex items-center justify-between">
                                                     <span class="text-sm font-medium text-red-800 dark:text-red-200">
-                                                        Total Outstanding Balance:
+                                                        New Balance:
                                                     </span>
                                                     <span
                                                         class="text-2xl font-bold text-red-700 dark:text-red-400"
