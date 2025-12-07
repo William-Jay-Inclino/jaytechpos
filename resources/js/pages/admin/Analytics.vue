@@ -228,8 +228,7 @@ function extractSubdirectory(urlStr: string | null | undefined): string {
                             </p>
                         </div>
                         <div v-else>
-                            <!-- Desktop / Table view -->
-                            <div class="hidden md:block overflow-x-auto">
+                            <div class="overflow-x-auto">
                                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                 <thead class="bg-gray-50 dark:bg-gray-700/50">
                                     <tr>
@@ -269,38 +268,6 @@ function extractSubdirectory(urlStr: string | null | undefined): string {
                                         </tr>
                                 </tbody>
                                 </table>
-                            </div>
-
-                            <!-- Mobile / Card view -->
-                            <div class="md:hidden grid gap-3">
-                                <div v-for="stat in daily_visit_stats.data" :key="stat.id" class="rounded-lg border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                                    <div class="flex items-start justify-between">
-                                        <div>
-                                            <div class="text-sm font-medium text-gray-900 dark:text-white">{{ stat.date_formatted }}</div>
-                                            <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">Total: <span class="text-gray-700 dark:text-gray-200">{{ stat.total_visits }}</span></div>
-                                            <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">Unique: <span class="text-gray-700 dark:text-gray-200">{{ stat.unique_visits }}</span></div>
-                                        </div>
-                                        <div class="flex items-center gap-2">
-                                            <div class="text-right text-sm text-gray-600 dark:text-gray-300">
-                                                <div class="font-semibold text-gray-900 dark:text-white">{{ stat.total_visits }}</div>
-                                                <div class="text-xs">visits</div>
-                                            </div>
-                                            <Button 
-                                                variant="ghost" 
-                                                size="sm"
-                                                @click="handleDeleteDailyStat(stat.id)"
-                                                class="h-8 w-8 p-0"
-                                            >
-                                                <Trash2 class="h-4 w-4 text-red-600 dark:text-red-400" />
-                                            </Button>
-                                        </div>
-                                    </div>
-                                    <div class="mt-3 grid grid-cols-3 gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                        <div class="text-center">Visits<br/><span class="font-semibold text-gray-900 dark:text-white">{{ stat.total_visits }}</span></div>
-                                        <div class="text-center">Page Views<br/><span class="font-semibold text-gray-900 dark:text-white">{{ stat.page_views }}</span></div>
-                                        <div class="text-center">Mobile<br/><span class="font-semibold text-gray-900 dark:text-white">{{ stat.mobile_visits }}</span></div>
-                                    </div>
-                                </div>
                             </div>
                         </div>
 
@@ -358,8 +325,7 @@ function extractSubdirectory(urlStr: string | null | undefined): string {
                             </p>
                         </div>
                         <div v-else>
-                            <!-- Desktop / Table view -->
-                            <div class="hidden md:block overflow-x-auto">
+                            <div class="overflow-x-auto">
                                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                 <thead class="bg-gray-50 dark:bg-gray-700/50">
                                     <tr>
@@ -397,40 +363,6 @@ function extractSubdirectory(urlStr: string | null | undefined): string {
                                         </tr>
                                 </tbody>
                                 </table>
-                            </div>
-
-                            <!-- Mobile / Card view for site visits -->
-                                <div class="md:hidden grid gap-3">
-                                <div v-for="visit in site_visits.data" :key="visit.id" class="rounded-lg border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                                    <div class="flex items-start justify-between">
-                                        <div class="flex-1 min-w-0">
-                                            <div class="flex items-center gap-3">
-                                                <div class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ visit.page_display }}</div>
-                                            </div>
-                                            <div class="mt-1 text-xs text-gray-500 dark:text-gray-400 truncate">Location: {{ visit.location_formatted }}</div>
-                                            <div class="mt-2 text-xs text-gray-600 dark:text-gray-300">Referer: <span class="text-gray-800 dark:text-gray-200">{{ visit.referer }}</span></div>
-                                            <div class="mt-2 text-xs text-gray-600 dark:text-gray-300">Flags: <span class="text-gray-800 dark:text-gray-200">{{ visit.flags_formatted }}</span></div>
-                                        </div>
-                                        <div class="ml-3 flex items-center gap-2">
-                                            <div class="text-right text-sm">
-                                                <div class="font-semibold text-gray-900 dark:text-white">{{ visit.page_views }}</div>
-                                                <div class="text-xs text-gray-500 dark:text-gray-400">{{ visit.visited_at_formatted }}</div>
-                                            </div>
-                                            <Button 
-                                                variant="ghost" 
-                                                size="sm"
-                                                @click="handleDeleteSiteVisit(visit.id)"
-                                                class="h-8 w-8 p-0"
-                                            >
-                                                <Trash2 class="h-4 w-4 text-red-600 dark:text-red-400" />
-                                            </Button>
-                                        </div>
-                                    </div>
-                                    <div class="mt-3 flex flex-wrap gap-2 text-xs text-gray-600 dark:text-gray-300">
-                                        <span class="inline-flex items-center gap-2 rounded-full bg-gray-100 px-2 py-1 dark:bg-gray-700">IP: {{ visit.ip_address }}</span>
-                                        <span class="inline-flex items-center gap-2 rounded-full bg-gray-100 px-2 py-1 dark:bg-gray-700">Device: {{ visit.device_formatted }}</span>
-                                    </div>
-                                </div>
                             </div>
                         </div>
 
