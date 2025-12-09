@@ -56,8 +56,7 @@ Monitor your business at a glance with comprehensive analytics:
 ### 💰 **Sales Transaction**
 Streamlined point-of-sale experience:
 - Fast and intuitive product selection
-- Multiple payment methods (Cash & Utang)
-- Real-time inventory updates
+- Payment methods supported (Cash & Utang)
 - Transaction history tracking
 
 ### 💳 **Utang Management**
@@ -65,27 +64,20 @@ Comprehensive credit management system:
 - Customer payment processing
 - Outstanding balance tracking
 - Transaction history per customer
-- Payment reminders and analytics
 
 ### 📝 **Expense Management**
 Keep track of business expenses:
 - Categorized expense tracking
 - Visual analytics and reports
-- Budget monitoring
-- Expense trend analysis
 
 ### 📦 **Product Management**
 Complete inventory control:
 - Add, edit, and delete products
-- Stock level monitoring
-- Product categorization
 - Unit management
-- Low stock alerts
 
 ### 👥 **Customer Management**
 Build lasting customer relationships:
 - Customer database
-- Purchase history
 - Credit tracking
 - Customer analytics
 
@@ -112,9 +104,8 @@ Data-driven business insights:
 - **Inertia.js 2** - Modern monolithic SPA approach
 - **TypeScript 5** - Type-safe JavaScript
 - **Tailwind CSS 4** - Utility-first CSS framework
-- **Reka UI** - Accessible component primitives
+- **Shadcn** - A set of beautifully designed components
 - **Chart.js** - Beautiful data visualizations
-- **Vee-Validate + Zod** - Powerful form validation
 
 ### Development Tools
 - **Vite** - Lightning-fast build tool
@@ -125,7 +116,6 @@ Data-driven business insights:
 
 ### DevOps
 - **Docker** - Containerized development
-- **Laravel Sail** - Docker-based local environment
 - **Nginx** - High-performance web server
 
 ---
@@ -187,7 +177,7 @@ npm run build
 php artisan serve
 ```
 
-Visit `http://localhost:8000` to see the application.
+Visit `https://jaytechsolutions.cloud` to see the application.
 
 ### Development with Vite
 For hot module replacement during development:
@@ -306,12 +296,6 @@ jaytechpos/
 
 ---
 
-## 🤝 Contributing
-
-This is a portfolio project, but suggestions and feedback are welcome!
-
----
-
 ## 📄 License
 
 This project is open-sourced under the MIT license.
@@ -333,13 +317,13 @@ I'm a full-stack developer passionate about building elegant solutions to real-w
 - Docker & DevOps
 - Clean code principles
 
-**Currently seeking opportunities** as a Full-Stack Developer or Backend Developer.
+**Currently seeking opportunities** as a Full-Stack Developer, Backend Developer, or Frontend Developer.
 
 ### 📫 Let's Connect
 
 - GitHub: [@William-Jay-Inclino](https://github.com/William-Jay-Inclino)
-- LinkedIn: [Connect with me](#) <!-- Add your LinkedIn URL -->
-- Email: [your.email@example.com](#) <!-- Add your email -->
+- LinkedIn: [Connect with me](https://www.linkedin.com/in/william-jay-inclino-02140022a/) 
+- Email: [wjay.inclino@gmail.com](wjay.inclino@gmail.com) 
 
 ---
 
