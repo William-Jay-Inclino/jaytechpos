@@ -2,11 +2,11 @@
   <h1>🏪 JayTech POS</h1>
   <p><strong>Modern Point of Sale System for Philippine Retail Businesses</strong></p>
   
-  <p>
+  <h3>
     <a href="https://jaytechsolutions.cloud/" target="_blank">
-      <img src="https://img.shields.io/badge/🚀_Live_Demo-Visit_App-success?style=for-the-badge" alt="Live Demo" />
+      🌐 <strong>VIEW LIVE DEMO</strong> →
     </a>
-  </p>
+  </h3>
   
   <p>
     <img src="https://img.shields.io/badge/Laravel-12-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel 12" />
