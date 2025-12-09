@@ -3,6 +3,12 @@
   <p><strong>Modern Point of Sale System for Philippine Retail Businesses</strong></p>
   
   <p>
+    <a href="https://jaytechsolutions.cloud/" target="_blank">
+      <img src="https://img.shields.io/badge/🚀_Live_Demo-Visit_App-success?style=for-the-badge" alt="Live Demo" />
+    </a>
+  </p>
+  
+  <p>
     <img src="https://img.shields.io/badge/Laravel-12-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel 12" />
     <img src="https://img.shields.io/badge/Vue.js-3-4FC08D?style=for-the-badge&logo=vue.js&logoColor=white" alt="Vue 3" />
     <img src="https://img.shields.io/badge/Inertia.js-2-9553E9?style=for-the-badge&logo=inertia&logoColor=white" alt="Inertia.js" />
