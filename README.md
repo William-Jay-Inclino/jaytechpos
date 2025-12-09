@@ -31,15 +31,15 @@
 ## 📸 Screenshots
 
 <div align="center">
-  <img src="public/screenshots_mobile/Dashboard.jpg" alt="Dashboard" width="250"/>
-  <img src="public/screenshots_mobile/Sale_Transaction.jpg" alt="Sale Transaction" width="250"/>
-  <img src="public/screenshots_mobile/Cash_Flow.jpg" alt="Cash Flow" width="250"/>
+  <img src="readme-screenshots/1_sale 2.jpeg" alt="Sale Transaction" width="250"/>
+  <img src="readme-screenshots/2_sale.jpeg" alt="Sale Confirmation" width="250"/>
+  <img src="readme-screenshots/3_dashboard.jpeg" alt="Dashboard" width="250"/>
 </div>
 
 <div align="center">
-  <img src="public/screenshots_mobile/Product_Listings.jpg" alt="Products" width="250"/>
-  <img src="public/screenshots_mobile/Utang_Payment.jpg" alt="Utang Payment" width="250"/>
-  <img src="public/screenshots_mobile/Expenses_Breakdown.jpg" alt="Expenses" width="250"/>
+  <img src="readme-screenshots/4_customer list.jpeg" alt="Customer List" width="250"/>
+  <img src="readme-screenshots/5_customer info.jpeg" alt="Customer Information" width="250"/>
+  <img src="readme-screenshots/6_add product.jpeg" alt="Add Product" width="250"/>
 </div>
 
 ---
