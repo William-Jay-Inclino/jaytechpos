@@ -492,9 +492,19 @@ watch(amountTendered, () => {
                                                 <span class="truncate text-left">
                                                     {{ selectedCustomerName || 'Select customer or walk-in' }}
                                                 </span>
-                                                <svg class="h-4 w-4 opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                    <path d="m6 9 6 6 6-6"/>
-                                                </svg>
+                                                <div class="flex items-center gap-2">
+                                                    <button
+                                                        v-if="selectedCustomerId !== '0'"
+                                                        @click.stop="selectCustomer('0')"
+                                                        class="h-4 w-4 rounded hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center transition-colors"
+                                                        title="Clear customer"
+                                                    >
+                                                        <X class="h-3 w-3" />
+                                                    </button>
+                                                    <svg class="h-4 w-4 opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="m6 9 6 6 6-6"/>
+                                                    </svg>
+                                                </div>
                                             </div>
                                             
                                             <div
