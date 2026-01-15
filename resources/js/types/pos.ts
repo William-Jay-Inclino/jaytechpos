@@ -1,3 +1,4 @@
+import { Inventory } from "./inventory";
 
 export interface Customer {
     id: number;
@@ -78,6 +79,7 @@ export interface Product {
     unit_price: number;
     cost_price: number;
     status: 'active' | 'inactive';
+    inventory: Inventory;
     created_at: string;
     updated_at: string;
 

@@ -245,8 +245,8 @@ async function saveLSA(productId: number) {
                                 <th class="py-3 pl-6 pr-4 text-left text-sm font-medium text-gray-900 dark:text-white">
                                     Product
                                 </th>
-                                <th class="py-3 px-4 text-left text-sm font-medium text-gray-900 dark:text-white">
-                                    Qty
+                                <th class="py-3 px-4 text-left text-sm font-medium text-gray-900 dark:text-white text-nowrap">
+                                    Available Qty
                                 </th>
                                 <th class="py-3 px-4 text-left text-sm font-medium text-gray-900 dark:text-white">
                                     <div class="flex items-center gap-1">
@@ -263,11 +263,23 @@ async function saveLSA(productId: number) {
                                         </TooltipProvider>
                                     </div>
                                 </th>
-                                <th class="py-3 px-4 text-left text-sm font-medium text-gray-900 dark:text-white">
-                                    Update
+                                <th class="py-3 px-4 text-left text-sm font-medium text-gray-900 dark:text-white text-nowrap">
+                                    Update Qty
                                 </th>
                                 <th class="py-3 pl-4 pr-6 text-left text-sm font-medium text-gray-900 dark:text-white">
-                                    Transactions
+                                    <div class="flex items-center gap-1">
+                                        <span>SMH</span>
+                                        <TooltipProvider>
+                                            <Tooltip>
+                                                <TooltipTrigger as-child>
+                                                    <Info class="h-4 w-4 text-gray-400" />
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>Stock Movement History</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
+                                    </div>
                                 </th>
                             </tr>
                         </thead>
@@ -278,7 +290,9 @@ async function saveLSA(productId: number) {
                                 class="group border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                             >
                                 <td class="py-4 pl-6 pr-4 font-medium text-gray-900 dark:text-white">
-                                    {{ product.product_name }}
+                                    <span :class="{'text-red-500 dark:text-red-300': Number(product.quantity) <= 0}">
+                                        {{ product.product_name }}
+                                    </span>
                                 </td>
                                 <td class="py-4 px-4 text-gray-900 dark:text-white">
                                     {{ product.quantity }}

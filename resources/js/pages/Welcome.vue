@@ -2,7 +2,7 @@
 import { dashboard, login, register } from '@/routes';
 import { Link } from '@inertiajs/vue3';
 import { ref, onMounted, onBeforeUnmount } from 'vue';
-import { CreditCard, Percent, Package, BarChart3 } from 'lucide-vue-next';
+import { CreditCard, Percent, Users, BarChart3, Box, Package } from 'lucide-vue-next';
 import { getDeviceType, sendAnalytics } from '@/utils/analytics';
 
 
@@ -121,7 +121,7 @@ z                    />
                             </div>
                             <div class="text-left">
                                 <h4 class="font-semibold">Sales & Payments</h4>
-                                <p class="text-sm text-neutral-500 dark:text-neutral-400">Faster checkout & accurate cash tracking para sa mga busy na counter.</p>
+                                <p class="text-sm text-neutral-500 dark:text-neutral-400">Lightning-fast checkout with real-time cash tracking. Process hundreds of transactions daily with zero errors.</p>
                             </div>
                         </div>
 
@@ -131,7 +131,7 @@ z                    />
                             </div>
                             <div class="text-left">
                                 <h4 class="font-semibold">Utang & Interest</h4>
-                                <p class="text-sm text-neutral-500 dark:text-neutral-400">Allow customers na bumili nang pa-utang. Automatic monthly interest calculation.</p>
+                                <p class="text-sm text-neutral-500 dark:text-neutral-400">Grow sales with flexible credit terms. Fully automated monthly interest calculations and payment tracking.</p>
                             </div>
                         </div>
 
@@ -140,8 +140,28 @@ z                    />
                                 <Package class="w-6 h-6 text-amber-600" />
                             </div>
                             <div class="text-left">
-                                <h4 class="font-semibold">Products & Customers</h4>
-                                <p class="text-sm text-neutral-500 dark:text-neutral-400">Simple product management & customer profiles na may kasamang balance tracking.</p>
+                                <h4 class="font-semibold">Product Management</h4>
+                                <p class="text-sm text-neutral-500 dark:text-neutral-400">Streamline your product catalog with powerful search and filtering. Track pricing, stock levels, and product details effortlessly.</p>
+                            </div>
+                        </div>
+
+                        <div class="rounded-lg border bg-white p-4 shadow-sm dark:bg-[#0f0f0f] dark:border-neutral-800 flex items-start gap-3">
+                            <div class="flex-shrink-0 mt-1">
+                                <Users class="w-6 h-6 text-amber-600" />
+                            </div>
+                            <div class="text-left">
+                                <h4 class="font-semibold">Customer Management</h4>
+                                <p class="text-sm text-neutral-500 dark:text-neutral-400">Build lasting relationships with detailed customer profiles, purchase history, and automated balance tracking.</p>
+                            </div>
+                        </div>
+
+                        <div class="rounded-lg border bg-white p-4 shadow-sm dark:bg-[#0f0f0f] dark:border-neutral-800 flex items-start gap-3">
+                            <div class="flex-shrink-0 mt-1">
+                                <Box class="w-6 h-6 text-amber-600" />
+                            </div>
+                            <div class="text-left">
+                                <h4 class="font-semibold">Inventory Control</h4>
+                                <p class="text-sm text-neutral-500 dark:text-neutral-400">Complete inventory visibility with Stock In/Out/Adjustments. Smart low-stock alerts prevent stockouts and lost sales.</p>
                             </div>
                         </div>
 
@@ -151,7 +171,7 @@ z                    />
                             </div>
                             <div class="text-left">
                                 <h4 class="font-semibold">Reports & Cash Flow</h4>
-                                <p class="text-sm text-neutral-500 dark:text-neutral-400">Sales reports at cash flow monitoring para mas mapalago ang negosyo.</p>
+                                <p class="text-sm text-neutral-500 dark:text-neutral-400">Powerful insights at your fingertips. Track sales trends, monitor cash flow, and make data-driven decisions to grow your business.</p>
                             </div>
                         </div>
                     </div>

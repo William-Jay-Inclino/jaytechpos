@@ -36,7 +36,7 @@ class SaleController extends Controller
         $this->authorize('viewAny', Sale::class);
 
         $products = Product::availableForSale()
-            ->with(['unit'])
+            ->with(['unit', 'inventory:product_id,quantity'])
             ->orderBy('product_name')
             ->get();
 

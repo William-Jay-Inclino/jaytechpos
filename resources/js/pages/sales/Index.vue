@@ -668,12 +668,20 @@ watch(amountTendered, () => {
                                             v-for="product in filteredProducts"
                                             :key="product.id"
                                             @click="selectProduct(product)"
-                                            class="relative flex cursor-default select-none items-center rounded-sm px-2 py-2.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground cursor-pointer"
+                                            class="relative flex cursor-default select-none items-center justify-between rounded-sm px-2 py-2.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground cursor-pointer gap-3"
                                         >
-                                            <div class="flex flex-col">
-                                                <div class="font-medium">{{ product.product_name }}</div>
+                                            <div class="flex flex-col flex-1 min-w-0">
+                                                <div class="font-medium truncate">{{ product.product_name }}</div>
                                                 <div class="text-xs text-green-600 dark:text-green-400 font-medium">
                                                     {{ formatCurrency(product.unit_price) }}/ <span class="text-gray-500 dark:text-gray-400"> {{ product.unit?.abbreviation || 'unit' }} </span>
+                                                </div>
+                                            </div>
+                                            <div class="flex-shrink-0">
+                                                <div v-if="product.inventory" class="text-xs text-gray-600 dark:text-gray-400 text-right">
+                                                    <span class="font-medium">{{ product.inventory.quantity }}</span> available
+                                                </div>
+                                                <div v-else class="text-xs text-orange-600 dark:text-orange-400 italic text-right">
+                                                    Not in inventory
                                                 </div>
                                             </div>
                                         </div>
