@@ -31,12 +31,6 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
-        // TEMPORARY DEBUG LOGGING - REMOVE AFTER DEBUGGING
-        \Log::info('Login attempt', [
-            'email' => $request->input('email'),
-            'is_inertia' => $request->header('X-Inertia'),
-            'referer' => $request->header('Referer'),
-        ]);
 
         $user = $request->validateCredentials();
 
