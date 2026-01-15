@@ -26,6 +26,7 @@ import {
     TrendingUp,
     UserCircle,
     Users,
+    Boxes,
 } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
@@ -39,6 +40,11 @@ const mainNavItems: NavItem[] = [
         title: 'Transact a Sale',
         href: '/sales',
         icon: ShoppingCart,
+    },
+    {
+        title: 'Inventory',
+        href: '/inventory',
+        icon: Boxes,
     },
     {
         title: 'Utang Payment',

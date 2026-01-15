@@ -2,18 +2,21 @@
 
 namespace App\Http\Controllers\POS;
 
+use App\Enums\StockMovementType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreSaleRequest;
-use App\Http\Resources\CustomerResource;
 use App\Http\Resources\SaleResource;
 use App\Models\Customer;
 use App\Models\CustomerTransaction;
+use App\Models\Inventory;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SalesItem;
+use App\Models\StockMovement;
 use App\Services\CustomerService;
 use App\Services\SaleService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
@@ -78,8 +81,24 @@ class SaleController extends Controller
         try {
             DB::beginTransaction();
 
+            // Check inventory availability for all products
+            foreach ($request->validated('items') as $itemData) {
+                $inventory = Inventory::where('product_id', $itemData['product_id'])->first();
+
+                if ($inventory) {
+                    if ($inventory->quantity < $itemData['quantity']) {
+                        $product = Product::find($itemData['product_id']);
+                        DB::rollBack();
+
+                        return response()->json([
+                            'message' => "Insufficient stock for {$product->product_name}. Available: {$inventory->quantity}",
+                        ], 422);
+                    }
+                }
+            }
+
             // Generate unique invoice number for this user
-            $invoiceNumber = $this->saleService->generateInvoiceNumber(auth()->id());
+            $invoiceNumber = $this->saleService->generateInvoiceNumber(Auth::id());
 
             // Get customer and current balance for customer transaction tracking
             $customer = null;
@@ -106,7 +125,7 @@ class SaleController extends Controller
 
             // Create the sale record
             $sale = Sale::create([
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
                 'customer_id' => $request->validated('customer_id'),
                 'total_amount' => $request->validated('total_amount'),
                 'paid_amount' => $request->validated('paid_amount'),
@@ -130,12 +149,31 @@ class SaleController extends Controller
                 ]);
             }
 
+            // Update inventory and create stock movements
+            foreach ($request->validated('items') as $itemData) {
+                $inventory = Inventory::where('product_id', $itemData['product_id'])->first();
+
+                if ($inventory) {
+                    // Reduce inventory quantity
+                    $inventory->stockOut($itemData['quantity']);
+
+                    // Create stock movement record
+                    StockMovement::create([
+                        'product_id' => $itemData['product_id'],
+                        'type' => StockMovementType::OUT,
+                        'quantity' => $itemData['quantity'],
+                        'reference' => $sale->id,
+                        'remarks' => "Sale - Invoice #{$invoiceNumber}",
+                    ]);
+                }
+            }
+
             // Customer transaction tracking is handled by the system
 
             // Create customer transaction record (only if customer is selected)
             if ($sale->customer_id) {
                 CustomerTransaction::create([
-                    'user_id' => auth()->id(),
+                    'user_id' => Auth::id(),
                     'customer_id' => $sale->customer_id,
                     'transaction_type' => 'sale',
                     'reference_id' => $sale->id,

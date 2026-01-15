@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use App\Models\Inventory;
 use App\Services\ProductService;
 use App\Services\SaleService;
 use App\Services\UserService;
@@ -10,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
@@ -21,7 +23,7 @@ class DashboardController extends Controller
 
     public function index(): Response
     {
-        $userId = auth()->id();
+        $userId = Auth::id();
         $today = Carbon::today();
         $currentYear = Carbon::now()->year;
 
@@ -37,6 +39,9 @@ class DashboardController extends Controller
         // Cash Flow Data
         $cashFlowData = $this->userService->getCashFlow($currentYear, $userId);
 
+        // Low Stock Products
+        $lowStockProducts = $this->getLowStockProducts($userId);
+
         // Sales Chart Data (last 30 days)
         // $salesChartData = $this->getSalesChartData($userId);
 
@@ -45,6 +50,7 @@ class DashboardController extends Controller
             // 'utangStats' => $utangStats,
             'bestSellingProducts' => $bestSellingProducts,
             'cashFlowData' => $cashFlowData,
+            'lowStockProducts' => $lowStockProducts,
             // 'salesChartData' => $salesChartData,
             'currentYear' => $currentYear,
         ]);
@@ -84,6 +90,27 @@ class DashboardController extends Controller
         return [
             'total_amount_receivable' => $totalAmountReceivable,
         ];
+    }
+
+    private function getLowStockProducts(int $userId): array
+    {
+        return Inventory::lowStock()
+            ->whereHas('product', function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            })
+            ->with('product')
+            ->orderBy('quantity', 'asc')
+            ->limit(10)
+            ->get()
+            ->map(function ($inventory) {
+                return [
+                    'product_id' => $inventory->product_id,
+                    'product_name' => $inventory->product->product_name,
+                    'quantity' => number_format((float) $inventory->quantity, 2, '.', ''),
+                    'low_stock_threshold' => number_format((float) $inventory->low_stock_threshold, 2, '.', ''),
+                ];
+            })
+            ->toArray();
     }
 
     private function getBestSellingProducts(int $userId): array
@@ -133,7 +160,7 @@ class DashboardController extends Controller
     public function getCashFlowData(Request $request)
     {
         $year = $request->input('year', Carbon::now()->year);
-        $userId = auth()->id();
+        $userId = Auth::id();
 
         $cashFlowData = $this->userService->getCashFlow($year, $userId);
 
@@ -146,7 +173,7 @@ class DashboardController extends Controller
     public function getSalesChartDataForYear(Request $request)
     {
         $year = $request->input('year', Carbon::now()->year);
-        $userId = auth()->id();
+        $userId = Auth::id();
 
         $salesChartData = $this->getSalesChartDataByYear($userId, (int) $year);
 
@@ -159,7 +186,7 @@ class DashboardController extends Controller
     public function getBestSellingProductsForYear(Request $request)
     {
         $year = $request->input('year', Carbon::now()->year);
-        $userId = auth()->id();
+        $userId = Auth::id();
 
         $bestSellingProducts = $this->getBestSellingProductsByYear($userId, (int) $year);
 

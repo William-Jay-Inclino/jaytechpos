@@ -3,7 +3,7 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import StatsCard from '@/components/StatsCard.vue'
 import BestSellingProducts from '@/components/BestSellingProducts.vue'
 import CashFlowTable from '@/components/CashFlowTable.vue'
-import SalesChart from '@/components/SalesChart.vue'
+import LowStockItems from '@/components/LowStockItems.vue'
 import { dashboard } from '@/routes'
 import { type BreadcrumbItem } from '@/types'
 import { Head } from '@inertiajs/vue3'
@@ -28,6 +28,12 @@ interface DashboardProps {
         income: number
         expense: number
         cash_flow: number
+    }>
+    lowStockProducts: Array<{
+        product_id: number
+        product_name: string
+        quantity: string
+        low_stock_threshold: string
     }>
     // salesChartData: {
     //     labels: string[]
@@ -93,17 +99,17 @@ const breadcrumbs: BreadcrumbItem[] = [
             <!-- Main Content Area -->
             <div class="relative px-4 pb-12 pt-8 sm:px-6 lg:px-8">
                 <div class="max-w-7xl mx-auto space-y-8">
-                    <!-- Sales Chart Section -->
-                    <!-- <div class="relative">
-                        <div class="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-teal-500/5 rounded-3xl blur-xl"></div>
+
+                    <!-- Low Stock Items -->
+                    <div class="relative group">
+                        <div class="absolute inset-0 bg-gradient-to-r from-red-500/10 to-orange-500/10 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                         <div class="relative">
-                            <SalesChart 
-                                :chart-data="salesChartData" 
-                                :current-year="currentYear" 
-                                class="transform hover:shadow-2xl transition-all duration-500" 
+                            <LowStockItems 
+                                :products="lowStockProducts" 
+                                class="transform hover:shadow-2xl transition-all duration-500"
                             />
                         </div>
-                    </div> -->
+                    </div>
 
                     <!-- Analytics Grid -->
                     <div class="grid gap-6 sm:gap-8 lg:grid-cols-2">
@@ -131,17 +137,9 @@ const breadcrumbs: BreadcrumbItem[] = [
                             </div>
                         </div>
                     </div>
+                    
                 </div>
             </div>
-
-            <!-- Floating Action Button -->
-            <!-- <div class="fixed bottom-8 right-8 z-10">
-                <button class="w-14 h-14 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-full shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 flex items-center justify-center">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                    </svg>
-                </button>
-            </div> -->
         </div>
     </AppLayout>
 </template>

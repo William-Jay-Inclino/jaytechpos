@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Inventory\InventoryController;
 use App\Http\Controllers\POS\CustomerController;
 use App\Http\Controllers\POS\CustomerTransactionController;
 use App\Http\Controllers\POS\ExpenseController;
@@ -32,6 +33,9 @@ Route::middleware(['throttle:global'])->group(function () {
     // sales
     Route::get('sales', [SaleController::class, 'index'])->middleware(['auth', 'verified'])->name('sales');
     Route::post('sales', [SaleController::class, 'store'])->middleware(['auth', 'verified'])->name('sales.store');
+
+    // inventory
+    Route::get('inventory', [InventoryController::class, 'index'])->middleware(['auth', 'verified'])->name('inventory');
 
     // sales reports
     Route::get('sales-report', [App\Http\Controllers\SalesReportController::class, 'index'])->middleware(['auth', 'verified'])->name('sales-report');
@@ -77,6 +81,15 @@ Route::middleware(['throttle:global'])->group(function () {
         Route::get('sales-report/data', [App\Http\Controllers\SalesReportController::class, 'getSalesData'])->name('sales-report.api.data');
         Route::get('sales-report/chart', [App\Http\Controllers\SalesReportController::class, 'getChartData'])->name('sales-report.api.chart');
         Route::get('sales-report/payment-types', [App\Http\Controllers\SalesReportController::class, 'getPaymentTypeData'])->name('sales-report.api.payment-types');
+
+        // Stock Movement API endpoints
+        Route::post('stock-movements/stock-in', [App\Http\Controllers\Inventory\StockMovementController::class, 'stockIn'])->name('stock-movements.api.stock-in');
+        Route::post('stock-movements/stock-out', [App\Http\Controllers\Inventory\StockMovementController::class, 'stockOut'])->name('stock-movements.api.stock-out');
+        Route::post('stock-movements/adjustment', [App\Http\Controllers\Inventory\StockMovementController::class, 'stockAdjustment'])->name('stock-movements.api.adjustment');
+        Route::get('stock-movements/product/{productId}', [App\Http\Controllers\Inventory\StockMovementController::class, 'getProductStockMovements'])->name('stock-movements.api.product');
+
+        // Inventory API endpoints
+        Route::post('inventory/update-low-stock-threshold', [App\Http\Controllers\Inventory\InventoryController::class, 'updateLowStockThreshold'])->name('inventory.api.update-low-stock-threshold');
     });
 
     Route::prefix('analytics')->group(function () {

@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\Unit;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
 {
@@ -45,7 +46,7 @@ class ProductController extends Controller
         $this->authorize('create', Product::class);
 
         $validated = $request->validated();
-        $validated['user_id'] = auth()->id();
+        $validated['user_id'] = Auth::id();
 
         $product = Product::create($validated);
         $product->load(['unit']);

@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Traits\LogsActivityWithRequest;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Auth;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -34,7 +36,7 @@ class Product extends Model
 
     public function scopeOwnedBy($query, $userId = null)
     {
-        $userId = $userId ?? auth()->id();
+        $userId = $userId ?? Auth::id();
 
         return $query->where('user_id', $userId);
     }
@@ -57,6 +59,16 @@ class Product extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function inventory(): HasOne
+    {
+        return $this->hasOne(Inventory::class);
+    }
+
+    public function stockMovements()
+    {
+        return $this->hasMany(StockMovement::class, 'product_id');
     }
 
     public function getActivitylogOptions(): LogOptions
