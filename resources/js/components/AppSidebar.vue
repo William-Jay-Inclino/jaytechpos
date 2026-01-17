@@ -37,24 +37,19 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: 'Transact a Sale',
+        title: 'Sale',
         href: '/sales',
         icon: ShoppingCart,
+    },
+    {
+        title: 'Utang',
+        href: '/utang-payments',
+        icon: Banknote,
     },
     {
         title: 'Inventory',
         href: '/inventory',
         icon: Boxes,
-    },
-    {
-        title: 'Utang Payment',
-        href: '/utang-payments',
-        icon: Banknote,
-    },
-    {
-        title: 'Expenses',
-        href: '/expenses',
-        icon: CircleDollarSign,
     },
     {
         title: 'Products',
@@ -65,6 +60,11 @@ const mainNavItems: NavItem[] = [
         title: 'Customers',
         href: '/customers',
         icon: Users,
+    },
+    {
+        title: 'Expenses',
+        href: '/expenses',
+        icon: CircleDollarSign,
     },
     {
         title: 'Sales Report',

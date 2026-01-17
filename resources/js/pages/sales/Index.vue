@@ -26,7 +26,7 @@ const props = defineProps<{
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'New Sale', href: '/sales' },
+    { title: 'Sale', href: '/sales' },
 ];
 
 interface SaleResponse {

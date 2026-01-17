@@ -23,7 +23,7 @@ const props = defineProps<{
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Utang Payment',
+        title: 'Utang',
         href: '/utang-payments',
     },
 ];
