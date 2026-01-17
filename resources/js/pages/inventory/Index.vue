@@ -62,6 +62,19 @@ const helperText = computed(() => {
     }
 });
 
+const actionColumnTxt = computed(() => {
+    switch (selectedAction.value) {
+        case 'stock-in':
+            return 'Add Stock';
+        case 'stock-out':
+            return 'Remove Stock';
+        case 'stock-adjustment':
+            return 'Update Qty';
+        default:
+            return '';
+    }
+})
+
 const filteredProducts = computed(() => {
     if (!searchQuery.value.trim()) {
         return localProducts.value;
@@ -264,22 +277,7 @@ async function saveLSA(productId: number) {
                                     </div>
                                 </th>
                                 <th class="py-3 px-4 text-left text-sm font-medium text-gray-900 dark:text-white text-nowrap">
-                                    Update Qty
-                                </th>
-                                <th class="py-3 pl-4 pr-6 text-left text-sm font-medium text-gray-900 dark:text-white">
-                                    <div class="flex items-center gap-1">
-                                        <span>SMH</span>
-                                        <TooltipProvider>
-                                            <Tooltip>
-                                                <TooltipTrigger as-child>
-                                                    <Info class="h-4 w-4 text-gray-400" />
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                    <p>Stock Movement History</p>
-                                                </TooltipContent>
-                                            </Tooltip>
-                                        </TooltipProvider>
-                                    </div>
+                                    {{ actionColumnTxt }}
                                 </th>
                             </tr>
                         </thead>
@@ -289,11 +287,25 @@ async function saveLSA(productId: number) {
                                 :key="product.id"
                                 class="group border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                             >
-                                <td class="py-4 pl-6 pr-4 font-medium text-gray-900 dark:text-white">
-                                    <span :class="{'text-red-500 dark:text-red-300': Number(product.quantity) <= 0}">
-                                        {{ product.product_name }}
-                                    </span>
+                                <td class="relative py-4 pl-6 pr-4 font-medium text-gray-900 dark:text-white">
+                                    <div class="flex items-center h-full">
+                                        <span :class="{'text-red-500 dark:text-red-300': Number(product.quantity) <= 0}">
+                                            {{ product.product_name }}
+                                        </span>
+                                    </div>
+
+                                    <!-- Hover-only action -->
+                                    <button
+                                        class="absolute left-6 bottom-1
+                                            text-sm text-blue-500 dark:text-blue-300
+                                            opacity-0 group-hover:opacity-100
+                                            transition-opacity duration-200 hover:underline"
+                                        @click="openMovementModal(product.id, product.product_name)"
+                                    >
+                                        View stock movement
+                                    </button>
                                 </td>
+
                                 <td class="py-4 px-4 text-gray-900 dark:text-white">
                                     {{ product.quantity }}
                                 </td>
@@ -322,7 +334,6 @@ async function saveLSA(productId: number) {
                                     <div v-else class="flex items-center gap-2">
                                         <span class="text-gray-900 dark:text-white">{{ product.low_stock_threshold }}</span>
                                         <Button
-                                            v-if="Number(product.quantity) > 0"
                                             size="icon"
                                             variant="ghost"
                                             class="h-6 w-6 cursor-pointer opacity-0 transition-opacity group-hover:opacity-100"
@@ -353,19 +364,9 @@ async function saveLSA(productId: number) {
                                         </Button>
                                     </div>
                                 </td>
-                                <td class="py-4 pl-4 pr-6">
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        class="cursor-pointer text-blue-500 dark:text-blue-300"
-                                        @click="openMovementModal(product.id, product.product_name)"
-                                    >
-                                        <span>View</span>
-                                    </Button>
-                                </td>
                             </tr>
                             <tr v-if="filteredProducts.length === 0">
-                                <td colspan="5" class="py-8 text-center text-gray-500 dark:text-gray-400">
+                                <td colspan="4" class="py-8 text-center text-gray-500 dark:text-gray-400">
                                     No products found
                                 </td>
                             </tr>
