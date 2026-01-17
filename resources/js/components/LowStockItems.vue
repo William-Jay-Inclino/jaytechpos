@@ -35,13 +35,18 @@ function getStockColor(percentage: number): string {
 <template>
     <div class="overflow-hidden rounded-2xl border border-white/20 bg-white/70 backdrop-blur-xl shadow-xl dark:border-gray-700/50 dark:bg-gray-800/70 p-4 sm:p-6">
         <div class="mb-4 sm:mb-6">
-            <div class="flex items-center gap-3 mb-3">
-                <div class="p-2 sm:p-3 rounded-xl bg-gradient-to-br from-red-500/20 to-orange-500/20 flex-shrink-0">
-                    <AlertTriangle class="h-4 w-4 sm:h-5 sm:w-5 text-red-600 dark:text-red-400" />
+            <div class="flex items-center justify-between gap-3 mb-3">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 sm:p-3 rounded-xl bg-gradient-to-br from-red-500/20 to-orange-500/20 flex-shrink-0">
+                        <AlertTriangle class="h-4 w-4 sm:h-5 sm:w-5 text-red-600 dark:text-red-400" />
+                    </div>
+                    <h3 class="text-base sm:text-lg font-semibold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent truncate">
+                        Low Stocks
+                    </h3>
                 </div>
-                <h3 class="text-base sm:text-lg font-semibold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent truncate">
-                    Low Stock Alert
-                </h3>
+                <span v-if="hasLowStockItems" class="inline-flex items-center rounded-full bg-red-100 dark:bg-red-900/30 px-2.5 py-1 text-xs font-semibold text-red-800 dark:text-red-400">
+                    {{ products.length }} {{ products.length === 1 ? 'Product' : 'Products' }}
+                </span>
             </div>
         </div>
         
@@ -58,11 +63,11 @@ function getStockColor(percentage: number): string {
                 </p>
             </div>
 
-            <div v-else class="space-y-2 sm:space-y-3">
+            <div v-else class="space-y-2 sm:space-y-3 max-h-[500px] overflow-y-auto overflow-x-hidden pr-1">
                 <div
                     v-for="product in products"
                     :key="product.product_id"
-                    class="relative overflow-hidden rounded-xl border border-gray-200/50 bg-white/50 p-3 sm:p-4 transition-all duration-300 hover:shadow-lg hover:scale-102 hover:border-red-200/50 dark:border-gray-600/50 dark:bg-gray-700/50 dark:hover:border-red-700/50"
+                    class="relative overflow-hidden rounded-xl border border-gray-200/50 bg-white/50 p-3 sm:p-4 dark:border-gray-600/50 dark:bg-gray-700/50"
                 >
                     <div class="flex items-center justify-between mb-2">
                         <div class="flex-1 min-w-0">
