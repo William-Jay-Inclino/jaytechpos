@@ -6,8 +6,10 @@ node_modules
 .vscode
 storage/*.key
 storage/debugbar
+storage/app/*
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
 .git
-vendor_data
-/.phpunit.result.cache
 vendor_data
 /.phpunit.result.cache
