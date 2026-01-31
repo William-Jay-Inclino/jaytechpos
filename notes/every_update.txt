@@ -1,0 +1,9 @@
+if naay update sa packages dapat inside sa docker mag composer install 
+like so: docker exec docker-app-1 composer install
+
+
+Available Commands:
+docker exec docker-app-1 php artisan backup:run --only-db - Run backup manually
+docker exec docker-app-1 php artisan backup:list - View all backups
+docker exec docker-app-1 php artisan backup:clean - Clean old backups manually
+docker exec docker-app-1 php artisan backup:monitor - Check backup health

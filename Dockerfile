@@ -21,6 +21,7 @@ RUN apt-get update \
         build-essential \
         pkg-config \
         libpq-dev \
+        postgresql-client \
         libzip-dev \
         libpng-dev \
         libjpeg62-turbo-dev \
