@@ -121,11 +121,10 @@ class ExpenseController extends Controller
             ->where('category_id', $categoryId)
             ->whereYear('expense_date', $year)
             ->orderBy('expense_date', 'desc')
-            ->get(['id', 'name', 'amount', 'expense_date']);
+            ->paginate(10, ['id', 'name', 'amount', 'expense_date'])
+            ->withQueryString();
 
-        return response()->json([
-            'expenses' => $expenses,
-        ]);
+        return response()->json($expenses);
     }
 
     public function create()

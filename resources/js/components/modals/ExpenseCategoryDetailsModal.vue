@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { X } from 'lucide-vue-next';
+import { X, Loader2 } from 'lucide-vue-next';
 
 interface Expense {
     id: number;
@@ -15,14 +15,20 @@ interface Props {
     categoryColor: string;
     expenses: Expense[];
     year: number;
+    loading?: boolean;
+    hasMorePages?: boolean;
+    loadingMore?: boolean;
 }
 
-const props = defineProps<Props>();
-
-console.log('expenses', props.expenses);
+const props = withDefaults(defineProps<Props>(), {
+    loading: false,
+    hasMorePages: false,
+    loadingMore: false,
+});
 
 const emit = defineEmits<{
     (e: 'update:open', value: boolean): void;
+    (e: 'load-more'): void;
 }>();
 
 // Format currency
@@ -49,6 +55,20 @@ const getMonthName = (dateString: string) => {
     });
 };
 
+// Helper to parse and sanitize amount
+const parseAmount = (val: any): number => {
+    if (typeof val === 'number') return val;
+    if (typeof val === 'string') {
+        const cleaned = val.replace(/[^\d.]/g, '');
+        const parts = cleaned.split('.');
+        if (parts.length > 2) {
+            return parseFloat(parts[0] + '.' + parts.slice(1).join(''));
+        }
+        return parseFloat(cleaned);
+    }
+    return 0;
+};
+
 // Group expenses by month
 const expensesByMonth = computed(() => {
     const grouped = new Map<string, Expense[]>();
@@ -61,7 +81,6 @@ const expensesByMonth = computed(() => {
         grouped.get(month)!.push(expense);
     });
     
-    // Sort by month order
     const monthOrder = [
         'January', 'February', 'March', 'April', 'May', 'June',
         'July', 'August', 'September', 'October', 'November', 'December'
@@ -69,68 +88,18 @@ const expensesByMonth = computed(() => {
     
     return Array.from(grouped.entries())
         .sort((a, b) => monthOrder.indexOf(a[0]) - monthOrder.indexOf(b[0]))
-        .map(([month, expenses]) => {
-            // Helper to parse and sanitize amount
-            const parseAmount = (val: any) => {
-                if (typeof val === 'number') return val;
-                if (typeof val === 'string') {
-                    // Remove all except digits and decimal point, then parse
-                    const cleaned = val.replace(/[^\d.]/g, '');
-                    // If multiple decimals, keep only the first
-                    const parts = cleaned.split('.');
-                    if (parts.length > 2) {
-                        return parseFloat(parts[0] + '.' + parts.slice(1).join(''));
-                    }
-                    return parseFloat(cleaned);
-                }
-                return 0;
-            };
-            return {
-                month,
-                expenses: expenses.sort((a, b) => 
-                    new Date(b.expense_date).getTime() - new Date(a.expense_date).getTime()
-                ),
-                total: expenses.reduce((sum, exp) => sum + parseAmount(exp.amount), 0),
-            };
-        });
+        .map(([month, expenses]) => ({
+            month,
+            expenses: expenses.sort((a, b) => 
+                new Date(b.expense_date).getTime() - new Date(a.expense_date).getTime()
+            ),
+            total: expenses.reduce((sum, exp) => sum + parseAmount(exp.amount), 0),
+        }));
 });
-
-// Total amount (parse and sanitize like in expensesByMonth)
-const parseAmount = (val: any) => {
-    if (typeof val === 'number') return val;
-    if (typeof val === 'string') {
-        // Remove all except digits and decimal point, then parse
-        const cleaned = val.replace(/[^\d.]/g, '');
-        // If multiple decimals, keep only the first
-        const parts = cleaned.split('.');
-        if (parts.length > 2) {
-            return parseFloat(parts[0] + '.' + parts.slice(1).join(''));
-        }
-        return parseFloat(cleaned);
-    }
-    return 0;
-};
 
 const totalAmount = computed(() => {
     return props.expenses.reduce((sum, expense) => sum + parseAmount(expense.amount), 0);
 });
-
-// Generate badge style based on category color
-const getCategoryBadgeStyle = () => {
-    const hex = props.categoryColor.replace('#', '');
-    const r = parseInt(hex.substr(0, 2), 16);
-    const g = parseInt(hex.substr(2, 2), 16);
-    const b = parseInt(hex.substr(4, 2), 16);
-    
-    const lightBg = `rgba(${r}, ${g}, ${b}, 0.1)`;
-    const lightBorder = `rgba(${r}, ${g}, ${b}, 0.3)`;
-    
-    return {
-        backgroundColor: lightBg,
-        borderColor: lightBorder,
-        color: props.categoryColor,
-    };
-};
 </script>
 
 <template>
@@ -194,8 +163,13 @@ const getCategoryBadgeStyle = () => {
 
                 <!-- Content -->
                 <div class="flex-1 overflow-y-auto px-6 py-4">
+                    <!-- Loading State -->
+                    <div v-if="loading" class="flex items-center justify-center py-16">
+                        <Loader2 class="h-8 w-8 animate-spin text-gray-400" />
+                    </div>
+
                     <!-- Empty State -->
-                    <div v-if="expenses.length === 0" class="flex items-center justify-center py-16">
+                    <div v-else-if="expenses.length === 0" class="flex items-center justify-center py-16">
                     <div class="text-center">
                         <div class="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
                             <span class="text-4xl">📋</span>
@@ -254,6 +228,18 @@ const getCategoryBadgeStyle = () => {
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Load More -->
+                    <div v-if="hasMorePages" class="flex items-center justify-center py-2">
+                        <button
+                            @click="emit('load-more')"
+                            :disabled="loadingMore"
+                            class="text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors disabled:opacity-50 flex items-center gap-2"
+                        >
+                            <Loader2 v-if="loadingMore" class="h-4 w-4 animate-spin" />
+                            {{ loadingMore ? 'Loading...' : 'Load more' }}
+                        </button>
                     </div>
                     </div>
                 </div>

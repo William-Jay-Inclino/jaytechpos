@@ -4,7 +4,7 @@ import ExpensePieChart from '@/components/ExpensePieChart.vue';
 import ExpenseCategoryDetailsModal from '@/components/modals/ExpenseCategoryDetailsModal.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
-import { computed, ref, withDefaults, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { ChevronLeft, ChevronRight, Info } from 'lucide-vue-next';
 import axios from 'axios';
 
@@ -79,6 +79,9 @@ const showCategoryModal = ref(false);
 const selectedCategory = ref<ChartDataItem | null>(null);
 const categoryExpenses = ref<Expense[]>([]);
 const loadingExpenses = ref(false);
+const categoryExpensesCurrentPage = ref(0);
+const categoryExpensesLastPage = ref(0);
+const loadingMoreExpenses = ref(false);
 
 // Computed properties
 const totalAmount = computed(() => {
@@ -128,6 +131,7 @@ async function handleCategoryClick(category: ChartDataItem) {
     selectedCategory.value = category;
     loadingExpenses.value = true;
     showCategoryModal.value = true;
+    categoryExpenses.value = [];
     
     try {
         const response = await axios.get(`/expenses/category/${category.id}`, {
@@ -136,12 +140,39 @@ async function handleCategoryClick(category: ChartDataItem) {
             },
         });
         
-        categoryExpenses.value = response.data.expenses;
+        categoryExpenses.value = response.data.data;
+        categoryExpensesCurrentPage.value = response.data.current_page;
+        categoryExpensesLastPage.value = response.data.last_page;
     } catch (error) {
         console.error('Error loading category expenses:', error);
         categoryExpenses.value = [];
     } finally {
         loadingExpenses.value = false;
+    }
+}
+
+// Load more category expenses (next page)
+async function loadMoreCategoryExpenses() {
+    if (!selectedCategory.value?.id || loadingMoreExpenses.value) return;
+    if (categoryExpensesCurrentPage.value >= categoryExpensesLastPage.value) return;
+
+    loadingMoreExpenses.value = true;
+
+    try {
+        const response = await axios.get(`/expenses/category/${selectedCategory.value.id}`, {
+            params: {
+                year: selectedYear.value,
+                page: categoryExpensesCurrentPage.value + 1,
+            },
+        });
+
+        categoryExpenses.value.push(...response.data.data);
+        categoryExpensesCurrentPage.value = response.data.current_page;
+        categoryExpensesLastPage.value = response.data.last_page;
+    } catch (error) {
+        console.error('Error loading more category expenses:', error);
+    } finally {
+        loadingMoreExpenses.value = false;
     }
 }
 
@@ -333,6 +364,10 @@ watch(selectedYear, () => {
             :category-color="selectedCategory?.color || '#6B7280'"
             :expenses="categoryExpenses"
             :year="selectedYear"
+            :loading="loadingExpenses"
+            :has-more-pages="categoryExpensesCurrentPage < categoryExpensesLastPage"
+            :loading-more="loadingMoreExpenses"
+            @load-more="loadMoreCategoryExpenses"
         />
     </AppLayout>
 </template>

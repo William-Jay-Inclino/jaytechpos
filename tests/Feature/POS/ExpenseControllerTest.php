@@ -279,13 +279,14 @@ describe('categoryExpenses', function () {
 
         $response->assertOk();
         $response->assertJson([
-            'expenses' => [
+            'data' => [
                 [
                     'id' => $expense->id,
                     'name' => $expense->name,
                 ],
             ],
         ]);
+        $response->assertJsonPath('current_page', 1);
     });
 
     it('requires authentication', function () {
