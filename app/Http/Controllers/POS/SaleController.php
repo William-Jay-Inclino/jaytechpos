@@ -16,6 +16,8 @@ use App\Models\StockMovement;
 use App\Services\CustomerService;
 use App\Services\SaleService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -35,10 +37,7 @@ class SaleController extends Controller
     {
         $this->authorize('viewAny', Sale::class);
 
-        $products = Product::availableForSale()
-            ->with(['unit', 'inventory:product_id,quantity'])
-            ->orderBy('product_name')
-            ->get();
+        $hasProducts = Product::availableForSale()->exists();
 
         $customers = Customer::ownedBy()
             ->select(['id', 'name'])
@@ -46,9 +45,30 @@ class SaleController extends Controller
             ->get();
 
         return Inertia::render('sales/Index', [
-            'products' => $products,
+            'hasProducts' => $hasProducts,
             'customers' => $customers,
         ]);
+    }
+
+    public function searchProducts(Request $request): JsonResponse
+    {
+        $this->authorize('viewAny', Sale::class);
+
+        $query = Product::availableForSale()
+            ->with(['unit', 'inventory:product_id,quantity'])
+            ->orderBy('product_name');
+
+        if ($request->filled('search')) {
+            $search = mb_strtolower($request->string('search'));
+            $query->where(function ($q) use ($search) {
+                $q->whereRaw('LOWER(product_name) LIKE ?', ["%{$search}%"])
+                    ->orWhereHas('unit', fn ($q) => $q->whereRaw('LOWER(abbreviation) LIKE ?', ["%{$search}%"]));
+            });
+        }
+
+        $products = $query->limit(20)->get();
+
+        return response()->json(['products' => $products]);
     }
 
     public function getSale(Sale $sale)

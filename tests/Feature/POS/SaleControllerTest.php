@@ -36,12 +36,12 @@ describe('index', function () {
         $response->assertOk();
         $response->assertInertia(fn ($page) => $page
             ->component('sales/Index')
-            ->has('products')
+            ->has('hasProducts')
             ->has('customers')
         );
     });
 
-    it('only shows active products owned by authenticated user', function () {
+    it('reports hasProducts when active products exist for authenticated user', function () {
         $otherUser = User::factory()->create();
 
         Product::factory()->create([
@@ -63,7 +63,7 @@ describe('index', function () {
         $response->assertOk();
         $response->assertInertia(fn ($page) => $page
             ->component('sales/Index')
-            ->has('products', 1)
+            ->where('hasProducts', true)
         );
     });
 
@@ -85,6 +85,109 @@ describe('index', function () {
 
     it('requires authentication', function () {
         $response = get('/sales');
+
+        $response->assertRedirect(route('login'));
+    });
+});
+
+describe('searchProducts', function () {
+    it('returns products matching the search query', function () {
+        Product::factory()->create([
+            'user_id' => $this->user->id,
+            'unit_id' => $this->unit->id,
+            'product_name' => 'Coca Cola',
+            'status' => 'active',
+        ]);
+
+        Product::factory()->create([
+            'user_id' => $this->user->id,
+            'unit_id' => $this->unit->id,
+            'product_name' => 'Pepsi',
+            'status' => 'active',
+        ]);
+
+        actingAs($this->user);
+
+        $response = get('/api/sales/products/search?search=coca');
+
+        $response->assertOk();
+        $response->assertJsonCount(1, 'products');
+        $response->assertJsonPath('products.0.product_name', 'Coca Cola');
+    });
+
+    it('returns all products when no search query is provided', function () {
+        actingAs($this->user);
+
+        $response = get('/api/sales/products/search');
+
+        $response->assertOk();
+        $response->assertJsonStructure(['products']);
+    });
+
+    it('excludes inactive products', function () {
+        Product::factory()->create([
+            'user_id' => $this->user->id,
+            'unit_id' => $this->unit->id,
+            'product_name' => 'Inactive Product',
+            'status' => 'inactive',
+        ]);
+
+        actingAs($this->user);
+
+        $response = get('/api/sales/products/search?search=inactive');
+
+        $response->assertOk();
+        $response->assertJsonCount(0, 'products');
+    });
+
+    it('excludes products owned by other users', function () {
+        $otherUser = User::factory()->create();
+
+        Product::factory()->create([
+            'user_id' => $otherUser->id,
+            'unit_id' => $this->unit->id,
+            'product_name' => 'Other User Product',
+            'status' => 'active',
+        ]);
+
+        actingAs($this->user);
+
+        $response = get('/api/sales/products/search?search=other');
+
+        $response->assertOk();
+        $response->assertJsonCount(0, 'products');
+    });
+
+    it('includes unit and inventory relationships', function () {
+        actingAs($this->user);
+
+        $response = get('/api/sales/products/search');
+
+        $response->assertOk();
+        $response->assertJsonStructure([
+            'products' => [
+                '*' => ['id', 'product_name', 'unit_price', 'unit'],
+            ],
+        ]);
+    });
+
+    it('limits results to 20 products', function () {
+        Product::factory()->count(25)->create([
+            'user_id' => $this->user->id,
+            'unit_id' => $this->unit->id,
+            'status' => 'active',
+        ]);
+
+        actingAs($this->user);
+
+        $response = get('/api/sales/products/search');
+
+        $response->assertOk();
+        $response->assertJsonCount(20, 'products');
+    });
+
+    it('requires authentication', function () {
+        $response = get('/api/sales/products/search');
 
         $response->assertRedirect(route('login'));
     });

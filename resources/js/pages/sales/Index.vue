@@ -2,6 +2,7 @@
 import { Head, router } from '@inertiajs/vue3';
 import { X, Search, UserPlus, Plus, Minus} from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { useDebounceFn } from '@vueuse/core';
 import axios from 'axios';
 
 // Layout & Components
@@ -21,7 +22,7 @@ import { CartItem, Customer, Product } from '@/types/pos';
 import { formatCurrency } from '@/utils/currency';
 
 const props = defineProps<{
-    products: Product[];
+    hasProducts: boolean;
     customers: Customer[];
 }>();
 
@@ -80,6 +81,8 @@ const customerSearch = ref('');
 const showCustomerDropdown = ref(false);
 const productSearch = ref('');
 const showProductDropdown = ref(false);
+const searchResults = ref<Product[]>([]);
+const isSearchingProducts = ref(false);
 const transactionDate = ref(new Date().toISOString().split('T')[0]);
 const transactionTime = ref(
     new Date().toLocaleTimeString('en-US', { 
@@ -168,12 +171,23 @@ const filteredCustomers = computed(() => {
     );
 });
 
-const filteredProducts = computed(() => {
-    if (!productSearch.value) return props.products;
-    return props.products.filter(product =>
-        product.product_name.toLowerCase().includes(productSearch.value.toLowerCase())
-    );
-});
+async function fetchProducts(search: string = ''): Promise<void> {
+    isSearchingProducts.value = true;
+    try {
+        const response = await axios.get('/api/sales/products/search', {
+            params: { search: search || undefined },
+        });
+        searchResults.value = response.data.products;
+    } catch {
+        searchResults.value = [];
+    } finally {
+        isSearchingProducts.value = false;
+    }
+}
+
+const debouncedFetchProducts = useDebounceFn((search: string) => {
+    fetchProducts(search);
+}, 300);
 
 const selectedCustomerName = computed(() => {
     if (selectedCustomerId.value === '0') return '---';
@@ -277,6 +291,13 @@ function selectProduct(product: Product) {
     productSearch.value = '';
 }
 
+function openProductDropdown(): void {
+    showProductDropdown.value = !showProductDropdown.value;
+    if (showProductDropdown.value && searchResults.value.length === 0) {
+        fetchProducts(productSearch.value);
+    }
+}
+
 async function handleCheckout(): Promise<void> {
     if (!isCheckoutValid.value || isProcessing.value) return;
 
@@ -334,6 +355,7 @@ function resetFormData(): void {
     showCustomerDropdown.value = false;
     productSearch.value = '';
     showProductDropdown.value = false;
+    searchResults.value = [];
     transactionDate.value = new Date().toISOString().split('T')[0];
     transactionTime.value = new Date().toLocaleTimeString('en-US', { 
         hour: '2-digit', 
@@ -387,6 +409,11 @@ onUnmounted(() => {
     document.removeEventListener('click', handleClickOutside);
 });
 
+// Watch product search input and trigger debounced server-side search
+watch(productSearch, (search: string) => {
+    debouncedFetchProducts(search);
+});
+
 // Watch for checkbox changes to set default deduction amount
 watch(payTowardsBalance, (isChecked: boolean) => {
     if (isChecked) {
@@ -429,7 +456,7 @@ watch(amountTendered, () => {
             <!-- Page Header -->
                 <div class="mx-auto max-w-7xl">
                     <!-- Alert: No products available -->
-                    <div v-if="!props.products || props.products.length === 0" class="mb-6">
+                    <div v-if="!props.hasProducts" class="mb-6">
                         <div class="alert-primary-subtle">
                             <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                                 <div class="flex items-start gap-4">
@@ -652,7 +679,7 @@ watch(amountTendered, () => {
                             <!-- Product Selection Dropdown -->
                             <div class="relative product-dropdown">
                                 <div
-                                    @click="showProductDropdown = !showProductDropdown"
+                                    @click="openProductDropdown()"
                                     class="flex h-12 w-full cursor-pointer items-center justify-center rounded-md border border-input px-4 py-3 text-medium text-primary dark:hover:bg-white/10 hover:bg-gray-100"
                                 >
                                     <Plus class="mr-2 h-4 w-4"/>
@@ -673,34 +700,44 @@ watch(amountTendered, () => {
                                         />
                                     </div>
                                     <div class="max-h-[52vh] overflow-auto">
+                                        <!-- Loading State -->
+                                        <div v-if="isSearchingProducts" class="py-6 text-center">
+                                            <div class="inline-flex items-center gap-2 text-sm text-muted-foreground">
+                                                <div class="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+                                                Searching...
+                                            </div>
+                                        </div>
+
                                         <!-- Product Options -->
-                                        <div
-                                            v-for="product in filteredProducts"
-                                            :key="product.id"
-                                            @click="selectProduct(product)"
-                                            class="relative flex cursor-default select-none items-center justify-between rounded-sm px-2 py-2.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground cursor-pointer gap-3"
-                                        >
-                                            <div class="flex flex-col flex-1 min-w-0">
-                                                <div class="font-medium truncate">{{ product.product_name }}</div>
-                                                <div class="text-xs text-green-600 dark:text-green-400 font-medium">
-                                                    {{ formatCurrency(product.unit_price) }}/ <span class="text-gray-500 dark:text-gray-400"> {{ product.unit?.abbreviation || 'unit' }} </span>
+                                        <template v-else>
+                                            <div
+                                                v-for="product in searchResults"
+                                                :key="product.id"
+                                                @click="selectProduct(product)"
+                                                class="relative flex cursor-default select-none items-center justify-between rounded-sm px-2 py-2.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground cursor-pointer gap-3"
+                                            >
+                                                <div class="flex flex-col flex-1 min-w-0">
+                                                    <div class="font-medium truncate">{{ product.product_name }}</div>
+                                                    <div class="text-xs text-green-600 dark:text-green-400 font-medium">
+                                                        {{ formatCurrency(product.unit_price) }}/ <span class="text-gray-500 dark:text-gray-400"> {{ product.unit?.abbreviation || 'unit' }} </span>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-shrink-0">
+                                                    <div v-if="product.inventory" class="text-xs text-gray-600 dark:text-gray-400 text-right">
+                                                        <span class="font-medium">{{ product.inventory.quantity }}</span> available
+                                                    </div>
+                                                    <div v-else class="text-xs text-orange-600 dark:text-orange-400 italic text-right">
+                                                        Not in inventory
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div class="flex-shrink-0">
-                                                <div v-if="product.inventory" class="text-xs text-gray-600 dark:text-gray-400 text-right">
-                                                    <span class="font-medium">{{ product.inventory.quantity }}</span> available
-                                                </div>
-                                                <div v-else class="text-xs text-orange-600 dark:text-orange-400 italic text-right">
-                                                    Not in inventory
-                                                </div>
+                                            <div
+                                                v-if="searchResults.length === 0"
+                                                class="py-6 text-center text-sm text-muted-foreground"
+                                            >
+                                                No products found.
                                             </div>
-                                        </div>
-                                        <div
-                                            v-if="filteredProducts.length === 0"
-                                            class="py-6 text-center text-sm text-muted-foreground"
-                                        >
-                                            No products found.
-                                        </div>
+                                        </template>
                                     </div>
                                 </div>
                             </div>

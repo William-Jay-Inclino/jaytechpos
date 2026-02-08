@@ -75,6 +75,7 @@ Route::middleware(['throttle:global'])->group(function () {
 
         // Sale API endpoints
         Route::get('sales/{sale}', [SaleController::class, 'getSale'])->name('sales.api.show');
+        Route::get('sales/products/search', [SaleController::class, 'searchProducts'])->name('sales.api.products.search');
         Route::get('customers/{customer}/balance', [SaleController::class, 'getCustomerBalance'])->name('customers.api.balance');
 
         // Sales Report API endpoints
