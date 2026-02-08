@@ -8,31 +8,46 @@ use App\Models\Inventory;
 use App\Models\Product;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class InventoryController extends Controller
 {
     use AuthorizesRequests;
 
-    public function index()
+    public function index(Request $request)
     {
         $this->authorize('viewAny', Product::class);
 
-        $products = Product::ownedBy()
+        $query = Product::ownedBy()
             ->with(['inventory'])
+            ->orderBy('product_name');
+
+        if ($request->filled('search')) {
+            $search = mb_strtolower($request->search);
+            $query->whereRaw('LOWER(product_name) like ?', ["%{$search}%"]);
+        }
+
+        $products = $query->paginate(15)->withQueryString()->through(function ($product) {
+            return [
+                'id' => $product->id,
+                'product_name' => $product->product_name,
+                'quantity' => $product->inventory?->quantity ?? 0,
+                'low_stock_threshold' => $product->inventory?->low_stock_threshold ?? 0,
+            ];
+        });
+
+        $unstockedProducts = Product::ownedBy()
+            ->whereDoesntHave('inventory')
             ->orderBy('product_name')
-            ->get()
-            ->map(function ($product) {
-                return [
-                    'id' => $product->id,
-                    'product_name' => $product->product_name,
-                    'quantity' => $product->inventory?->quantity ?? 0,
-                    'low_stock_threshold' => $product->inventory?->low_stock_threshold ?? 0,
-                ];
-            });
+            ->get(['id', 'product_name']);
 
         return Inertia::render('inventory/Index', [
             'products' => $products,
+            'unstockedProducts' => $unstockedProducts,
+            'filters' => [
+                'search' => $request->search,
+            ],
         ]);
     }
 

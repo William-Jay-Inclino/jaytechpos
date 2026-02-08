@@ -3,6 +3,13 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import {
     Tooltip,
     TooltipContent,
     TooltipProvider,
@@ -11,10 +18,10 @@ import {
 import StockMovementModal from '@/components/modals/StockMovementModal.vue';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import axios from 'axios';
-import { Check, Info, Pencil, Save, Search } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { Check, Eye, Info, Loader2, Pencil, Save, Search } from 'lucide-vue-next';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 
 type ActionType = 'stock-in' | 'stock-out' | 'stock-adjustment';
 
@@ -25,11 +32,30 @@ interface Product {
     low_stock_threshold: string;
 }
 
+interface PaginatedProducts {
+    data: Product[]
+    current_page: number
+    last_page: number
+    per_page: number
+    total: number
+    from: number
+    to: number
+}
+
 const props = defineProps<{
-    products: Product[];
+    products: PaginatedProducts
+    unstockedProducts: { id: number; product_name: string }[]
+    filters: {
+        search?: string
+    }
 }>();
 
-const localProducts = ref<Product[]>([...props.products]);
+const localProducts = ref<Product[]>([...props.products.data]);
+
+// Keep localProducts in sync when server data changes (pagination/search)
+watch(() => props.products.data, (newData) => {
+    localProducts.value = [...newData];
+});
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -39,7 +65,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const selectedAction = ref<ActionType>('stock-in');
-const searchQuery = ref('');
+const searchQuery = ref(props.filters.search || '');
 const actionQuantities = ref<Record<number, string>>({});
 const savingProducts = ref<Record<number, boolean>>({});
 const showMovementModal = ref(false);
@@ -48,6 +74,53 @@ const selectedProductName = ref<string>('');
 const editingLSA = ref<number | null>(null);
 const lsaEditValue = ref<string>('');
 const savingLSA = ref(false);
+const showUnstockedModal = ref(false);
+
+// Loading state
+const isLoading = ref(false)
+let removeStartListener: (() => void) | null = null
+let removeFinishListener: (() => void) | null = null
+
+onMounted(() => {
+    removeStartListener = router.on('start', () => {
+        isLoading.value = true
+    })
+    removeFinishListener = router.on('finish', () => {
+        isLoading.value = false
+    })
+})
+
+onUnmounted(() => {
+    removeStartListener?.()
+    removeFinishListener?.()
+})
+
+// Debounced server-side search
+let searchTimeout: ReturnType<typeof setTimeout> | null = null
+
+watch(searchQuery, () => {
+    if (searchTimeout) {
+        clearTimeout(searchTimeout)
+    }
+
+    searchTimeout = setTimeout(() => {
+        applyFilters()
+    }, 300)
+})
+
+function applyFilters(): void {
+    router.get('/inventory', {
+        search: searchQuery.value || undefined,
+    }, {
+        preserveState: true,
+        preserveScroll: true,
+    })
+}
+
+function clearSearch(): void {
+    searchQuery.value = ''
+    applyFilters()
+}
 
 const helperText = computed(() => {
     switch (selectedAction.value) {
@@ -74,17 +147,6 @@ const actionColumnTxt = computed(() => {
             return '';
     }
 })
-
-const filteredProducts = computed(() => {
-    if (!searchQuery.value.trim()) {
-        return localProducts.value;
-    }
-    
-    const query = searchQuery.value.toLowerCase();
-    return localProducts.value.filter(product => 
-        product.product_name.toLowerCase().includes(query)
-    );
-});
 
 async function handleSave(productId: number) {
     const quantity = actionQuantities.value[productId];
@@ -242,12 +304,27 @@ async function saveLSA(productId: number) {
 
                 <!-- Search -->
                 <div class="relative">
-                    <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                    <Search v-if="!isLoading" class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                    <Loader2 v-else class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 animate-spin" />
                     <Input
                         v-model="searchQuery"
                         placeholder="Search here..."
                         class="pl-9"
                     />
+                </div>
+
+                <!-- Unstocked Products Warning -->
+                <div v-if="unstockedProducts.length > 0" class="flex items-center justify-between rounded-lg bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-900/20 dark:text-amber-300">
+                    <span>{{ unstockedProducts.length }} {{ unstockedProducts.length === 1 ? 'product has' : 'products have' }} no inventory record yet.</span>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        class="shrink-0 border-amber-300 text-amber-800 hover:bg-amber-100 dark:border-amber-700 dark:text-amber-300 dark:hover:bg-amber-900/40"
+                        @click="showUnstockedModal = true"
+                    >
+                        <Eye class="h-4 w-4" />
+                        View
+                    </Button>
                 </div>
 
                 <!-- Products Table -->
@@ -283,7 +360,7 @@ async function saveLSA(productId: number) {
                         </thead>
                         <tbody>
                             <tr
-                                v-for="product in filteredProducts"
+                                v-for="product in localProducts"
                                 :key="product.id"
                                 class="group border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                             >
@@ -365,13 +442,43 @@ async function saveLSA(productId: number) {
                                     </div>
                                 </td>
                             </tr>
-                            <tr v-if="filteredProducts.length === 0">
+                            <tr v-if="localProducts.length === 0">
                                 <td colspan="4" class="py-8 text-center text-gray-500 dark:text-gray-400">
-                                    No products found
+                                    <template v-if="searchQuery">
+                                        No products found. <button class="text-blue-500 hover:underline" @click="clearSearch">Clear search</button>
+                                    </template>
+                                    <template v-else>
+                                        No products found
+                                    </template>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
+
+                    <!-- Pagination -->
+                    <div v-if="localProducts.length" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-t border-gray-200 px-4 py-4 sm:px-6 dark:border-gray-700">
+                        <div class="text-sm text-gray-500 dark:text-gray-400">
+                            Showing {{ products.from }} to {{ products.to }} of {{ products.total }} results
+                        </div>
+                        <div class="flex gap-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                :disabled="products.current_page === 1"
+                                @click="router.get('/inventory', { page: products.current_page - 1, search: searchQuery || undefined }, { preserveState: true, preserveScroll: true })"
+                            >
+                                Previous
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                :disabled="products.current_page === products.last_page"
+                                @click="router.get('/inventory', { page: products.current_page + 1, search: searchQuery || undefined }, { preserveState: true, preserveScroll: true })"
+                            >
+                                Next
+                            </Button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -381,6 +488,29 @@ async function saveLSA(productId: number) {
             :product-id="selectedProductId"
             :product-name="selectedProductName"
         />
+
+        <!-- Unstocked Products Modal -->
+        <Dialog :open="showUnstockedModal" @update:open="showUnstockedModal = $event">
+            <DialogContent class="sm:max-w-md">
+                <DialogHeader>
+                    <DialogTitle>Unstocked Products</DialogTitle>
+                    <DialogDescription>
+                        These products have no inventory record yet. Use Stock In to add initial stock.
+                    </DialogDescription>
+                </DialogHeader>
+                <div class="max-h-80 overflow-y-auto">
+                    <ul class="divide-y divide-gray-100 dark:divide-gray-700">
+                        <li
+                            v-for="product in unstockedProducts"
+                            :key="product.id"
+                            class="py-3 px-1 text-sm text-gray-900 dark:text-white"
+                        >
+                            {{ product.product_name }}
+                        </li>
+                    </ul>
+                </div>
+            </DialogContent>
+        </Dialog>
     </AppLayout>
 </template>
 
