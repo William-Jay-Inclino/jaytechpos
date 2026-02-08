@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Product, type BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/vue3';
-import { computed, ref, withDefaults } from 'vue';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { onMounted, onUnmounted, ref, watch } from 'vue';
 import axios from 'axios';
-import { Search, Edit, Trash2 } from 'lucide-vue-next';
+import { Search, Edit, Trash2, Loader2 } from 'lucide-vue-next';
 import { formatCurrency } from '@/utils/currency';
 
 // UI Components
@@ -14,11 +14,28 @@ import { Input } from '@/components/ui/input';
 import { showConfirmDelete } from '@/lib/swal';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
-const props = withDefaults(defineProps<{
-    products: Array<Product>;
-}>(), {
-    products: () => [],
-});
+interface PaginationMeta {
+    current_page: number
+    last_page: number
+    per_page: number
+    total: number
+    from: number
+    to: number
+}
+
+interface Props {
+    products: {
+        data: Product[]
+        links: any[]
+        meta: PaginationMeta
+    }
+    filters: {
+        search?: string
+        status?: string
+    }
+}
+
+const props = defineProps<Props>()
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -27,36 +44,61 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-// Search and filter state
-const searchQuery = ref('');
-const statusFilter = ref('all'); // 'all', 'active', 'inactive'
+// Search and filter state (initialized from server-side filters)
+const searchQuery = ref(props.filters.search || '')
+const statusFilter = ref(props.filters.status || 'all')
 
-const totalProducts = computed(() => Array.isArray(props.products) ? props.products.length : 0);
+// Debounced server-side search
+let searchTimeout: ReturnType<typeof setTimeout> | null = null
 
-// Filtered products based on search and filters
-const filteredProducts = computed(() => {
-    if (!Array.isArray(props.products)) return [];
-    
-    let filtered = props.products;
-    
-    // Apply search filter
-    if (searchQuery.value.trim()) {
-        const query = searchQuery.value.toLowerCase().trim();
-        filtered = filtered.filter(product => 
-            product.product_name.toLowerCase().includes(query) ||
-            (product.unit?.unit_name && product.unit.unit_name.toLowerCase().includes(query))
-        );
+watch(searchQuery, () => {
+    if (searchTimeout) {
+        clearTimeout(searchTimeout)
     }
-    
-    // Apply status filter
-    if (statusFilter.value !== 'all') {
-        filtered = filtered.filter(product => product.status === statusFilter.value);
-    }
-    
-    return filtered;
-});
 
-// Use `product.unit?.abbreviation` directly (see resources/js/types/pos.ts)
+    searchTimeout = setTimeout(() => {
+        applyFilters()
+    }, 300)
+})
+
+watch(statusFilter, () => {
+    applyFilters()
+})
+
+function applyFilters(): void {
+    router.get('/products', {
+        search: searchQuery.value || undefined,
+        status: statusFilter.value !== 'all' ? statusFilter.value : undefined,
+    }, {
+        preserveState: true,
+        preserveScroll: true,
+    })
+}
+
+function clearFilters(): void {
+    searchQuery.value = ''
+    statusFilter.value = 'all'
+    applyFilters()
+}
+
+// Loading state
+const isLoading = ref(false)
+let removeStartListener: (() => void) | null = null
+let removeFinishListener: (() => void) | null = null
+
+onMounted(() => {
+    removeStartListener = router.on('start', () => {
+        isLoading.value = true
+    })
+    removeFinishListener = router.on('finish', () => {
+        isLoading.value = false
+    })
+})
+
+onUnmounted(() => {
+    removeStartListener?.()
+    removeFinishListener?.()
+})
 
 // Action handlers
 async function deleteProduct(productId: number) {
@@ -74,20 +116,11 @@ async function deleteProduct(productId: number) {
 
             if (data.success) {
                 showSuccessToast(data.msg || 'Product deleted successfully!')
-
-                const indx = props.products.findIndex(product => product.id === productId);
-                if (indx !== -1) {
-                    props.products.splice(indx, 1);
-                    searchQuery.value = ''; // Clear search after deletion
-                }
-
-
+                router.reload({ only: ['products'] })
             } else {
-                // backend responded but indicated failure
                 showErrorToast(data.msg || 'Failed to delete product')
             }
         } catch (error: any) {
-            // try to show a useful message from the response when available
             const message = error?.response?.data?.msg || error?.response?.data?.message || 'Failed to delete product'
             showErrorToast(message)
         }
@@ -103,8 +136,14 @@ async function deleteProduct(productId: number) {
             <!-- Page Header -->
             <div class="mx-auto max-w-7xl">
                 <div class="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
-                    
-                    <Button v-if="totalProducts > 0" as-child class="w-full sm:w-auto">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Products</h2>
+                        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                            {{ products.meta.total }} {{ products.meta.total === 1 ? 'product' : 'products' }} total
+                        </p>
+                    </div>
+
+                    <Button v-if="products.meta.total > 0" as-child class="w-full sm:w-auto">
                         <Link href="/products/create" class="flex items-center justify-center gap-2">
                             <span>Add Product</span>
                         </Link>
@@ -112,11 +151,12 @@ async function deleteProduct(productId: number) {
                 </div>
 
                 <!-- Search and Filters -->
-                <div v-if="totalProducts > 0" class="mb-6">
+                <div v-if="products.meta.total > 0 || searchQuery || statusFilter !== 'all'" class="mb-6">
                     <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
                         <!-- Search -->
                         <div class="relative flex-1">
-                            <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                            <Search v-if="!isLoading" class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                            <Loader2 v-else class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 animate-spin" />
                             <Input
                                 v-model="searchQuery"
                                 type="text"
@@ -130,7 +170,7 @@ async function deleteProduct(productId: number) {
                 <!-- Products Display -->
                 <div class="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800 overflow-hidden">
                     <!-- Empty State - No Products -->
-                    <div v-if="totalProducts === 0" class="px-4 py-16 sm:px-6 sm:py-20 text-center">
+                    <div v-if="products.meta.total === 0 && !searchQuery && statusFilter === 'all'" class="px-4 py-16 sm:px-6 sm:py-20 text-center">
                         <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
                             <span class="text-3xl">📦</span>
                         </div>
@@ -150,7 +190,7 @@ async function deleteProduct(productId: number) {
                     </div>
 
                     <!-- Empty State - No Results -->
-                    <div v-else-if="filteredProducts.length === 0 && (searchQuery.trim() || statusFilter !== 'all')" class="px-4 py-16 sm:px-6 sm:py-20 text-center">
+                    <div v-else-if="products.data.length === 0" class="px-4 py-16 sm:px-6 sm:py-20 text-center">
                         <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
                             <Search class="h-8 w-8 text-gray-400" />
                         </div>
@@ -161,7 +201,7 @@ async function deleteProduct(productId: number) {
                             Try adjusting your search terms or filter criteria to find what you're looking for.
                         </p>
                         <div class="mt-8">
-                            <Button variant="outline" @click="searchQuery = ''; statusFilter = 'all'" size="lg">
+                            <Button variant="outline" @click="clearFilters" size="lg">
                                 Clear All Filters
                             </Button>
                         </div>
@@ -173,7 +213,7 @@ async function deleteProduct(productId: number) {
                         <!-- Mobile Cards -->
                         <div class="block lg:hidden divide-y divide-gray-100 dark:divide-gray-700">
                             <div
-                                v-for="product in filteredProducts"
+                                v-for="product in products.data"
                                 :key="product.id"
                                 class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors space-y-3"
                             >
@@ -262,7 +302,7 @@ async function deleteProduct(productId: number) {
                                 </thead>
                                 <tbody>
                                     <tr 
-                                        v-for="product in filteredProducts" 
+                                        v-for="product in products.data" 
                                         :key="product.id"
                                         class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                                     >
@@ -318,6 +358,31 @@ async function deleteProduct(productId: number) {
                                     </tr>
                                 </tbody>
                             </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div v-if="products.data.length" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-t border-gray-200 px-4 py-4 sm:px-6 dark:border-gray-700">
+                            <div class="text-sm text-gray-500 dark:text-gray-400">
+                                Showing {{ products.meta.from }} to {{ products.meta.to }} of {{ products.meta.total }} results
+                            </div>
+                            <div class="flex gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    :disabled="products.meta.current_page === 1"
+                                    @click="router.get('/products', { page: products.meta.current_page - 1, search: searchQuery || undefined, status: statusFilter !== 'all' ? statusFilter : undefined }, { preserveState: true, preserveScroll: true })"
+                                >
+                                    Previous
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    :disabled="products.meta.current_page === products.meta.last_page"
+                                    @click="router.get('/products', { page: products.meta.current_page + 1, search: searchQuery || undefined, status: statusFilter !== 'all' ? statusFilter : undefined }, { preserveState: true, preserveScroll: true })"
+                                >
+                                    Next
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </div>

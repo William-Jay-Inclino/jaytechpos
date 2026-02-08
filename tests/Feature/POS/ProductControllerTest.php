@@ -28,7 +28,9 @@ describe('index', function () {
         $response->assertOk();
         $response->assertInertia(fn ($page) => $page
             ->component('products/Index')
-            ->has('products')
+            ->has('products.data')
+            ->has('products.meta')
+            ->has('filters')
         );
     });
 
@@ -52,7 +54,7 @@ describe('index', function () {
         $response->assertOk();
         $response->assertInertia(fn ($page) => $page
             ->component('products/Index')
-            ->has('products', 1)
+            ->has('products.data', 1)
         );
     });
 
@@ -82,9 +84,9 @@ describe('index', function () {
         $response->assertOk();
         $response->assertInertia(fn ($page) => $page
             ->component('products/Index')
-            ->where('products.0.product_name', 'Alpha Product')
-            ->where('products.1.product_name', 'Beta Product')
-            ->where('products.2.product_name', 'Zebra Product')
+            ->where('products.data.0.product_name', 'Alpha Product')
+            ->where('products.data.1.product_name', 'Beta Product')
+            ->where('products.data.2.product_name', 'Zebra Product')
         );
     });
 
@@ -92,6 +94,121 @@ describe('index', function () {
         $response = get('/products');
 
         $response->assertRedirect(route('login'));
+    });
+
+    it('filters products by search query', function () {
+        Product::factory()->create([
+            'user_id' => $this->user->id,
+            'unit_id' => $this->unit->id,
+            'product_name' => 'Apple Juice',
+        ]);
+
+        Product::factory()->create([
+            'user_id' => $this->user->id,
+            'unit_id' => $this->unit->id,
+            'product_name' => 'Banana Shake',
+        ]);
+
+        actingAs($this->user);
+
+        $response = get('/products?search=Apple');
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->component('products/Index')
+            ->has('products.data', 1)
+            ->where('products.data.0.product_name', 'Apple Juice')
+            ->where('filters.search', 'Apple')
+        );
+    });
+
+    it('filters products by search query case insensitively', function () {
+        Product::factory()->create([
+            'user_id' => $this->user->id,
+            'unit_id' => $this->unit->id,
+            'product_name' => 'Apple Juice',
+        ]);
+
+        Product::factory()->create([
+            'user_id' => $this->user->id,
+            'unit_id' => $this->unit->id,
+            'product_name' => 'Banana Shake',
+        ]);
+
+        actingAs($this->user);
+
+        $response = get('/products?search=apple');
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->component('products/Index')
+            ->has('products.data', 1)
+            ->where('products.data.0.product_name', 'Apple Juice')
+        );
+    });
+
+    it('filters products by status', function () {
+        Product::factory()->create([
+            'user_id' => $this->user->id,
+            'unit_id' => $this->unit->id,
+            'status' => 'active',
+        ]);
+
+        Product::factory()->create([
+            'user_id' => $this->user->id,
+            'unit_id' => $this->unit->id,
+            'status' => 'inactive',
+        ]);
+
+        actingAs($this->user);
+
+        $response = get('/products?status=active');
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->component('products/Index')
+            ->has('products.data', 1)
+            ->where('filters.status', 'active')
+        );
+    });
+
+    it('paginates products with 15 per page', function () {
+        Product::factory(20)->create([
+            'user_id' => $this->user->id,
+            'unit_id' => $this->unit->id,
+        ]);
+
+        actingAs($this->user);
+
+        $response = get('/products');
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->component('products/Index')
+            ->has('products.data', 15)
+            ->where('products.meta.current_page', 1)
+            ->where('products.meta.last_page', 2)
+            ->where('products.meta.per_page', 15)
+            ->where('products.meta.total', 20)
+        );
+    });
+
+    it('navigates to second page of products', function () {
+        Product::factory(20)->create([
+            'user_id' => $this->user->id,
+            'unit_id' => $this->unit->id,
+        ]);
+
+        actingAs($this->user);
+
+        $response = get('/products?page=2');
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->component('products/Index')
+            ->has('products.data', 5)
+            ->where('products.meta.current_page', 2)
+        );
     });
 });
 

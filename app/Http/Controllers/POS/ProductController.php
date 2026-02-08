@@ -9,24 +9,43 @@ use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use App\Models\Unit;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Inertia\Inertia;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class ProductController extends Controller
 {
     use AuthorizesRequests;
 
-    public function index()
+    public function index(Request $request)
     {
         $this->authorize('viewAny', Product::class);
 
-        $products = Product::ownedBy()
+        $query = Product::ownedBy()
             ->with(['unit'])
-            ->orderBy('product_name')
-            ->get();
+            ->orderBy('product_name');
+
+        if ($request->filled('search')) {
+            $search = mb_strtolower($request->search);
+            $query->where(function ($q) use ($search) {
+                $q->whereRaw('LOWER(product_name) like ?', ["%{$search}%"])
+                    ->orWhereHas('unit', fn ($q) => $q->whereRaw('LOWER(unit_name) like ?', ["%{$search}%"])
+                        ->orWhereRaw('LOWER(abbreviation) like ?', ["%{$search}%"]));
+            });
+        }
+
+        if ($request->filled('status') && in_array($request->status, ['active', 'inactive'])) {
+            $query->where('status', $request->status);
+        }
+
+        $products = $query->paginate(15)->withQueryString();
 
         return Inertia::render('products/Index', [
-            'products' => ProductResource::collection($products)->resolve(),
+            'products' => ProductResource::collection($products),
+            'filters' => [
+                'search' => $request->search,
+                'status' => $request->status,
+            ],
         ]);
     }
 
