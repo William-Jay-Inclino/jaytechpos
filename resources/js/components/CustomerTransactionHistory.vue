@@ -114,6 +114,7 @@ const isTransactionLoading = (transactionId: number) => {
 
 <template>
     <div
+        data-testid="transaction-history-panel"
         class="flex flex-1 flex-col rounded-xl border border-gray-300 bg-white p-4 shadow-lg ring-1 ring-gray-100 sm:p-6 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none"
     >
         <h2
@@ -136,6 +137,7 @@ const isTransactionLoading = (transactionId: number) => {
         <!-- Loading State -->
         <div
             v-if="loading"
+            data-testid="transaction-history-loading"
             class="flex flex-col items-center justify-center space-y-3 py-8 sm:py-12"
         >
             <div
@@ -151,6 +153,7 @@ const isTransactionLoading = (transactionId: number) => {
         <!-- No Customer Selected -->
         <div
             v-else-if="!customerName"
+            data-testid="no-customer-selected"
             class="space-y-3 py-8 text-center sm:py-12"
         >
             <div
@@ -175,6 +178,7 @@ const isTransactionLoading = (transactionId: number) => {
         <!-- No Transactions -->
         <div
             v-else-if="transactions.length === 0"
+            data-testid="no-transactions"
             class="space-y-3 py-8 text-center sm:py-12"
         >
             <div
@@ -199,11 +203,13 @@ const isTransactionLoading = (transactionId: number) => {
         <!-- Transaction List -->
         <div
             v-else
+            data-testid="transaction-list"
             class="flex-1 space-y-3 overflow-y-auto sm:space-y-4"
         >
             <div
                 v-for="transaction in transactions"
                 :key="`${transaction.transaction_type}-${transaction.id}`"
+                data-testid="transaction-card"
                 class="rounded-lg border border-gray-200 bg-gray-50 p-3 transition-colors hover:bg-gray-100 sm:p-4 dark:border-gray-600 dark:bg-gray-700/50 dark:hover:bg-gray-700"
             >
                 <div

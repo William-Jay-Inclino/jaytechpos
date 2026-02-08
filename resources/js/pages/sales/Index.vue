@@ -456,7 +456,7 @@ watch(amountTendered, () => {
             <!-- Page Header -->
                 <div class="mx-auto max-w-7xl">
                     <!-- Alert: No products available -->
-                    <div v-if="!props.hasProducts" class="mb-6">
+                    <div v-if="!props.hasProducts" class="mb-6" data-testid="no-products-alert">
                         <div class="alert-primary-subtle">
                             <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                                 <div class="flex items-start gap-4">
@@ -514,6 +514,7 @@ watch(amountTendered, () => {
                                         <div class="relative customer-dropdown">
                                             <div
                                                 @click="showCustomerDropdown = !showCustomerDropdown"
+                                                data-testid="customer-dropdown-trigger"
                                                 class="flex h-10 w-full cursor-pointer items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800"
                                             >
                                                 <span class="truncate text-left">
@@ -543,6 +544,7 @@ watch(amountTendered, () => {
                                                     <input
                                                         v-model="customerSearch"
                                                         placeholder="Enter name of customer..."
+                                                        data-testid="customer-search-input"
                                                         class="flex h-8 w-full rounded-md bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 dark:text-white"
                                                         @click.stop
                                                     />
@@ -554,6 +556,7 @@ watch(amountTendered, () => {
                                                         v-for="customer in filteredCustomers"
                                                         :key="customer.id"
                                                         @click="selectCustomer(customer.id.toString())"
+                                                        :data-testid="`customer-option-${customer.id}`"
                                                         class="relative flex cursor-default select-none items-center rounded-sm px-2 py-2.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground cursor-pointer"
                                                     >
                                                         <div class="flex flex-col">
@@ -584,6 +587,7 @@ watch(amountTendered, () => {
                                     <!-- Customer Balance Display -->
                                     <div
                                         v-if="selectedCustomer"
+                                        data-testid="customer-balance-display"
                                         class="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-900/20"
                                     >
                                         <div class="flex items-center justify-between">
@@ -615,6 +619,7 @@ watch(amountTendered, () => {
                                             <button
                                                 type="button"
                                                 @click="paymentMethod = 'cash'"
+                                                data-testid="payment-cash-btn"
                                                 :class="[
                                                     'relative flex items-center justify-center rounded-md px-4 py-3 text-sm font-semibold transition-all duration-200',
                                                     paymentMethod === 'cash'
@@ -630,6 +635,7 @@ watch(amountTendered, () => {
                                             <button
                                                 type="button"
                                                 @click="paymentMethod = 'utang'"
+                                                data-testid="payment-utang-btn"
                                                 :class="[
                                                     'relative flex items-center justify-center rounded-md px-4 py-3 text-sm font-semibold transition-all duration-200',
                                                     paymentMethod === 'utang'
@@ -680,6 +686,7 @@ watch(amountTendered, () => {
                             <div class="relative product-dropdown">
                                 <div
                                     @click="openProductDropdown()"
+                                    data-testid="add-item-btn"
                                     class="flex h-12 w-full cursor-pointer items-center justify-center rounded-md border border-input px-4 py-3 text-medium text-primary dark:hover:bg-white/10 hover:bg-gray-100"
                                 >
                                     <Plus class="mr-2 h-4 w-4"/>
@@ -695,6 +702,7 @@ watch(amountTendered, () => {
                                         <input
                                             v-model="productSearch"
                                             placeholder="Enter name of product..."
+                                            data-testid="product-search-input"
                                             class="flex h-8 w-full rounded-md bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 dark:text-white"
                                             @click.stop
                                         />
@@ -714,6 +722,7 @@ watch(amountTendered, () => {
                                                 v-for="product in searchResults"
                                                 :key="product.id"
                                                 @click="selectProduct(product)"
+                                                :data-testid="`product-option-${product.id}`"
                                                 class="relative flex cursor-default select-none items-center justify-between rounded-sm px-2 py-2.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground cursor-pointer gap-3"
                                             >
                                                 <div class="flex flex-col flex-1 min-w-0">
@@ -747,7 +756,7 @@ watch(amountTendered, () => {
                                 class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none"
                             >
                                 <!-- Empty state -->
-                                <div v-if="!cartItems.length" class="px-6 py-16 text-center">
+                                <div v-if="!cartItems.length" class="px-6 py-16 text-center" data-testid="cart-empty-state">
                                     <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
                                         <span class="text-3xl">📝</span>
                                     </div>
@@ -832,7 +841,7 @@ watch(amountTendered, () => {
 
                                     <!-- Desktop Table Layout (lg and above) -->
                                     <div class="hidden lg:block">
-                                        <table class="w-full">
+                                        <table class="w-full" data-testid="cart-table">
                                             <thead class="border-b border-gray-200 dark:border-gray-700">
                                                 <tr>
                                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -854,6 +863,7 @@ watch(amountTendered, () => {
                                                 <tr 
                                                     v-for="(item, index) in cartItems" 
                                                     :key="item.id"
+                                                    :data-testid="`cart-item-${item.id}`"
                                                     class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                                                 >
                                                     <td class="px-4 py-3">
@@ -940,6 +950,7 @@ watch(amountTendered, () => {
                                                     class="rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-orange-800 dark:bg-orange-900/20 text-right"
                                                 >
                                                     <span
+                                                        data-testid="total-amount"
                                                         class="text-2xl font-bold text-orange-700 dark:text-orange-400"
                                                         >{{ formatCurrency(cartTotalAmount) }}</span
                                                     >
@@ -959,6 +970,7 @@ watch(amountTendered, () => {
                                                     <InputCurrency
                                                         id="amountTendered"
                                                         v-model="amountTendered"
+                                                        data-testid="amount-tendered-input"
                                                         class="border-0 bg-transparent p-0 text-right text-2xl font-bold text-teal-700 placeholder:text-teal-400 focus:ring-0 dark:text-teal-400 dark:placeholder:text-teal-500"
                                                     />
                                                 </div>
@@ -979,6 +991,7 @@ watch(amountTendered, () => {
                                                     "
                                                 >
                                                     <span
+                                                        data-testid="change-amount"
                                                         class="text-2xl font-bold"
                                                         :class="
                                                             changeAmount > 0
@@ -1123,6 +1136,7 @@ watch(amountTendered, () => {
                                                     <InputCurrency
                                                         id="paidAmount"
                                                         v-model="paidAmount"
+                                                        data-testid="paid-amount-input"
                                                         class="border-0 bg-transparent p-0 text-right text-2xl font-bold text-teal-700 placeholder:text-teal-400 focus:ring-0 dark:text-teal-400 dark:placeholder:text-teal-500"
                                                     />
                                                     <p v-if="paidAmount > cartTotalAmount" class="mt-2 text-xs text-red-600 dark:text-red-400">
@@ -1164,6 +1178,7 @@ watch(amountTendered, () => {
                                     <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 space-y-4">
                                         <Button
                                             size="lg"
+                                            data-testid="checkout-btn"
                                             class="h-16 w-full bg-green-600 text-xl font-bold text-white shadow-lg hover:bg-green-700 hover:shadow-xl transition-all"
                                             :disabled="!isCheckoutValid || isProcessing || isLoadingBalance"
                                             @click="handleCheckout"
@@ -1185,7 +1200,7 @@ watch(amountTendered, () => {
                                                 Complete Checkout
                                             </span>
                                         </Button>
-                                        <p v-if="(!isCheckoutValid && !isProcessing) && checkoutDisabledReason" class="mt-2 text-sm text-center text-gray-600 dark:text-gray-400">
+                                        <p v-if="(!isCheckoutValid && !isProcessing) && checkoutDisabledReason" data-testid="checkout-disabled-reason" class="mt-2 text-sm text-center text-gray-600 dark:text-gray-400">
                                             {{ checkoutDisabledReason }}
                                         </p>
                                     </div>

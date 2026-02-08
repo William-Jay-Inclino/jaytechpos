@@ -294,9 +294,10 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                     <div class="flex flex-col space-y-6 lg:col-span-4">
                         <!-- Payment Form Card -->
                         <div
+                            data-testid="payment-form-card"
                             class="rounded-xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:ring-gray-800 dark:shadow-none"
                         >
-                            <form @submit.prevent="handleSubmit" class="space-y-6">
+                            <form @submit.prevent="handleSubmit" class="space-y-6" data-testid="payment-form">
                                 <!-- Customer Selection -->
                                 <div class="space-y-3">
                                     <label
@@ -313,15 +314,17 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                         />
                                         <div
                                             @click="showCustomerDropdown = !showCustomerDropdown"
+                                            data-testid="customer-dropdown-trigger"
                                             class="flex h-12 w-full cursor-pointer items-center justify-between rounded-md border-2 border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800"
                                         >
-                                            <span class="truncate text-left">
+                                            <span class="truncate text-left" data-testid="selected-customer-name">
                                                 {{ selectedCustomerName || '---' }}
                                             </span>
                                             <div class="flex items-center gap-2">
                                                 <button
                                                     v-if="selectedCustomerId"
                                                     @click.stop="selectCustomer('')"
+                                                    data-testid="clear-customer-btn"
                                                     class="h-4 w-4 rounded hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center transition-colors"
                                                     title="Clear customer"
                                                 >
@@ -335,6 +338,7 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                         
                                         <div
                                             v-if="showCustomerDropdown"
+                                                data-testid="customer-dropdown-list"
                                                 class="absolute z-50 mt-1 max-h-[60vh] w-full overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-lg dark:border-gray-700"
                                         >
                                             <div class="flex items-center border-b px-3 pb-2 mb-2 dark:border-gray-700">
@@ -342,6 +346,7 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                                 <input
                                                     v-model="customerSearch"
                                                     placeholder="Enter name of customer..."
+                                                    data-testid="customer-search-input"
                                                     class="flex h-8 w-full rounded-md bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 dark:text-white"
                                                     @click.stop
                                                 />
@@ -351,6 +356,7 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                                     v-for="customer in filteredCustomers"
                                                     :key="customer.id"
                                                     @click="selectCustomer(customer.id.toString())"
+                                                    :data-testid="`customer-option-${customer.id}`"
                                                     class="relative flex cursor-default select-none items-center rounded-sm px-2 py-2.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground cursor-pointer"
                                                 >
                                                     <div class="flex flex-col">
@@ -392,17 +398,18 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                     <!-- Customer Balance Display -->
                                     <div v-if="selectedCustomer">
                                         <div
+                                            data-testid="balance-display"
                                             class="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-900/20 mb-2"
                                         >
                                             <div class="flex items-center justify-between">
                                                 <span class="text-sm font-medium text-amber-800 dark:text-amber-200"
                                                     >Outstanding Balance:</span
                                                 >
-                                                <span v-if="isLoadingBalance" class="flex items-center gap-2 text-amber-700 dark:text-amber-300">
+                                                <span v-if="isLoadingBalance" data-testid="balance-loading" class="flex items-center gap-2 text-amber-700 dark:text-amber-300">
                                                     <div class="h-4 w-4 animate-spin rounded-full border-2 border-amber-600 border-t-transparent dark:border-amber-400"></div>
                                                     <span class="text-sm">Loading...</span>
                                                 </span>
-                                                <span v-else class="text-lg font-bold text-amber-900 dark:text-amber-100"
+                                                <span v-else data-testid="balance-value" class="text-lg font-bold text-amber-900 dark:text-amber-100"
                                                     >{{ formatCurrency(selectedCustomer.running_utang_balance) }}</span
                                                 >
                                             </div>
@@ -410,7 +417,7 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                         
                                         <!-- Interest Rate and View Transaction History Button -->
                                         <div class="flex items-center justify-between">
-                                            <span class="text-xs text-gray-500 dark:text-gray-400">
+                                            <span data-testid="interest-rate" class="text-xs text-gray-500 dark:text-gray-400">
                                                 Interest Rate: {{ selectedCustomer.interest_rate?.toFixed(2) || '0.00' }}%
                                             </span>
                                             <Button
@@ -418,6 +425,7 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                                 @click="showTransactionHistoryView"
                                                 variant="ghost"
                                                 size="sm"
+                                                data-testid="view-history-btn"
                                                 class="h-7 text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                                             >
                                                 📋 View History
@@ -449,6 +457,7 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                     </div>
                                     <div
                                         v-if="paymentAmountError"
+                                        data-testid="payment-amount-error"
                                         class="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400"
                                     >
                                         {{ paymentAmountError }}
@@ -461,6 +470,7 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                     </div>
                                     <div
                                         v-if="selectedCustomer && !paymentAmountError && paymentAmount"
+                                        data-testid="remaining-balance"
                                         class="text-xs text-gray-600 dark:text-gray-400"
                                     >
                                         Remaining balance: {{ formatCurrency((selectedCustomer.running_utang_balance || 0) - parseFloat(String(paymentAmount || '0'))) }}
@@ -518,6 +528,7 @@ watch(selectedCustomerId, (newCustomerId, oldCustomerId) => {
                                 <Button
                                     type="submit"
                                     :disabled="!isFormValid"
+                                    data-testid="submit-payment-btn"
                                     class="h-12 w-full bg-green-600 text-lg font-semibold text-white shadow-lg hover:bg-green-700"
                                 >
                                     <span

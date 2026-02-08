@@ -61,6 +61,7 @@ const handleClose = () => {
     <!-- Simple Modal Overlay -->
     <div
         v-if="open"
+        data-testid="sale-receipt-modal"
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
         @click.self="handleClose"
     >
@@ -205,6 +206,7 @@ const handleClose = () => {
             <div class="flex-shrink-0 border-t border-gray-200 dark:border-gray-700 p-6 pt-4 flex justify-center">
                 <Button
                     @click="handleClose"
+                    data-testid="receipt-close-btn"
                     class="bg-green-600 px-8 text-white hover:bg-green-700"
                 >
                     Close
