@@ -24,23 +24,43 @@ class ExpenseController extends Controller
         $month = $request->get('month', now()->format('m'));
         $year = $request->get('year', now()->format('Y'));
 
-        $expenses = Expense::ownedBy()
-            ->with(['category'])
+        $baseQuery = Expense::ownedBy()
             ->whereYear('expense_date', $year)
-            ->whereMonth('expense_date', $month)
+            ->whereMonth('expense_date', $month);
+
+        // Period totals (independent of search/pagination)
+        $periodTotal = (clone $baseQuery)->sum('amount');
+        $periodCount = (clone $baseQuery)->count();
+
+        $query = (clone $baseQuery)
+            ->with(['category'])
             ->orderBy('expense_date', 'desc')
-            ->orderBy('created_at', 'desc')
-            ->get();
+            ->orderBy('created_at', 'desc');
+
+        if ($request->filled('search')) {
+            $search = mb_strtolower($request->search);
+            $query->where(function ($q) use ($search) {
+                $q->whereRaw('LOWER(name) like ?', ["%{$search}%"])
+                    ->orWhereHas('category', fn ($q) => $q->whereRaw('LOWER(name) like ?', ["%{$search}%"]));
+            });
+        }
+
+        $expenses = $query->paginate(15)->withQueryString();
 
         $categories = ExpenseCategory::ownedBy()
             ->orderBy('name')
             ->get(['id', 'name', 'color']);
 
         return Inertia::render('expenses/Index', [
-            'expenses' => ExpenseResource::collection($expenses)->resolve(),
+            'expenses' => ExpenseResource::collection($expenses),
             'categories' => $categories,
             'selectedMonth' => (int) $month,
             'selectedYear' => (int) $year,
+            'periodTotal' => (float) $periodTotal,
+            'periodCount' => $periodCount,
+            'filters' => [
+                'search' => $request->search,
+            ],
         ]);
     }
 

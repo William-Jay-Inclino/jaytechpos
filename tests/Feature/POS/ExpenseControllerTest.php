@@ -31,6 +31,7 @@ describe('index', function () {
             ->has('categories')
             ->has('selectedMonth')
             ->has('selectedYear')
+            ->has('filters')
         );
     });
 
@@ -57,7 +58,7 @@ describe('index', function () {
         $response->assertOk();
         $response->assertInertia(fn ($page) => $page
             ->component('expenses/Index')
-            ->has('expenses', 1)
+            ->has('expenses.data', 1)
         );
     });
 
@@ -81,7 +82,7 @@ describe('index', function () {
         $response->assertOk();
         $response->assertInertia(fn ($page) => $page
             ->component('expenses/Index')
-            ->has('expenses', 1)
+            ->has('expenses.data', 1)
             ->where('selectedMonth', 1)
             ->where('selectedYear', 2024)
         );
@@ -115,9 +116,9 @@ describe('index', function () {
         $response->assertOk();
         $response->assertInertia(fn ($page) => $page
             ->component('expenses/Index')
-            ->where('expenses.0.id', $expense3->id)
-            ->where('expenses.1.id', $expense2->id)
-            ->where('expenses.2.id', $expense1->id)
+            ->where('expenses.data.0.id', $expense3->id)
+            ->where('expenses.data.1.id', $expense2->id)
+            ->where('expenses.data.2.id', $expense1->id)
         );
     });
 
@@ -125,6 +126,96 @@ describe('index', function () {
         $response = get('/expenses');
 
         $response->assertRedirect(route('login'));
+    });
+
+    it('searches expenses by name', function () {
+        Expense::factory()->create([
+            'user_id' => $this->user->id,
+            'category_id' => $this->category->id,
+            'name' => 'Office Supplies',
+            'expense_date' => now(),
+        ]);
+
+        Expense::factory()->create([
+            'user_id' => $this->user->id,
+            'category_id' => $this->category->id,
+            'name' => 'Rent Payment',
+            'expense_date' => now(),
+        ]);
+
+        actingAs($this->user);
+
+        $month = now()->format('m');
+        $year = now()->format('Y');
+
+        $response = get("/expenses?month={$month}&year={$year}&search=office");
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->component('expenses/Index')
+            ->has('expenses.data', 1)
+            ->where('expenses.data.0.name', 'Office Supplies')
+            ->where('filters.search', 'office')
+        );
+    });
+
+    it('searches expenses by category name', function () {
+        $rentCategory = ExpenseCategory::factory()->create([
+            'user_id' => $this->user->id,
+            'name' => 'Rent',
+        ]);
+
+        Expense::factory()->create([
+            'user_id' => $this->user->id,
+            'category_id' => $this->category->id,
+            'name' => 'Pens and Paper',
+            'expense_date' => now(),
+        ]);
+
+        Expense::factory()->create([
+            'user_id' => $this->user->id,
+            'category_id' => $rentCategory->id,
+            'name' => 'Office Space',
+            'expense_date' => now(),
+        ]);
+
+        actingAs($this->user);
+
+        $month = now()->format('m');
+        $year = now()->format('Y');
+
+        $response = get("/expenses?month={$month}&year={$year}&search=rent");
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->component('expenses/Index')
+            ->has('expenses.data', 1)
+            ->where('expenses.data.0.name', 'Office Space')
+        );
+    });
+
+    it('paginates expenses at 15 per page', function () {
+        Expense::factory()->count(20)->create([
+            'user_id' => $this->user->id,
+            'category_id' => $this->category->id,
+            'expense_date' => now(),
+        ]);
+
+        actingAs($this->user);
+
+        $month = now()->format('m');
+        $year = now()->format('Y');
+
+        $response = get("/expenses?month={$month}&year={$year}");
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->component('expenses/Index')
+            ->has('expenses.data', 15)
+            ->where('expenses.meta.total', 20)
+            ->where('expenses.meta.last_page', 2)
+            ->where('expenses.meta.per_page', 15)
+        );
     });
 });
 
