@@ -54,6 +54,26 @@ export function getCurrentManilaDate(): string {
 }
 
 /**
+ * Get current Manila time in HH:MM format (24-hour)
+ */
+export function getCurrentManilaTime(): string {
+    const now = new Date();
+
+    const manilaFormatter = new Intl.DateTimeFormat('en-CA', {
+        timeZone: MANILA_TIMEZONE,
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+    });
+
+    const parts = manilaFormatter.formatToParts(now);
+    const hour = parts.find((part) => part.type === 'hour')?.value;
+    const minute = parts.find((part) => part.type === 'minute')?.value;
+
+    return `${hour}:${minute}`;
+}
+
+/**
  * Format date string to Philippine locale with Manila timezone
  */
 export function formatManilaDateTime(dateString: string): string {

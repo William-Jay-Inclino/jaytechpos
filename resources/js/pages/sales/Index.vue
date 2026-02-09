@@ -20,6 +20,7 @@ import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import type { BreadcrumbItem } from '@/types';
 import { CartItem, Customer, Product } from '@/types/pos';
 import { formatCurrency } from '@/utils/currency';
+import { getCurrentManilaDate, getCurrentManilaTime } from '@/utils/timezone';
 
 const props = defineProps<{
     hasProducts: boolean;
@@ -83,14 +84,8 @@ const productSearch = ref('');
 const showProductDropdown = ref(false);
 const searchResults = ref<Product[]>([]);
 const isSearchingProducts = ref(false);
-const transactionDate = ref(new Date().toISOString().split('T')[0]);
-const transactionTime = ref(
-    new Date().toLocaleTimeString('en-US', { 
-        hour: '2-digit', 
-        minute: '2-digit', 
-        hour12: false 
-    })
-);
+const transactionDate = ref(getCurrentManilaDate());
+const transactionTime = ref(getCurrentManilaTime());
 
 
 // Business Logic Functions
@@ -356,12 +351,8 @@ function resetFormData(): void {
     productSearch.value = '';
     showProductDropdown.value = false;
     searchResults.value = [];
-    transactionDate.value = new Date().toISOString().split('T')[0];
-    transactionTime.value = new Date().toLocaleTimeString('en-US', { 
-        hour: '2-digit', 
-        minute: '2-digit', 
-        hour12: false 
-    });
+    transactionDate.value = getCurrentManilaDate();
+    transactionTime.value = getCurrentManilaTime();
 }
 
 function resetForm(): void {
