@@ -9,6 +9,7 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import axios from 'axios';
+import { getCurrentManilaDate } from '@/utils/timezone';
 
 interface ExpenseCategory {
     id: number;
@@ -28,7 +29,7 @@ const form = ref({
     name: '',
     category_id: '',
     amount: '',
-    expense_date: new Date().toISOString().split('T')[0],
+    expense_date: getCurrentManilaDate(),
 });
 
 const processing = ref(false);
