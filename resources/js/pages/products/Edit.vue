@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
+import BarcodeScannerModal from '@/components/modals/BarcodeScannerModal.vue';
 import ProductSuccessModal from '@/components/modals/ProductSuccessModal.vue';
 import { Button } from '@/components/ui/button';
 import { Input, InputCurrency } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 import AppLayout from '@/layouts/AppLayout.vue';
-import { showSuccessToast } from '@/lib/toast';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
-import { Search } from 'lucide-vue-next';
+import { ScanBarcode, Search } from 'lucide-vue-next';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import axios from 'axios';
 
@@ -57,6 +57,11 @@ const form = useForm({
 const showSuccessModal = ref(false);
 const updatedProduct = ref(null);
 const isSubmitting = ref(false);
+const showBarcodeScanner = ref(false);
+
+function onBarcodeScanned(barcode: string) {
+    form.barcode = barcode;
+}
 
 // Search functionality
 const unitSearch = ref('');
@@ -182,13 +187,25 @@ onUnmounted(() => {
                         <!-- Barcode -->
                         <div class="grid gap-2">
                             <Label for="barcode">Barcode <span class="text-sm text-gray-400 dark:text-gray-400">(Optional)</span></Label>
-                            <Input
-                                id="barcode"
-                                v-model="form.barcode"
-                                type="text"
-                                placeholder="Scan or type barcode"
-                                class="font-mono dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
-                            />
+                            <div class="flex gap-2">
+                                <Input
+                                    id="barcode"
+                                    v-model="form.barcode"
+                                    type="text"
+                                    placeholder="Scan or type barcode"
+                                    class="font-mono dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                                />
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="icon"
+                                    @click="showBarcodeScanner = true"
+                                    title="Scan barcode with camera"
+                                    class="shrink-0"
+                                >
+                                    <ScanBarcode class="h-4 w-4" />
+                                </Button>
+                            </div>
                             <InputError
                                 :message="form.errors.barcode"
                                 class="mt-1"
@@ -368,6 +385,12 @@ onUnmounted(() => {
             </div>
 
         </div>
+
+        <!-- Barcode Scanner Modal -->
+        <BarcodeScannerModal
+            v-model:open="showBarcodeScanner"
+            @scanned="onBarcodeScanned"
+        />
 
         <!-- Success Modal -->
         <ProductSuccessModal 
