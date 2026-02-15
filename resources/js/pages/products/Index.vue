@@ -4,7 +4,7 @@ import { Product, type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 import axios from 'axios';
-import { Search, Edit, Trash2, Loader2 } from 'lucide-vue-next';
+import { Search, Edit, Trash2, Loader2, ScanBarcode } from 'lucide-vue-next';
 import { formatCurrency } from '@/utils/currency';
 
 // UI Components
@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { showConfirmDelete } from '@/lib/swal';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import BarcodeScanner from '@/components/BarcodeScanner.vue';
+import BarcodeScannerModal from '@/components/modals/BarcodeScannerModal.vue';
 
 interface PaginationMeta {
     current_page: number
@@ -85,6 +86,8 @@ function clearFilters(): void {
 function onBarcodeScanned(barcode: string): void {
     searchQuery.value = barcode
 }
+
+const showBarcodeScanner = ref(false);
 
 // Loading state
 const isLoading = ref(false)
@@ -159,15 +162,27 @@ async function deleteProduct(productId: number) {
                 <div v-if="products.meta.total > 0 || searchQuery || statusFilter !== 'all'" class="mb-6">
                     <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
                         <!-- Search -->
-                        <div class="relative flex-1">
-                            <Search v-if="!isLoading" class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                            <Loader2 v-else class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 animate-spin" />
-                            <Input
-                                v-model="searchQuery"
-                                type="text"
-                                placeholder="Search by name or barcode..."
-                                class="pl-10"
-                            />
+                        <div class="flex flex-1 gap-2">
+                            <div class="relative flex-1">
+                                <Search v-if="!isLoading" class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                <Loader2 v-else class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 animate-spin" />
+                                <Input
+                                    v-model="searchQuery"
+                                    type="text"
+                                    placeholder="Search by name or barcode..."
+                                    class="pl-10"
+                                />
+                            </div>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                @click="showBarcodeScanner = true"
+                                title="Scan barcode with camera"
+                                class="shrink-0"
+                            >
+                                <ScanBarcode class="h-4 w-4" />
+                            </Button>
                         </div>
                     </div>
                 </div>
@@ -401,5 +416,11 @@ async function deleteProduct(productId: number) {
                 </div>
             </div>
         </div>
+
+        <!-- Barcode Scanner Modal -->
+        <BarcodeScannerModal
+            v-model:open="showBarcodeScanner"
+            @scanned="onBarcodeScanned"
+        />
     </AppLayout>
 </template>
