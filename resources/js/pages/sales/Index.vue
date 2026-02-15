@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3';
-import { X, Search, UserPlus, Plus, Minus} from 'lucide-vue-next';
+import { X, Search, UserPlus, Plus, Minus, ScanBarcode } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useDebounceFn } from '@vueuse/core';
 import axios from 'axios';
 
 // Layout & Components
 import BarcodeScanner from '@/components/BarcodeScanner.vue';
+import BarcodeScannerModal from '@/components/modals/BarcodeScannerModal.vue';
 import SaleReceiptModal from '@/components/modals/SaleReceiptModal.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 
@@ -74,6 +75,7 @@ const numericDeductFromBalance = computed((): number => {
     const n = typeof v === 'number' ? v : parseFloat(String(v || '0'))
     return Number.isFinite(n) ? n : 0
 })
+const showBarcodeScanner = ref(false);
 const showSuccessModal = ref(false);
 const saleData = ref<SaleResponse | null>(null);
 const isProcessing = ref(false);
@@ -697,7 +699,8 @@ watch(amountTendered, () => {
                         <div class="lg:col-span-8 space-y-6">
                                 
                             <!-- Product Selection Dropdown -->
-                            <div class="relative product-dropdown">
+                            <div class="flex gap-2">
+                            <div class="relative product-dropdown flex-1">
                                 <div
                                     @click="openProductDropdown()"
                                     data-testid="add-item-btn"
@@ -763,6 +766,17 @@ watch(amountTendered, () => {
                                         </template>
                                     </div>
                                 </div>
+                            </div>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                @click="showBarcodeScanner = true"
+                                title="Scan barcode with camera"
+                                class="h-12 w-12 shrink-0"
+                            >
+                                <ScanBarcode class="h-5 w-5" />
+                            </Button>
                             </div>
 
                             <!-- Section 2: Cart Items -->
@@ -1224,6 +1238,12 @@ watch(amountTendered, () => {
                     </div>
             </div>
         </div>
+
+        <!-- Barcode Scanner Modal -->
+        <BarcodeScannerModal
+            v-model:open="showBarcodeScanner"
+            @scanned="handleBarcodeScanned"
+        />
 
         <!-- Sale Receipt Modal -->
         <SaleReceiptModal
