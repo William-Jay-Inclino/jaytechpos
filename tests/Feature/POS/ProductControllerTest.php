@@ -147,6 +147,34 @@ describe('index', function () {
         );
     });
 
+    it('filters products by exact barcode match', function () {
+        Product::factory()->create([
+            'user_id' => $this->user->id,
+            'unit_id' => $this->unit->id,
+            'product_name' => 'Apple Juice',
+            'barcode' => '4901234567890',
+        ]);
+
+        Product::factory()->create([
+            'user_id' => $this->user->id,
+            'unit_id' => $this->unit->id,
+            'product_name' => 'Banana Shake',
+            'barcode' => '5901234567890',
+        ]);
+
+        actingAs($this->user);
+
+        $response = get('/products?search=4901234567890');
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->component('products/Index')
+            ->has('products.data', 1)
+            ->where('products.data.0.product_name', 'Apple Juice')
+            ->where('products.data.0.barcode', '4901234567890')
+        );
+    });
+
     it('filters products by status', function () {
         Product::factory()->create([
             'user_id' => $this->user->id,
@@ -471,6 +499,103 @@ describe('store', function () {
         $response->assertJsonValidationErrors(['status']);
     });
 
+    it('validates barcode max length', function () {
+        actingAs($this->user);
+
+        $response = post('/products', [
+            'product_name' => 'Test Product',
+            'barcode' => str_repeat('1', 256),
+            'unit_id' => $this->unit->id,
+            'unit_price' => 100,
+            'status' => 'active',
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['barcode']);
+    });
+
+    it('creates a product with barcode successfully', function () {
+        actingAs($this->user);
+
+        $response = post('/products', [
+            'product_name' => 'Barcode Product',
+            'barcode' => '4901234567890',
+            'unit_id' => $this->unit->id,
+            'unit_price' => 100,
+            'status' => 'active',
+        ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('products', [
+            'user_id' => $this->user->id,
+            'product_name' => 'Barcode Product',
+            'barcode' => '4901234567890',
+        ]);
+    });
+
+    it('creates a product without barcode', function () {
+        actingAs($this->user);
+
+        $response = post('/products', [
+            'product_name' => 'No Barcode Product',
+            'unit_id' => $this->unit->id,
+            'unit_price' => 100,
+            'status' => 'active',
+        ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('products', [
+            'user_id' => $this->user->id,
+            'product_name' => 'No Barcode Product',
+            'barcode' => null,
+        ]);
+    });
+
+    it('validates barcode uniqueness per user on store', function () {
+        Product::factory()->create([
+            'user_id' => $this->user->id,
+            'unit_id' => $this->unit->id,
+            'barcode' => '4901234567890',
+        ]);
+
+        actingAs($this->user);
+
+        $response = post('/products', [
+            'product_name' => 'Another Product',
+            'barcode' => '4901234567890',
+            'unit_id' => $this->unit->id,
+            'unit_price' => 100,
+            'status' => 'active',
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['barcode']);
+    });
+
+    it('allows duplicate barcode for different users on store', function () {
+        $otherUser = User::factory()->create();
+
+        Product::factory()->create([
+            'user_id' => $otherUser->id,
+            'unit_id' => $this->unit->id,
+            'barcode' => '4901234567890',
+        ]);
+
+        actingAs($this->user);
+
+        $response = post('/products', [
+            'product_name' => 'My Product',
+            'barcode' => '4901234567890',
+            'unit_id' => $this->unit->id,
+            'unit_price' => 100,
+            'status' => 'active',
+        ]);
+
+        $response->assertOk();
+    });
+
     it('requires authentication', function () {
         $response = post('/products', [
             'product_name' => 'Test Product',
@@ -558,6 +683,78 @@ describe('update', function () {
             'product_name' => 'New Name',
             'unit_price' => 200,
         ]);
+    });
+
+    it('updates product barcode successfully', function () {
+        $product = Product::factory()->create([
+            'user_id' => $this->user->id,
+            'unit_id' => $this->unit->id,
+            'barcode' => null,
+        ]);
+
+        actingAs($this->user);
+
+        $response = put("/products/{$product->id}", [
+            'product_name' => $product->product_name,
+            'barcode' => '4901234567890',
+            'unit_id' => $this->unit->id,
+            'unit_price' => $product->unit_price,
+            'status' => $product->status,
+        ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->id,
+            'barcode' => '4901234567890',
+        ]);
+    });
+
+    it('validates barcode uniqueness on update excludes current product', function () {
+        $product = Product::factory()->create([
+            'user_id' => $this->user->id,
+            'unit_id' => $this->unit->id,
+            'barcode' => '4901234567890',
+        ]);
+
+        actingAs($this->user);
+
+        $response = put("/products/{$product->id}", [
+            'product_name' => $product->product_name,
+            'barcode' => '4901234567890',
+            'unit_id' => $this->unit->id,
+            'unit_price' => $product->unit_price,
+            'status' => $product->status,
+        ]);
+
+        $response->assertOk();
+    });
+
+    it('validates barcode uniqueness with other products on update', function () {
+        Product::factory()->create([
+            'user_id' => $this->user->id,
+            'unit_id' => $this->unit->id,
+            'barcode' => '4901234567890',
+        ]);
+
+        $product2 = Product::factory()->create([
+            'user_id' => $this->user->id,
+            'unit_id' => $this->unit->id,
+            'barcode' => '5901234567890',
+        ]);
+
+        actingAs($this->user);
+
+        $response = put("/products/{$product2->id}", [
+            'product_name' => $product2->product_name,
+            'barcode' => '4901234567890',
+            'unit_id' => $this->unit->id,
+            'unit_price' => $product2->unit_price,
+            'status' => $product2->status,
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['barcode']);
     });
 
     it('prevents updating other users product', function () {

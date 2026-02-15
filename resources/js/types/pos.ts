@@ -75,6 +75,7 @@ export interface Product {
     user_id: number;
     unit_id: number;
     product_name: string;
+    barcode: string | null;
     description: string;
     unit_price: number;
     cost_price: number;

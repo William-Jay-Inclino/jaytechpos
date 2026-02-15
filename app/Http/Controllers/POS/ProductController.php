@@ -29,6 +29,7 @@ class ProductController extends Controller
             $search = mb_strtolower($request->search);
             $query->where(function ($q) use ($search) {
                 $q->whereRaw('LOWER(product_name) like ?', ["%{$search}%"])
+                    ->orWhere('barcode', $search)
                     ->orWhereHas('unit', fn ($q) => $q->whereRaw('LOWER(unit_name) like ?', ["%{$search}%"])
                         ->orWhereRaw('LOWER(abbreviation) like ?', ["%{$search}%"]));
             });

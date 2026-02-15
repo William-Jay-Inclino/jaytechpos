@@ -50,6 +50,14 @@ class StoreProductRequest extends FormRequest
                     return $query->where('user_id', $userId);
                 }),
             ],
+            'barcode' => [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::unique('products', 'barcode')->where(function ($query) use ($userId) {
+                    return $query->where('user_id', $userId);
+                }),
+            ],
             'description' => 'nullable|string|max:1000',
             'unit_id' => 'required|exists:units,id',
             'unit_price' => 'required|numeric|min:0',
@@ -68,6 +76,8 @@ class StoreProductRequest extends FormRequest
         return [
             'product_name.required' => 'Product name is required.',
             'product_name.unique' => 'A product with this name already exists.',
+            'barcode.unique' => 'This barcode is already assigned to another product.',
+            'barcode.max' => 'Barcode must not exceed 255 characters.',
             'unit_id.required' => 'Please select a unit.',
             'unit_id.exists' => 'The selected unit is invalid.',
             'unit_price.required' => 'Unit price is required.',

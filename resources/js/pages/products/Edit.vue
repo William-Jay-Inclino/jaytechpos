@@ -22,6 +22,7 @@ interface Unit {
 interface Product {
     id: number;
     product_name: string;
+    barcode?: string | null;
     description?: string | null;
     unit_id: number;
     unit_price: number;
@@ -46,6 +47,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const form = useForm({
     product_name: props.product.product_name || '',
+    barcode: props.product.barcode || '',
     unit_id: props.product.unit_id?.toString() || '',
     unit_price: props.product.unit_price?.toString() || '',
     cost_price: props.product.cost_price?.toString() || '',
@@ -92,6 +94,7 @@ async function submit() {
     try {
         const formData = {
             product_name: form.product_name,
+            barcode: form.barcode || null,
             unit_id: parseInt(form.unit_id),
             unit_price: parseFloat(String(form.unit_price || '0')),
             cost_price: parseFloat(String(form.cost_price || '0')),
@@ -172,6 +175,22 @@ onUnmounted(() => {
                             />
                             <InputError
                                 :message="form.errors.product_name"
+                                class="mt-1"
+                            />
+                        </div>
+
+                        <!-- Barcode -->
+                        <div class="grid gap-2">
+                            <Label for="barcode">Barcode <span class="text-sm text-gray-400 dark:text-gray-400">(Optional)</span></Label>
+                            <Input
+                                id="barcode"
+                                v-model="form.barcode"
+                                type="text"
+                                placeholder="Scan or type barcode"
+                                class="font-mono dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                            />
+                            <InputError
+                                :message="form.errors.barcode"
                                 class="mt-1"
                             />
                         </div>

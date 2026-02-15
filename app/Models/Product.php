@@ -18,6 +18,7 @@ class Product extends Model
         'user_id',
         'unit_id',
         'product_name',
+        'barcode',
         'description',
         'unit_price',
         'cost_price',
@@ -74,7 +75,7 @@ class Product extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['product_name', 'description', 'unit_price', 'cost_price', 'status', 'unit_id'])
+            ->logOnly(['product_name', 'barcode', 'description', 'unit_price', 'cost_price', 'status', 'unit_id'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }

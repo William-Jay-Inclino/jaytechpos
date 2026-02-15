@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { showConfirmDelete } from '@/lib/swal';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import BarcodeScanner from '@/components/BarcodeScanner.vue';
 
 interface PaginationMeta {
     current_page: number
@@ -79,6 +80,10 @@ function clearFilters(): void {
     searchQuery.value = ''
     statusFilter.value = 'all'
     applyFilters()
+}
+
+function onBarcodeScanned(barcode: string): void {
+    searchQuery.value = barcode
 }
 
 // Loading state
@@ -160,12 +165,14 @@ async function deleteProduct(productId: number) {
                             <Input
                                 v-model="searchQuery"
                                 type="text"
-                                placeholder="Search here..."
+                                placeholder="Search by name or barcode..."
                                 class="pl-10"
                             />
                         </div>
                     </div>
                 </div>
+
+                <BarcodeScanner @scanned="onBarcodeScanned" />
 
                 <!-- Products Display -->
                 <div class="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800 overflow-hidden">
@@ -224,6 +231,9 @@ async function deleteProduct(productId: number) {
                                             {{ product.product_name }}
                                             <span v-if="product.unit?.abbreviation" class="text-xs text-gray-500 dark:text-gray-400 ml-2">/{{ product.unit?.abbreviation }}</span>
                                         </h3>
+                                        <p v-if="product.barcode" class="mt-0.5 text-xs text-gray-500 dark:text-gray-400 font-mono">
+                                            {{ product.barcode }}
+                                        </p>
                                         <div class="mt-2">
                                             <Badge 
                                                 :variant="product.status === 'active' ? 'default' : 'destructive'"
@@ -312,6 +322,9 @@ async function deleteProduct(productId: number) {
                                                     {{ product.product_name }}
                                                     <span v-if="product.unit?.abbreviation" class="text-xs text-gray-500 dark:text-gray-400 ml-2">/{{ product.unit?.abbreviation }}</span>
                                                 </h4>
+                                                <p v-if="product.barcode" class="mt-0.5 text-xs text-gray-500 dark:text-gray-400 font-mono">
+                                                    {{ product.barcode }}
+                                                </p>
                                             </div>
                                         </td>
                                         <td class="py-4 px-4 text-right">

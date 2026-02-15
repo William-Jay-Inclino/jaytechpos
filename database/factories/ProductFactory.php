@@ -20,6 +20,7 @@ class ProductFactory extends Factory
             'user_id' => \App\Models\User::factory(),
             'unit_id' => \App\Models\Unit::factory(),
             'product_name' => fake()->words(2, true),
+            'barcode' => fake()->optional(0.7)->ean13(),
             'description' => fake()->sentence(),
             'unit_price' => fake()->randomFloat(2, 10, 1000),
             'cost_price' => fake()->randomFloat(2, 5, 500),

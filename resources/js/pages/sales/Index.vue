@@ -6,6 +6,7 @@ import { useDebounceFn } from '@vueuse/core';
 import axios from 'axios';
 
 // Layout & Components
+import BarcodeScanner from '@/components/BarcodeScanner.vue';
 import SaleReceiptModal from '@/components/modals/SaleReceiptModal.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 
@@ -286,6 +287,27 @@ function selectProduct(product: Product) {
     productSearch.value = '';
 }
 
+async function handleBarcodeScanned(barcode: string): Promise<void> {
+    try {
+        const response = await axios.get('/api/sales/products/search', {
+            params: { search: barcode },
+        });
+
+        const products: Product[] = response.data.products;
+        const exactMatch = products.find((p) => p.barcode === barcode);
+
+        if (exactMatch) {
+            addProductToCart(exactMatch);
+        } else if (products.length > 0) {
+            addProductToCart(products[0]);
+        } else {
+            showErrorToast(`No product found for barcode: ${barcode}`);
+        }
+    } catch {
+        showErrorToast('Failed to look up barcode. Please try again.');
+    }
+}
+
 function openProductDropdown(): void {
     showProductDropdown.value = !showProductDropdown.value;
     if (showProductDropdown.value && searchResults.value.length === 0) {
@@ -443,6 +465,7 @@ watch(amountTendered, () => {
     <Head title="Create Sale" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
+        <BarcodeScanner @scanned="handleBarcodeScanned" />
         <div class="w-full px-4 py-6 lg:px-8 lg:py-10">
             <!-- Page Header -->
                 <div class="mx-auto max-w-7xl">
