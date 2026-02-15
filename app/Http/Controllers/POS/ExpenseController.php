@@ -10,6 +10,7 @@ use App\Models\Expense;
 use App\Models\ExpenseCategory;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class ExpenseController extends Controller
@@ -145,7 +146,7 @@ class ExpenseController extends Controller
         $this->authorize('create', Expense::class);
 
         $validated = $request->validated();
-        $validated['user_id'] = auth()->id();
+        $validated['user_id'] = Auth::id();
 
         $expense = Expense::create($validated);
         $expense->load(['category']);

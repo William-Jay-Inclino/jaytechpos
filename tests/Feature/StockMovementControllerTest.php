@@ -4,10 +4,13 @@ use App\Enums\StockMovementType;
 use App\Models\Inventory;
 use App\Models\Product;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\postJson;
+
+uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->user = User::factory()->create();
@@ -102,7 +105,7 @@ test('can adjust stock upward', function () {
     assertDatabaseHas('stock_movements', [
         'product_id' => $product->id,
         'type' => StockMovementType::ADJUSTMENT->value,
-        'quantity' => 50,
+        'quantity' => 150,
     ]);
 
     $inventory = Inventory::where('product_id', $product->id)->first();
@@ -129,7 +132,7 @@ test('can adjust stock downward', function () {
     assertDatabaseHas('stock_movements', [
         'product_id' => $product->id,
         'type' => StockMovementType::ADJUSTMENT->value,
-        'quantity' => -30,
+        'quantity' => 70,
     ]);
 
     $inventory = Inventory::where('product_id', $product->id)->first();

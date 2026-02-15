@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 
@@ -120,7 +121,7 @@ class UserController extends Controller
     {
         // Authorize deletion first (follows ExpenseController pattern)
         $this->authorize('delete', $user);
-        if ($user->id === auth()->id()) {
+        if ($user->id === Auth::id()) {
             return response()->json([
                 'success' => false,
                 'msg' => 'You cannot delete yourself.',

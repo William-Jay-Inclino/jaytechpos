@@ -13,7 +13,7 @@ use App\Models\Setting;
 use App\Services\CustomerService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -59,7 +59,7 @@ class CustomerController extends Controller
     {
         $customer = DB::transaction(function () use ($request) {
             $customer = Customer::create([
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
                 'name' => $request->validated('name'),
                 'mobile_number' => $request->validated('mobile_number'),
                 'remarks' => $request->validated('remarks'),
@@ -70,7 +70,7 @@ class CustomerController extends Controller
             $startingBalance = $request->validated('starting_balance');
             if ($startingBalance && $startingBalance > 0) {
                 CustomerTransaction::create([
-                    'user_id' => auth()->id(),
+                    'user_id' => Auth::id(),
                     'customer_id' => $customer->id,
                     'transaction_type' => 'starting_balance',
                     'reference_id' => null,
@@ -149,7 +149,7 @@ class CustomerController extends Controller
         DB::transaction(function () use ($customer, $newBalance, $note, $currentBalance) {
             // Create balance update transaction
             CustomerTransaction::create([
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
                 'customer_id' => $customer->id,
                 'transaction_type' => 'balance_update',
                 'reference_id' => null,
@@ -160,7 +160,7 @@ class CustomerController extends Controller
                 'transaction_amount' => $newBalance,
             ]);
 
-            if($newBalance > 0) {
+            if ($newBalance > 0) {
                 $customer->update(['has_utang' => true]);
             } else {
                 $customer->update(['has_utang' => false]);

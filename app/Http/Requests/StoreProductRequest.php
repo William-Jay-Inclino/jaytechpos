@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 class StoreProductRequest extends FormRequest
@@ -38,7 +39,7 @@ class StoreProductRequest extends FormRequest
      */
     public function rules(): array
     {
-        $userId = $this->user()?->id ?? auth()->id();
+        $userId = $this->user()?->id ?? Auth::id();
 
         return [
             'product_name' => [

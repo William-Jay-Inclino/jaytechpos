@@ -21,26 +21,24 @@ class StockMovementController extends Controller
     public function stockIn(StockInRequest $request): JsonResponse
     {
         try {
-            DB::beginTransaction();
+            $inventory = DB::transaction(function () use ($request) {
+                StockMovement::create([
+                    'product_id' => $request->product_id,
+                    'type' => StockMovementType::IN,
+                    'quantity' => $request->quantity,
+                    'reference' => $request->reference,
+                    'remarks' => $request->remarks,
+                ]);
 
-            $stockMovement = StockMovement::create([
-                'product_id' => $request->product_id,
-                'type' => StockMovementType::IN,
-                'quantity' => $request->quantity,
-                'reference' => $request->reference,
-                'remarks' => $request->remarks,
-            ]);
+                $inventory = Inventory::firstOrCreate(
+                    ['product_id' => $request->product_id],
+                    ['quantity' => 0, 'low_stock_threshold' => 1]
+                );
 
-            $inventory = Inventory::firstOrCreate(
-                ['product_id' => $request->product_id],
-                ['quantity' => 0, 'low_stock_threshold' => 1]
-            );
+                $inventory->stockIn($request->quantity);
 
-            $inventory->stockIn($request->quantity);
-
-            DB::commit();
-
-            $inventory->refresh();
+                return $inventory->refresh();
+            });
 
             return response()->json([
                 'success' => true,
@@ -53,8 +51,6 @@ class StockMovementController extends Controller
                 ],
             ], 201);
         } catch (\Exception $e) {
-            DB::rollBack();
-
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to add stock.',
@@ -69,8 +65,6 @@ class StockMovementController extends Controller
     public function stockOut(StockOutRequest $request): JsonResponse
     {
         try {
-            DB::beginTransaction();
-
             $inventory = Inventory::where('product_id', $request->product_id)->first();
 
             if (! $inventory) {
@@ -87,19 +81,19 @@ class StockMovementController extends Controller
                 ], 422);
             }
 
-            $stockMovement = StockMovement::create([
-                'product_id' => $request->product_id,
-                'type' => StockMovementType::OUT,
-                'quantity' => $request->quantity,
-                'reference' => $request->reference,
-                'remarks' => $request->remarks,
-            ]);
+            $inventory = DB::transaction(function () use ($request, $inventory) {
+                StockMovement::create([
+                    'product_id' => $request->product_id,
+                    'type' => StockMovementType::OUT,
+                    'quantity' => $request->quantity,
+                    'reference' => $request->reference,
+                    'remarks' => $request->remarks,
+                ]);
 
-            $inventory->stockOut($request->quantity);
+                $inventory->stockOut($request->quantity);
 
-            DB::commit();
-
-            $inventory->refresh();
+                return $inventory->refresh();
+            });
 
             return response()->json([
                 'success' => true,
@@ -112,15 +106,11 @@ class StockMovementController extends Controller
                 ],
             ], 200);
         } catch (\InvalidArgumentException $e) {
-            DB::rollBack();
-
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),
             ], 422);
         } catch (\Exception $e) {
-            DB::rollBack();
-
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to remove stock.',
@@ -135,8 +125,6 @@ class StockMovementController extends Controller
     public function stockAdjustment(StockAdjustmentRequest $request): JsonResponse
     {
         try {
-            DB::beginTransaction();
-
             $inventory = Inventory::where('product_id', $request->product_id)->first();
 
             if (! $inventory) {
@@ -148,19 +136,19 @@ class StockMovementController extends Controller
 
             $newQuantity = $request->quantity;
 
-            $stockMovement = StockMovement::create([
-                'product_id' => $request->product_id,
-                'type' => StockMovementType::ADJUSTMENT,
-                'quantity' => $newQuantity,
-                'reference' => $request->reference,
-                'remarks' => $request->remarks,
-            ]);
+            $inventory = DB::transaction(function () use ($request, $inventory, $newQuantity) {
+                StockMovement::create([
+                    'product_id' => $request->product_id,
+                    'type' => StockMovementType::ADJUSTMENT,
+                    'quantity' => $newQuantity,
+                    'reference' => $request->reference,
+                    'remarks' => $request->remarks,
+                ]);
 
-            $inventory->update(['quantity' => $newQuantity]);
+                $inventory->update(['quantity' => $newQuantity]);
 
-            DB::commit();
-
-            $inventory->refresh();
+                return $inventory->refresh();
+            });
 
             return response()->json([
                 'success' => true,
@@ -173,15 +161,11 @@ class StockMovementController extends Controller
                 ],
             ], 200);
         } catch (\InvalidArgumentException $e) {
-            DB::rollBack();
-
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),
             ], 422);
         } catch (\Exception $e) {
-            DB::rollBack();
-
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to adjust stock.',

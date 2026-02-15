@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -126,7 +127,7 @@ class SalesReportController extends Controller
     private function getSalesDataQuery(array $filters): array
     {
         $query = Sale::with(['user', 'customer', 'salesItems.product'])
-            ->where('user_id', auth()->id());
+            ->where('user_id', Auth::id());
 
         // Apply date filters
         if (! empty($filters['start_date']) && ! empty($filters['end_date'])) {
@@ -164,7 +165,7 @@ class SalesReportController extends Controller
 
     private function getSalesSummary(array $filters): array
     {
-        $query = Sale::where('user_id', auth()->id());
+        $query = Sale::where('user_id', Auth::id());
 
         // Apply date filters only (payment type filter should not affect summary stats)
         if (! empty($filters['start_date']) && ! empty($filters['end_date'])) {
@@ -195,7 +196,7 @@ class SalesReportController extends Controller
 
     private function getChartDataQuery(array $filters): array
     {
-        $query = Sale::where('user_id', auth()->id());
+        $query = Sale::where('user_id', Auth::id());
 
         // Apply date filters only (payment type filter should not affect chart)
         if (! empty($filters['start_date']) && ! empty($filters['end_date'])) {
@@ -268,7 +269,7 @@ class SalesReportController extends Controller
 
     private function getPaymentTypeDistribution(array $filters): array
     {
-        $query = Sale::where('user_id', auth()->id());
+        $query = Sale::where('user_id', Auth::id());
 
         // Apply date filters
         if (! empty($filters['start_date']) && ! empty($filters['end_date'])) {

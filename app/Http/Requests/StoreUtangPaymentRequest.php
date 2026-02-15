@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Customer;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Validator;
 
 class StoreUtangPaymentRequest extends FormRequest
@@ -27,7 +28,7 @@ class StoreUtangPaymentRequest extends FormRequest
             'customer_id' => [
                 'required',
                 'integer',
-                'exists:customers,id,user_id,'.auth()->id(),
+                'exists:customers,id,user_id,'.Auth::id(),
             ],
             'payment_amount' => ['required', 'numeric', 'min:0.01'],
             'payment_date' => ['required', 'date'],

@@ -6,6 +6,7 @@ use App\Traits\LogsActivityWithRequest;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Auth;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -36,7 +37,7 @@ class Expense extends Model
 
     public function scopeOwnedBy($query, $userId = null)
     {
-        $userId = $userId ?? auth()->id();
+        $userId = $userId ?? Auth::id();
 
         return $query->where('user_id', $userId);
     }

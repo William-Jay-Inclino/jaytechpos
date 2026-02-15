@@ -100,7 +100,7 @@ describe('processMonthlyInterest', function () {
             ->withUtang()
             ->create([
                 'user_id' => $this->user->id,
-                'created_at' => now()->startOfYear()->addMonth(),
+                'created_at' => now()->subMonth()->startOfMonth(),
             ]);
 
         CustomerTransaction::factory()->create([

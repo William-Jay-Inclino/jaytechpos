@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Customer;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class CustomerService
@@ -42,7 +43,7 @@ class CustomerService
                 $query->whereYear('created_at', '<', $year)
                     ->orWhere(function ($q) use ($year, $month) {
                         $q->whereYear('created_at', '=', $year)
-                          ->whereMonth('created_at', '<', $month);
+                            ->whereMonth('created_at', '<', $month);
                     });
             })
             ->get();
@@ -102,7 +103,7 @@ class CustomerService
 
             $txn = DB::transaction(function () use ($customer, $previousBalance, $newBalance, $interestAmount, $transactionDesc, $now) {
                 return $customer->customerTransactions()->create([
-                    'user_id' => $customer->user_id ?? auth()->id(),
+                    'user_id' => $customer->user_id ?? Auth::id(),
                     'transaction_type' => 'monthly_interest',
                     'reference_id' => null,
                     'previous_balance' => $previousBalance,
@@ -130,7 +131,7 @@ class CustomerService
             ];
 
             activity()
-                ->causedBy(auth()->user() ?? null)
+                ->causedBy(Auth::user() ?? null)
                 ->withProperties($properties)
                 ->log('Monthly interest processing completed');
         } catch (\Throwable $e) {
