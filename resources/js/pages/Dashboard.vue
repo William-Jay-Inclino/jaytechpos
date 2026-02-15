@@ -11,8 +11,8 @@ import { Head } from '@inertiajs/vue3'
 interface DashboardProps {
     dailyStats: {
         total_sales_today: number
-        // total_cash_today: number
-        // utang_payments_today: number
+        cash_sales_today: number
+        utang_sales_today: number
     }
     // utangStats: {
     //     total_amount_receivable: number
@@ -87,7 +87,8 @@ const breadcrumbs: BreadcrumbItem[] = [
                             <div class="relative">
                                 <StatsCard
                                     :title="dailyStats.total_sales_today > 0 ? 'Total sales today' : 'Wala ka pang kita ngayong araw'"
-                                    :value="dailyStats.total_sales_today"
+                                    :cash-value="dailyStats.cash_sales_today"
+                                    :utang-value="dailyStats.utang_sales_today"
                                     class="transform hover:scale-[1.02] transition-all duration-500 shadow-2xl border-0 bg-gradient-to-br from-white to-green-50/50 dark:from-gray-800 dark:to-green-900/20 p-8 sm:p-12"
                                 />
                             </div>

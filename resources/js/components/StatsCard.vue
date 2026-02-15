@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import Icon from './Icon.vue'
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { formatCurrency } from '@/utils/currency'
 
 interface Props {
     title: string
-    value: string | number
+    cashValue: number
+    utangValue: number
     trend?: {
         value: string
         isPositive: boolean
@@ -18,10 +18,40 @@ const props = defineProps<Props>()
 const animatedValue = ref(0)
 const isAnimating = ref(false)
 
+// Filter state — multi-select, default is cash only
+const showCash = ref(true)
+const showUtang = ref(false)
+
+function toggleCash() {
+    // Don't allow deselecting both
+    if (showCash.value && !showUtang.value) return
+    showCash.value = !showCash.value
+}
+
+function toggleUtang() {
+    // Don't allow deselecting both
+    if (showUtang.value && !showCash.value) return
+    showUtang.value = !showUtang.value
+}
+
+// Computed display value based on filter selection
+const displayValue = computed(() => {
+    let total = 0
+    if (showCash.value) total += props.cashValue
+    if (showUtang.value) total += props.utangValue
+    return total
+})
+
+// Computed label based on filter selection
+const filterLabel = computed(() => {
+    if (showCash.value && showUtang.value) return 'all'
+    if (showUtang.value) return 'utang'
+    return 'cash'
+})
+
 // Helper function to determine if value should show celebration
-function shouldShowCelebration(value: string | number): boolean {
-    const num = typeof value === 'string' ? parseFloat(value) : value
-    return num > 0
+function shouldShowCelebration(value: number): boolean {
+    return value > 0
 }
 
 // Animation function for counting effect
@@ -52,29 +82,31 @@ function animateValue(targetValue: number, duration: number = 2000) {
     requestAnimationFrame(updateValue)
 }
 
-// Function to get numeric value for animation
-function getNumericValue(value: string | number): number {
-    return typeof value === 'string' ? parseFloat(value) || 0 : value
+// Re-animate when filter changes
+function reAnimate() {
+    animatedValue.value = 0
+    isAnimating.value = false
+    setTimeout(() => animateValue(displayValue.value), 50)
 }
 
-// Start animation when component mounts or value changes
+// Start animation when component mounts
 onMounted(() => {
-    if (!props.loading && typeof props.value === 'number') {
-        animateValue(getNumericValue(props.value))
+    if (!props.loading) {
+        animateValue(displayValue.value)
     }
 })
 
-watch(() => props.value, (newValue) => {
-    if (!props.loading && typeof newValue === 'number') {
-        animateValue(getNumericValue(newValue))
+// Re-animate when the underlying data changes
+watch(displayValue, () => {
+    if (!props.loading) {
+        reAnimate()
     }
-}, { immediate: false })
+})
 
 watch(() => props.loading, (isLoading) => {
-    if (!isLoading && typeof props.value === 'number') {
-        // Reset and animate when loading finishes
+    if (!isLoading) {
         animatedValue.value = 0
-        setTimeout(() => animateValue(getNumericValue(props.value)), 100)
+        setTimeout(() => animateValue(displayValue.value), 100)
     }
 })
 </script>
@@ -101,6 +133,31 @@ watch(() => props.loading, (isLoading) => {
                     <p class="text-lg sm:text-xl font-semibold text-gray-700 dark:text-gray-300 tracking-wide">
                         {{ title }}
                     </p>
+                    <!-- Subtle filter toggle -->
+                    <div class="flex justify-center items-center gap-1.5 pt-2">
+                        <button
+                            @click="toggleCash"
+                            :class="[
+                                'px-3 py-1 text-xs font-medium rounded-full transition-all duration-300',
+                                showCash
+                                    ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400'
+                                    : 'bg-gray-100 text-gray-400 dark:bg-gray-700/40 dark:text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700/60',
+                            ]"
+                        >
+                            Cash
+                        </button>
+                        <button
+                            @click="toggleUtang"
+                            :class="[
+                                'px-3 py-1 text-xs font-medium rounded-full transition-all duration-300',
+                                showUtang
+                                    ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400'
+                                    : 'bg-gray-100 text-gray-400 dark:bg-gray-700/40 dark:text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700/60',
+                            ]"
+                        >
+                            Utang
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Value display with enhanced presentation -->
@@ -115,7 +172,7 @@ watch(() => props.loading, (isLoading) => {
                         </p>
                         
                         <!-- Celebration icons with animation -->
-                        <div v-if="shouldShowCelebration(value)" class="flex justify-center items-center gap-2 mt-4">
+                        <div v-if="shouldShowCelebration(displayValue)" class="flex justify-center items-center gap-2 mt-4">
                             <span class="text-4xl animate-bounce" style="animation-delay: 0ms">🎉</span>
                             <span class="text-3xl animate-pulse" style="animation-delay: 200ms">✨</span>
                             <span class="text-4xl animate-bounce" style="animation-delay: 400ms">💰</span>

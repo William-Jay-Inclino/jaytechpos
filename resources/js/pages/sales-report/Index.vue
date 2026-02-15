@@ -373,8 +373,8 @@ const getVisiblePages = (): (number | string)[] => {
                         <div class="grid gap-6 grid-cols-1 mb-8">
                             <StatsCard
                                 title="Total Sales"
-                                :value="salesData.summary.total_sales"
-                                icon="dollar-sign"
+                                :cash-value="salesData.summary.cash_sales"
+                                :utang-value="salesData.summary.utang_sales"
                                 class="transform hover:scale-105 transition-all duration-300"
                             />
                         </div>

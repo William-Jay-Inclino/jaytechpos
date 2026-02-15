@@ -9,9 +9,9 @@ use App\Services\SaleService;
 use App\Services\UserService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
@@ -61,21 +61,16 @@ class DashboardController extends Controller
         // Total sales today
         $totalSalesToday = $this->saleService->getTotalSales($today, $today, $userId);
 
-        // Total cash received today (cash sales + utang payments via customer transactions)
-        // $cashSalesToday = $this->saleService->getTotalSales($today, $today, $userId, 'cash');
+        // Cash sales today
+        $cashSalesToday = $this->saleService->getTotalSales($today, $today, $userId, 'cash');
 
-        // Get utang payments from customer transactions
-        // $utangPaymentsToday = \App\Models\CustomerTransaction::where('user_id', $userId)
-        //     ->where('transaction_type', 'utang_payment')
-        //     ->whereDate('transaction_date', $today)
-        //     ->sum('transaction_amount');
-
-        // $totalCashToday = $cashSalesToday + $utangPaymentsToday;
+        // Utang sales today
+        $utangSalesToday = $this->saleService->getTotalSales($today, $today, $userId, 'utang');
 
         return [
             'total_sales_today' => $totalSalesToday,
-            // 'total_cash_today' => $totalCashToday,
-            // 'utang_payments_today' => $utangPaymentsToday,
+            'cash_sales_today' => $cashSalesToday,
+            'utang_sales_today' => $utangSalesToday,
         ];
     }
 
